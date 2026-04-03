@@ -14,6 +14,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { File as ExpoFile } from "expo-file-system";
 import { generateText } from "@/utils/openai";
 import { useMutation } from "@tanstack/react-query";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -76,14 +77,30 @@ export default function SummaryScreen() {
       
       let imageBase64 = uri;
       if (!uri.startsWith("data:")) {
-        const response = await fetch(uri);
-        const blob = await response.blob();
-        const base64 = await new Promise<string>((resolve) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result as string);
-          reader.readAsDataURL(blob);
-        });
-        imageBase64 = base64;
+        try {
+          const file = new ExpoFile(uri);
+          const base64Data = await file.base64();
+          const ext = uri.split('.').pop()?.toLowerCase() || 'jpeg';
+          const mimeType = ext === 'png' ? 'image/png' : 'image/jpeg';
+          imageBase64 = `data:${mimeType};base64,${base64Data}`;
+          console.log("[FileSystem] Image converted to base64 successfully");
+        } catch (fsError) {
+          console.warn("[FileSystem] Failed, trying fetch fallback:", fsError);
+          try {
+            const response = await fetch(uri);
+            const blob = await response.blob();
+            const base64 = await new Promise<string>((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result as string);
+              reader.onerror = () => reject(new Error('FileReader failed'));
+              reader.readAsDataURL(blob);
+            });
+            imageBase64 = base64;
+          } catch (fetchError) {
+            console.error("[Fallback] Also failed:", fetchError);
+            throw new Error('Unable to read image file');
+          }
+        }
       }
 
       console.log("Image prepared for AI analysis");
@@ -192,9 +209,9 @@ export default function SummaryScreen() {
     },
   });
 
-  const { mutate: generateSummary, isPending: isGeneratingSummary } = useMutation({
+  const { mutate: generateSummary, isPending: isGeneratingSummary, isError: isSummaryError } = useMutation({
     mutationFn: async (type: SummaryType) => {
-      if (!bookInfo || !type) return "";
+      if (!bookInfo || !type) throw new Error('Missing book info or type');
       
       console.log(`Generating ${type} summary with AI...`);
 
@@ -414,7 +431,8 @@ Be precise, detailed and faithful to the book. Use your in-depth knowledge of th
     if (imageUri) {
       analyzeMutation(imageUri);
     }
-  }, [imageUri, analyzeMutation]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [imageUri]);
 
   useEffect(() => {
     if (isAnalyzing || isGeneratingSummary) {
@@ -804,6 +822,32 @@ return (
                 style={styles.buttonGradient}
               >
                 <Text style={styles.buttonText}>{t.summary.backToSelection}</Text>
+              </LinearGradient>
+            </Pressable>
+          </View>
+        ) : isSummaryError ? (
+          <View style={styles.errorContainer}>
+            <BookOpen size={48} color={colors.primary} />
+            <Text style={[styles.errorTitle, isDarkMode && styles.errorTitleDark]}>{t.summary.error}</Text>
+            <Text style={[styles.errorText, isDarkMode && styles.errorTextDark]}>
+              {language === 'fr'
+                ? "Impossible de générer le résumé. Veuillez réessayer."
+                : "Unable to generate the summary. Please try again."}
+            </Text>
+            <Pressable
+              onPress={() => {
+                setSummaryType(null);
+                setSelectedSummary('');
+              }}
+              style={styles.retryButton}
+            >
+              <LinearGradient
+                colors={colors.gradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.buttonGradient}
+              >
+                <Text style={styles.buttonText}>{t.summary.retry}</Text>
               </LinearGradient>
             </Pressable>
           </View>
