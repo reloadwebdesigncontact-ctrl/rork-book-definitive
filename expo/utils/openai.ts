@@ -1,9 +1,10 @@
 const GOOGLE_AI_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_AI_API_KEY || "";
 
-const MODELS = ["gemini-2.0-flash-lite", "gemini-2.0-flash", "gemini-1.5-flash-latest"];
+const MODELS = ["gemini-1.5-flash-latest", "gemini-2.0-flash", "gemini-1.5-pro-latest"];
 
 function getApiUrl(model: string): string {
-  return `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${GOOGLE_AI_API_KEY}`;
+  const apiVersion = model.startsWith("gemini-2") ? "v1beta" : "v1";
+  return `https://generativelanguage.googleapis.com/${apiVersion}/models/${model}:generateContent?key=${GOOGLE_AI_API_KEY}`;
 }
 
 type TextPart = { type: "text"; text: string };
