@@ -1,5 +1,5 @@
-const OPENAI_API_KEY = process.env.EXPO_PUBLIC_OPENAI_API_KEY || "";
-const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
+const GOOGLE_AI_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_AI_API_KEY || "";
+const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
 
 type TextPart = { type: "text"; text: string };
 type ImagePart = { type: "image"; image: string };
@@ -10,98 +10,141 @@ type GenerateTextInput =
   | string
   | { messages: (UserMessage | AssistantMessage)[] };
 
-function buildOpenAIMessages(input: GenerateTextInput): Array<{
+interface GeminiPart {
+  text?: string;
+  inlineData?: {
+    mimeType: string;
+    data: string;
+  };
+}
+
+interface GeminiContent {
   role: string;
-  content: string | Array<{ type: string; text?: string; image_url?: { url: string; detail?: string } }>;
-}> {
+  parts: GeminiPart[];
+}
+
+function extractBase64Info(dataUri: string): { mimeType: string; data: string } {
+  const match = dataUri.match(/^data:([^;]+);base64,(.+)$/);
+  if (match) {
+    return { mimeType: match[1], data: match[2] };
+  }
+  return { mimeType: "image/jpeg", data: dataUri };
+}
+
+function buildGeminiContents(input: GenerateTextInput): GeminiContent[] {
   if (typeof input === "string") {
-    return [{ role: "user", content: input }];
+    return [{ role: "user", parts: [{ text: input }] }];
   }
 
   return input.messages.map((msg) => {
+    const role = msg.role === "assistant" ? "model" : "user";
+
     if (typeof msg.content === "string") {
-      return { role: msg.role, content: msg.content };
+      return { role, parts: [{ text: msg.content }] };
     }
 
-    const parts: Array<{ type: string; text?: string; image_url?: { url: string; detail?: string } }> = [];
+    const parts: GeminiPart[] = [];
 
     for (const part of msg.content) {
       if (part.type === "text") {
-        parts.push({ type: "text", text: part.text });
+        parts.push({ text: part.text });
       } else if (part.type === "image") {
+        const { mimeType, data } = extractBase64Info(part.image);
         parts.push({
-          type: "image_url",
-          image_url: { url: part.image, detail: "low" },
+          inlineData: {
+            mimeType,
+            data,
+          },
         });
       }
     }
 
-    return { role: msg.role, content: parts };
+    return { role, parts };
   });
 }
 
 export async function generateText(input: GenerateTextInput): Promise<string> {
-  if (!OPENAI_API_KEY) {
-    console.error("[OpenAI] API key is missing! Set EXPO_PUBLIC_OPENAI_API_KEY.");
-    throw new Error("OpenAI API key is not configured.");
+  if (!GOOGLE_AI_API_KEY) {
+    console.error("[GoogleAI] API key is missing! Set EXPO_PUBLIC_GOOGLE_AI_API_KEY.");
+    throw new Error("Google AI API key is not configured.");
   }
 
-  const messages = buildOpenAIMessages(input);
+  const contents = buildGeminiContents(input);
 
-  console.log("[OpenAI] Sending request with", messages.length, "message(s)");
-  console.log("[OpenAI] API key present:", OPENAI_API_KEY.length > 0, "length:", OPENAI_API_KEY.length);
+  console.log("[GoogleAI] Sending request with", contents.length, "content(s)");
+  console.log("[GoogleAI] API key present:", GOOGLE_AI_API_KEY.length > 0, "length:", GOOGLE_AI_API_KEY.length);
+
+  const url = `${GEMINI_API_URL}?key=${GOOGLE_AI_API_KEY}`;
 
   let response: Response;
   try {
-    response = await fetch(OPENAI_API_URL, {
+    response = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages,
-        max_tokens: 4096,
-        temperature: 0.7,
+        contents,
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 8192,
+        },
       }),
     });
   } catch (networkError) {
-    console.error("[OpenAI] Network error:", networkError);
-    throw new Error("Network error while contacting OpenAI. Check your connection.");
+    console.error("[GoogleAI] Network error:", networkError);
+    throw new Error("Network error while contacting Google AI. Check your connection.");
   }
 
   if (!response.ok) {
     const errorBody = await response.text().catch(() => "Unknown error");
-    console.error("[OpenAI] API error:", response.status, errorBody);
-    if (response.status === 401) {
-      throw new Error("Invalid OpenAI API key. Please check your configuration.");
+    console.error("[GoogleAI] API error:", response.status, errorBody);
+    if (response.status === 400) {
+      console.error("[GoogleAI] Bad request. Check your API key and request format.");
+      throw new Error("Google AI bad request. Check API key format.");
+    }
+    if (response.status === 403) {
+      throw new Error("Google AI API key invalid or not authorized.");
     }
     if (response.status === 429) {
-      throw new Error("OpenAI rate limit exceeded. Please wait and try again.");
+      throw new Error("Google AI rate limit exceeded. Please wait and try again.");
     }
-    if (response.status === 402 || response.status === 403) {
-      throw new Error("OpenAI billing issue. Check your account credits.");
-    }
-    throw new Error(`OpenAI API error: ${response.status} - ${errorBody.substring(0, 200)}`);
+    throw new Error(`Google AI API error: ${response.status} - ${errorBody.substring(0, 200)}`);
   }
 
-  let data: { choices?: Array<{ message?: { content?: string } }> };
+  let data: {
+    candidates?: Array<{
+      content?: {
+        parts?: Array<{ text?: string }>;
+      };
+    }>;
+    error?: { message?: string };
+  };
+
   try {
     data = await response.json();
   } catch (parseError) {
-    console.error("[OpenAI] Failed to parse response JSON:", parseError);
-    throw new Error("Failed to parse OpenAI response.");
+    console.error("[GoogleAI] Failed to parse response JSON:", parseError);
+    throw new Error("Failed to parse Google AI response.");
   }
 
-  const result = data?.choices?.[0]?.message?.content ?? "";
+  console.log("[GoogleAI] Raw response keys:", Object.keys(data));
+
+  if (data.error) {
+    console.error("[GoogleAI] API returned error:", data.error.message);
+    throw new Error(`Google AI error: ${data.error.message}`);
+  }
+
+  const result = data?.candidates?.[0]?.content?.parts
+    ?.map((p) => p.text || "")
+    .join("") ?? "";
 
   if (!result) {
-    console.error("[OpenAI] Empty response from API. Full data:", JSON.stringify(data).substring(0, 500));
-    throw new Error("OpenAI returned an empty response.");
+    console.error("[GoogleAI] Empty response from API. Full data:", JSON.stringify(data).substring(0, 500));
+    throw new Error("Google AI returned an empty response.");
   }
 
-  console.log("[OpenAI] Response received, length:", result.length);
+  console.log("[GoogleAI] Response received, length:", result.length);
 
   return result;
 }
