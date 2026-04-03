@@ -12,7 +12,7 @@ type GenerateTextInput =
 
 function buildOpenAIMessages(input: GenerateTextInput): Array<{
   role: string;
-  content: string | Array<{ type: string; text?: string; image_url?: { url: string } }>;
+  content: string | Array<{ type: string; text?: string; image_url?: { url: string; detail?: string } }>;
 }> {
   if (typeof input === "string") {
     return [{ role: "user", content: input }];
@@ -23,18 +23,15 @@ function buildOpenAIMessages(input: GenerateTextInput): Array<{
       return { role: msg.role, content: msg.content };
     }
 
-    const parts: Array<{ type: string; text?: string; image_url?: { url: string } }> = [];
+    const parts: Array<{ type: string; text?: string; image_url?: { url: string; detail?: string } }> = [];
 
     for (const part of msg.content) {
       if (part.type === "text") {
         parts.push({ type: "text", text: part.text });
       } else if (part.type === "image") {
-        const imageUrl = part.image.startsWith("data:")
-          ? part.image
-          : part.image;
         parts.push({
           type: "image_url",
-          image_url: { url: imageUrl },
+          image_url: { url: part.image, detail: "low" },
         });
       }
     }
@@ -44,32 +41,65 @@ function buildOpenAIMessages(input: GenerateTextInput): Array<{
 }
 
 export async function generateText(input: GenerateTextInput): Promise<string> {
+  if (!OPENAI_API_KEY) {
+    console.error("[OpenAI] API key is missing! Set EXPO_PUBLIC_OPENAI_API_KEY.");
+    throw new Error("OpenAI API key is not configured.");
+  }
+
   const messages = buildOpenAIMessages(input);
 
   console.log("[OpenAI] Sending request with", messages.length, "message(s)");
+  console.log("[OpenAI] API key present:", OPENAI_API_KEY.length > 0, "length:", OPENAI_API_KEY.length);
 
-  const response = await fetch(OPENAI_API_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${OPENAI_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: "gpt-4o",
-      messages,
-      max_tokens: 4096,
-      temperature: 0.7,
-    }),
-  });
+  let response: Response;
+  try {
+    response = await fetch(OPENAI_API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages,
+        max_tokens: 4096,
+        temperature: 0.7,
+      }),
+    });
+  } catch (networkError) {
+    console.error("[OpenAI] Network error:", networkError);
+    throw new Error("Network error while contacting OpenAI. Check your connection.");
+  }
 
   if (!response.ok) {
     const errorBody = await response.text().catch(() => "Unknown error");
     console.error("[OpenAI] API error:", response.status, errorBody);
-    throw new Error(`OpenAI API error: ${response.status}`);
+    if (response.status === 401) {
+      throw new Error("Invalid OpenAI API key. Please check your configuration.");
+    }
+    if (response.status === 429) {
+      throw new Error("OpenAI rate limit exceeded. Please wait and try again.");
+    }
+    if (response.status === 402 || response.status === 403) {
+      throw new Error("OpenAI billing issue. Check your account credits.");
+    }
+    throw new Error(`OpenAI API error: ${response.status} - ${errorBody.substring(0, 200)}`);
   }
 
-  const data = await response.json();
+  let data: { choices?: Array<{ message?: { content?: string } }> };
+  try {
+    data = await response.json();
+  } catch (parseError) {
+    console.error("[OpenAI] Failed to parse response JSON:", parseError);
+    throw new Error("Failed to parse OpenAI response.");
+  }
+
   const result = data?.choices?.[0]?.message?.content ?? "";
+
+  if (!result) {
+    console.error("[OpenAI] Empty response from API. Full data:", JSON.stringify(data).substring(0, 500));
+    throw new Error("OpenAI returned an empty response.");
+  }
 
   console.log("[OpenAI] Response received, length:", result.length);
 

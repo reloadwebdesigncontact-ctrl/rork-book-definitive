@@ -7,6 +7,7 @@ import React, { useEffect, useState } from "react";
 import {
   Animated,
   Easing,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -14,7 +15,6 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { File as ExpoFile } from "expo-file-system";
 import { generateText } from "@/utils/openai";
 import { useMutation } from "@tanstack/react-query";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -31,6 +31,31 @@ interface BookInfo {
 }
 
 type SummaryType = 'normal' | 'chapter' | null;
+
+async function convertImageViaFetch(uri: string): Promise<string> {
+  console.log("[ImageConvert] Using fetch + FileReader fallback for:", uri.substring(0, 80));
+  try {
+    const response = await fetch(uri);
+    const blob = await response.blob();
+    const base64 = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === 'string') {
+          resolve(reader.result);
+        } else {
+          reject(new Error('FileReader result is not a string'));
+        }
+      };
+      reader.onerror = () => reject(new Error('FileReader failed'));
+      reader.readAsDataURL(blob);
+    });
+    console.log("[ImageConvert] Fetch fallback successful, length:", base64.length);
+    return base64;
+  } catch (error) {
+    console.error("[ImageConvert] Fetch fallback also failed:", error);
+    throw new Error('Unable to read image file');
+  }
+}
 
 export default function SummaryScreen() {
   const router = useRouter();
@@ -77,30 +102,30 @@ export default function SummaryScreen() {
       
       let imageBase64 = uri;
       if (!uri.startsWith("data:")) {
-        try {
-          const file = new ExpoFile(uri);
-          const base64Data = await file.base64();
-          const ext = uri.split('.').pop()?.toLowerCase() || 'jpeg';
-          const mimeType = ext === 'png' ? 'image/png' : 'image/jpeg';
-          imageBase64 = `data:${mimeType};base64,${base64Data}`;
-          console.log("[FileSystem] Image converted to base64 successfully");
-        } catch (fsError) {
-          console.warn("[FileSystem] Failed, trying fetch fallback:", fsError);
+        console.log("[ImageConvert] Converting image to base64, platform:", Platform.OS);
+        
+        if (Platform.OS !== 'web') {
           try {
-            const response = await fetch(uri);
-            const blob = await response.blob();
-            const base64 = await new Promise<string>((resolve, reject) => {
-              const reader = new FileReader();
-              reader.onloadend = () => resolve(reader.result as string);
-              reader.onerror = () => reject(new Error('FileReader failed'));
-              reader.readAsDataURL(blob);
-            });
-            imageBase64 = base64;
-          } catch (fetchError) {
-            console.error("[Fallback] Also failed:", fetchError);
-            throw new Error('Unable to read image file');
+            const { File: ExpoFile } = await import('expo-file-system');
+            const file = new ExpoFile(uri);
+            const base64Data = await file.base64();
+            const ext = uri.split('.').pop()?.toLowerCase() || 'jpeg';
+            const mimeType = ext === 'png' ? 'image/png' : 'image/jpeg';
+            imageBase64 = `data:${mimeType};base64,${base64Data}`;
+            console.log("[ImageConvert] Native base64 conversion successful");
+          } catch (fsError) {
+            console.warn("[ImageConvert] Native File API failed, trying fetch fallback:", fsError);
+            imageBase64 = await convertImageViaFetch(uri);
           }
+        } else {
+          imageBase64 = await convertImageViaFetch(uri);
         }
+      }
+      
+      console.log("[ImageConvert] Final base64 length:", imageBase64.length, "starts with data:?", imageBase64.startsWith("data:"));
+      
+      if (!imageBase64 || imageBase64.length < 100) {
+        throw new Error("Failed to convert image to base64");
       }
 
       console.log("Image prepared for AI analysis");
