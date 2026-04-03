@@ -5,7 +5,7 @@ import { ArrowLeft, CheckCircle2, Crown, Loader2, Sparkles, XCircle } from "luci
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Animated, Easing, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { generateText } from "@rork-ai/toolkit-sdk";
+import { generateText } from "@/utils/openai";
 import { useMutation } from "@tanstack/react-query";
 import { Paywall } from "@/components/Paywall";
 import { useLanguage } from "@/contexts/LanguageContext";
