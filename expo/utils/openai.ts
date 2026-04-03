@@ -1,6 +1,6 @@
 const GOOGLE_AI_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_AI_API_KEY || "";
 
-const MODELS = ["gemini-1.5-flash", "gemini-2.0-flash-lite"];
+const MODELS = ["gemini-2.0-flash", "gemini-1.5-flash"];
 
 function getApiUrl(model: string): string {
   return `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GOOGLE_AI_API_KEY}`;
@@ -86,7 +86,7 @@ async function callGeminiApi(
   let response: Response;
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 60000);
+    const timeout = setTimeout(() => controller.abort(), 90000);
 
     response = await fetch(url, {
       method: "POST",
@@ -120,7 +120,12 @@ async function callGeminiApi(
     throw new Error(`Erreur réseau. Vérifiez votre connexion internet. (${errMsg})`);
   }
 
-  const responseText = await response.text().catch(() => "");
+  let responseText = "";
+  try {
+    responseText = await response.text();
+  } catch {
+    console.error("[GoogleAI] Failed to read response text");
+  }
 
   if (!response.ok) {
     console.error(`[GoogleAI] HTTP ${response.status} from ${model}:`, responseText.substring(0, 500));
@@ -212,11 +217,11 @@ export async function generateText(input: GenerateTextInput): Promise<string> {
     throw new Error("Clé API Google AI non configurée. Ajoutez EXPO_PUBLIC_GOOGLE_AI_API_KEY.");
   }
 
-  console.log("[GoogleAI] API key length:", GOOGLE_AI_API_KEY.length);
+  console.log("[GoogleAI] API key present, length:", GOOGLE_AI_API_KEY.length);
 
   const contents = buildGeminiContents(input);
   const hasImage = contents.some(c => c.parts.some(p => !!p.inlineData));
-  console.log("[GoogleAI] Request has image:", hasImage, "| parts count:", contents.length);
+  console.log("[GoogleAI] Request has image:", hasImage, "| contents count:", contents.length);
 
   for (let i = 0; i < MODELS.length; i++) {
     const model = MODELS[i];

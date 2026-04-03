@@ -32,7 +32,32 @@ interface BookInfo {
 
 type SummaryType = 'normal' | 'chapter' | null;
 
-async function convertImageViaFetch(uri: string): Promise<string> {
+async function convertImageToBase64(uri: string): Promise<string> {
+  console.log("[ImageConvert] Converting image, platform:", Platform.OS, "uri:", uri.substring(0, 80));
+
+  if (Platform.OS !== 'web') {
+    try {
+      const LegacyFS = await import('expo-file-system/legacy');
+      const fileInfo = await LegacyFS.getInfoAsync(uri);
+      console.log("[ImageConvert] File exists:", fileInfo.exists);
+
+      if (fileInfo.exists) {
+        const base64Data = await LegacyFS.readAsStringAsync(uri, {
+          encoding: LegacyFS.EncodingType.Base64,
+        });
+        const ext = uri.split('.').pop()?.toLowerCase() || 'jpeg';
+        const mimeType = ext === 'png' ? 'image/png' : 'image/jpeg';
+        const result = `data:${mimeType};base64,${base64Data}`;
+        console.log("[ImageConvert] Native base64 conversion OK, length:", result.length);
+        return result;
+      }
+      console.warn("[ImageConvert] File not found at URI, falling back to fetch");
+    } catch (fsError: unknown) {
+      const fsMsg = fsError instanceof Error ? fsError.message : String(fsError);
+      console.warn("[ImageConvert] Native FS failed:", fsMsg, "- falling back to fetch");
+    }
+  }
+
   console.log("[ImageConvert] Using fetch + FileReader for:", uri.substring(0, 80));
   try {
     const controller = new AbortController();
@@ -63,11 +88,11 @@ async function convertImageViaFetch(uri: string): Promise<string> {
       reader.onerror = () => reject(new Error('FileReader failed'));
       reader.readAsDataURL(blob);
     });
-    console.log("[ImageConvert] Base64 conversion successful, length:", base64.length);
+    console.log("[ImageConvert] Fetch+FileReader conversion OK, length:", base64.length);
     return base64;
   } catch (error: unknown) {
     const errMsg = error instanceof Error ? error.message : String(error);
-    console.error("[ImageConvert] Conversion failed:", errMsg);
+    console.error("[ImageConvert] All conversion methods failed:", errMsg);
     throw new Error(`Impossible de lire l'image: ${errMsg}`);
   }
 }
@@ -118,33 +143,7 @@ export default function SummaryScreen() {
       
       let imageBase64 = uri;
       if (!uri.startsWith("data:")) {
-        console.log("[ImageConvert] Platform:", Platform.OS);
-        
-        if (Platform.OS !== 'web') {
-          try {
-            const ExpoFS = await import('expo-file-system');
-            const fileInfo = await ExpoFS.getInfoAsync(uri);
-            console.log("[ImageConvert] File exists:", fileInfo.exists);
-            
-            if (fileInfo.exists) {
-              const file = new ExpoFS.File(uri);
-              const base64Data = await file.base64();
-              const ext = uri.split('.').pop()?.toLowerCase() || 'jpeg';
-              const mimeType = ext === 'png' ? 'image/png' : 'image/jpeg';
-              imageBase64 = `data:${mimeType};base64,${base64Data}`;
-              console.log("[ImageConvert] Native conversion OK, length:", imageBase64.length);
-            } else {
-              console.warn("[ImageConvert] File not found, using fetch fallback");
-              imageBase64 = await convertImageViaFetch(uri);
-            }
-          } catch (fsError: unknown) {
-            const fsMsg = fsError instanceof Error ? fsError.message : String(fsError);
-            console.warn("[ImageConvert] Native API failed:", fsMsg);
-            imageBase64 = await convertImageViaFetch(uri);
-          }
-        } else {
-          imageBase64 = await convertImageViaFetch(uri);
-        }
+        imageBase64 = await convertImageToBase64(uri);
       }
       
       console.log("[ImageConvert] Final length:", imageBase64.length, "starts with data:?", imageBase64.startsWith("data:"));
