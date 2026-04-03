@@ -1,9 +1,9 @@
 const GOOGLE_AI_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_AI_API_KEY || "";
 
-const MODELS = ["gemini-2.0-flash", "gemini-1.5-flash"];
+const MODELS = ["gemini-2.0-flash-lite", "gemini-2.0-flash", "gemini-1.5-flash-latest"];
 
 function getApiUrl(model: string): string {
-  return `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GOOGLE_AI_API_KEY}`;
+  return `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${GOOGLE_AI_API_KEY}`;
 }
 
 type TextPart = { type: "text"; text: string };
@@ -126,10 +126,13 @@ async function callGeminiApi(
   if (!response.ok) {
     console.error(`[GoogleAI] HTTP ${response.status} from ${model}:`, responseText.substring(0, 500));
 
-    if (response.status === 429 && retryCount < 2) {
-      console.log("[GoogleAI] Rate limited, waiting...");
-      await new Promise(r => setTimeout(r, 3000 * (retryCount + 1)));
-      return callGeminiApi(model, contents, retryCount + 1);
+    if (response.status === 429) {
+      console.log("[GoogleAI] Rate limited on model:", model);
+      throw new Error(`RATE_LIMITED:${model}`);
+    }
+    if (response.status === 404) {
+      console.log("[GoogleAI] Model not found:", model);
+      throw new Error(`MODEL_NOT_FOUND:${model}`);
     }
     if (response.status >= 500 && retryCount < 2) {
       console.log("[GoogleAI] Server error, retrying...");
@@ -247,14 +250,16 @@ export async function generateText(input: GenerateTextInput): Promise<string> {
         errMsg.includes("invalide") ||
         errMsg.includes("403") ||
         errMsg.includes("bloquée") ||
-        errMsg.includes("sécurité")
+        errMsg.includes("sécurité") ||
+        errMsg.includes("400")
       ) {
         throw error;
       }
 
       if (i < MODELS.length - 1) {
-        console.log(`[GoogleAI] Falling back to next model...`);
-        await new Promise(r => setTimeout(r, 1000));
+        const delay = errMsg.includes("RATE_LIMITED") ? 5000 : 1500;
+        console.log(`[GoogleAI] Falling back to next model in ${delay}ms...`);
+        await new Promise(r => setTimeout(r, delay));
         continue;
       }
       throw error;
