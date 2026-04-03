@@ -1,5 +1,6 @@
 const GOOGLE_AI_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_AI_API_KEY || "";
-const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+const GEMINI_MODEL = "gemini-2.0-flash";
+const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
 type TextPart = { type: "text"; text: string };
 type ImagePart = { type: "image"; image: string };
@@ -63,17 +64,7 @@ function buildGeminiContents(input: GenerateTextInput): GeminiContent[] {
   });
 }
 
-export async function generateText(input: GenerateTextInput): Promise<string> {
-  if (!GOOGLE_AI_API_KEY) {
-    console.error("[GoogleAI] API key is missing! Set EXPO_PUBLIC_GOOGLE_AI_API_KEY.");
-    throw new Error("Google AI API key is not configured.");
-  }
-
-  const contents = buildGeminiContents(input);
-
-  console.log("[GoogleAI] Sending request with", contents.length, "content(s)");
-  console.log("[GoogleAI] API key present:", GOOGLE_AI_API_KEY.length > 0, "length:", GOOGLE_AI_API_KEY.length);
-
+async function attemptGenerate(contents: GeminiContent[], retryCount: number = 0): Promise<string> {
   const url = `${GEMINI_API_URL}?key=${GOOGLE_AI_API_KEY}`;
 
   let response: Response;
@@ -93,14 +84,29 @@ export async function generateText(input: GenerateTextInput): Promise<string> {
     });
   } catch (networkError) {
     console.error("[GoogleAI] Network error:", networkError);
+    if (retryCount < 2) {
+      console.log(`[GoogleAI] Retrying... attempt ${retryCount + 2}`);
+      await new Promise(r => setTimeout(r, 1000 * (retryCount + 1)));
+      return attemptGenerate(contents, retryCount + 1);
+    }
     throw new Error("Network error while contacting Google AI. Check your connection.");
   }
 
   if (!response.ok) {
     const errorBody = await response.text().catch(() => "Unknown error");
     console.error("[GoogleAI] API error:", response.status, errorBody);
+
+    if (response.status === 429 && retryCount < 2) {
+      console.log(`[GoogleAI] Rate limited, retrying... attempt ${retryCount + 2}`);
+      await new Promise(r => setTimeout(r, 2000 * (retryCount + 1)));
+      return attemptGenerate(contents, retryCount + 1);
+    }
+    if (response.status === 500 && retryCount < 2) {
+      console.log(`[GoogleAI] Server error, retrying... attempt ${retryCount + 2}`);
+      await new Promise(r => setTimeout(r, 1500 * (retryCount + 1)));
+      return attemptGenerate(contents, retryCount + 1);
+    }
     if (response.status === 400) {
-      console.error("[GoogleAI] Bad request. Check your API key and request format.");
       throw new Error("Google AI bad request. Check API key format.");
     }
     if (response.status === 403) {
@@ -117,14 +123,21 @@ export async function generateText(input: GenerateTextInput): Promise<string> {
       content?: {
         parts?: Array<{ text?: string }>;
       };
+      finishReason?: string;
     }>;
     error?: { message?: string };
+    promptFeedback?: { blockReason?: string };
   };
 
   try {
     data = await response.json();
   } catch (parseError) {
     console.error("[GoogleAI] Failed to parse response JSON:", parseError);
+    if (retryCount < 2) {
+      console.log(`[GoogleAI] Retrying after parse error... attempt ${retryCount + 2}`);
+      await new Promise(r => setTimeout(r, 1000));
+      return attemptGenerate(contents, retryCount + 1);
+    }
     throw new Error("Failed to parse Google AI response.");
   }
 
@@ -135,16 +148,45 @@ export async function generateText(input: GenerateTextInput): Promise<string> {
     throw new Error(`Google AI error: ${data.error.message}`);
   }
 
-  const result = data?.candidates?.[0]?.content?.parts
+  if (data.promptFeedback?.blockReason) {
+    console.error("[GoogleAI] Prompt blocked:", data.promptFeedback.blockReason);
+    throw new Error(`Google AI blocked the request: ${data.promptFeedback.blockReason}`);
+  }
+
+  const candidate = data?.candidates?.[0];
+  if (candidate?.finishReason && candidate.finishReason !== 'STOP' && candidate.finishReason !== 'MAX_TOKENS') {
+    console.warn("[GoogleAI] Unusual finish reason:", candidate.finishReason);
+  }
+
+  const result = candidate?.content?.parts
     ?.map((p) => p.text || "")
     .join("") ?? "";
 
   if (!result) {
     console.error("[GoogleAI] Empty response from API. Full data:", JSON.stringify(data).substring(0, 500));
+    if (retryCount < 1) {
+      console.log(`[GoogleAI] Retrying after empty response... attempt ${retryCount + 2}`);
+      await new Promise(r => setTimeout(r, 1000));
+      return attemptGenerate(contents, retryCount + 1);
+    }
     throw new Error("Google AI returned an empty response.");
   }
 
   console.log("[GoogleAI] Response received, length:", result.length);
-
   return result;
+}
+
+export async function generateText(input: GenerateTextInput): Promise<string> {
+  if (!GOOGLE_AI_API_KEY) {
+    console.error("[GoogleAI] API key is missing! Set EXPO_PUBLIC_GOOGLE_AI_API_KEY.");
+    throw new Error("Google AI API key is not configured.");
+  }
+
+  const contents = buildGeminiContents(input);
+
+  console.log("[GoogleAI] Sending request with", contents.length, "content(s)");
+  console.log("[GoogleAI] Model:", GEMINI_MODEL);
+  console.log("[GoogleAI] API key present:", GOOGLE_AI_API_KEY.length > 0, "length:", GOOGLE_AI_API_KEY.length);
+
+  return attemptGenerate(contents);
 }

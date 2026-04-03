@@ -106,13 +106,18 @@ export default function SummaryScreen() {
         
         if (Platform.OS !== 'web') {
           try {
-            const { File: ExpoFile } = await import('expo-file-system');
-            const file = new ExpoFile(uri);
-            const base64Data = await file.base64();
-            const ext = uri.split('.').pop()?.toLowerCase() || 'jpeg';
-            const mimeType = ext === 'png' ? 'image/png' : 'image/jpeg';
-            imageBase64 = `data:${mimeType};base64,${base64Data}`;
-            console.log("[ImageConvert] Native base64 conversion successful");
+            const ExpoFS = await import('expo-file-system');
+            const file = new ExpoFS.File(uri);
+            if (!file.exists) {
+              console.warn("[ImageConvert] File does not exist at URI, trying fetch fallback");
+              imageBase64 = await convertImageViaFetch(uri);
+            } else {
+              const base64Data = await file.base64();
+              const ext = uri.split('.').pop()?.toLowerCase() || 'jpeg';
+              const mimeType = ext === 'png' ? 'image/png' : 'image/jpeg';
+              imageBase64 = `data:${mimeType};base64,${base64Data}`;
+              console.log("[ImageConvert] Native base64 conversion successful");
+            }
           } catch (fsError) {
             console.warn("[ImageConvert] Native File API failed, trying fetch fallback:", fsError);
             imageBase64 = await convertImageViaFetch(uri);
@@ -154,8 +159,15 @@ export default function SummaryScreen() {
       
       let parsedInfo: { title: string; author: string };
       try {
-        parsedInfo = JSON.parse(extractionResult);
-      } catch {
+        const cleanedJson = extractionResult.trim()
+          .replace(/^```json\s*/i, '')
+          .replace(/^```\s*/i, '')
+          .replace(/```\s*$/i, '')
+          .trim();
+        console.log("[JSON Clean] Cleaned JSON:", cleanedJson.substring(0, 200));
+        parsedInfo = JSON.parse(cleanedJson);
+      } catch (parseErr) {
+        console.error("[JSON Parse] Failed to parse extraction result:", parseErr);
         parsedInfo = {
           title: language === 'fr' ? "Le titre n'a pas pu être identifié" : "Title could not be identified",
           author: language === 'fr' ? "Auteur inconnu" : "Unknown author",
