@@ -37,21 +37,19 @@ async function convertImageToBase64(uri: string): Promise<string> {
 
   if (Platform.OS !== 'web') {
     try {
-      const LegacyFS = await import('expo-file-system/legacy');
-      const fileInfo = await LegacyFS.getInfoAsync(uri);
-      console.log("[ImageConvert] File exists:", fileInfo.exists);
+      const { File } = await import('expo-file-system');
+      const file = new File(uri);
+      console.log("[ImageConvert] File exists:", file.exists, "size:", file.size);
 
-      if (fileInfo.exists) {
-        const base64Data = await LegacyFS.readAsStringAsync(uri, {
-          encoding: LegacyFS.EncodingType.Base64,
-        });
+      if (file.exists && file.size > 0) {
+        const base64Data = await file.base64();
         const ext = uri.split('.').pop()?.toLowerCase() || 'jpeg';
         const mimeType = ext === 'png' ? 'image/png' : 'image/jpeg';
         const result = `data:${mimeType};base64,${base64Data}`;
         console.log("[ImageConvert] Native base64 conversion OK, length:", result.length);
         return result;
       }
-      console.warn("[ImageConvert] File not found at URI, falling back to fetch");
+      console.warn("[ImageConvert] File not found or empty, falling back to fetch");
     } catch (fsError: unknown) {
       const fsMsg = fsError instanceof Error ? fsError.message : String(fsError);
       console.warn("[ImageConvert] Native FS failed:", fsMsg, "- falling back to fetch");

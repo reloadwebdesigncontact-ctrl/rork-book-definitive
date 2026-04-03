@@ -86,7 +86,7 @@ async function callGeminiApi(
   let response: Response;
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 90000);
+    const timeout = setTimeout(() => controller.abort(), 120000);
 
     response = await fetch(url, {
       method: "POST",
@@ -97,12 +97,6 @@ async function callGeminiApi(
           temperature: 0.7,
           maxOutputTokens: 8192,
         },
-        safetySettings: [
-          { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
-          { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
-          { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
-          { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
-        ],
       }),
       signal: controller.signal,
     });
@@ -113,8 +107,8 @@ async function callGeminiApi(
     console.error(`[GoogleAI] Network error (${model}):`, errMsg);
 
     if (retryCount < 2) {
-      console.log(`[GoogleAI] Retrying in ${(retryCount + 1)}s...`);
-      await new Promise(r => setTimeout(r, 1000 * (retryCount + 1)));
+      console.log(`[GoogleAI] Retrying in ${(retryCount + 1) * 2}s...`);
+      await new Promise(r => setTimeout(r, 2000 * (retryCount + 1)));
       return callGeminiApi(model, contents, retryCount + 1);
     }
     throw new Error(`Erreur réseau. Vérifiez votre connexion internet. (${errMsg})`);
@@ -127,34 +121,38 @@ async function callGeminiApi(
     console.error("[GoogleAI] Failed to read response text");
   }
 
+  console.log(`[GoogleAI] HTTP status: ${response.status}, response length: ${responseText.length}`);
+
   if (!response.ok) {
     console.error(`[GoogleAI] HTTP ${response.status} from ${model}:`, responseText.substring(0, 500));
 
     if (response.status === 429 && retryCount < 2) {
+      console.log("[GoogleAI] Rate limited, waiting...");
       await new Promise(r => setTimeout(r, 3000 * (retryCount + 1)));
       return callGeminiApi(model, contents, retryCount + 1);
     }
     if (response.status >= 500 && retryCount < 2) {
+      console.log("[GoogleAI] Server error, retrying...");
       await new Promise(r => setTimeout(r, 2000 * (retryCount + 1)));
       return callGeminiApi(model, contents, retryCount + 1);
     }
     if (response.status === 400) {
       console.error(`[GoogleAI] Bad request details:`, responseText.substring(0, 1000));
-      throw new Error(`Requête invalide (400). Détails: ${responseText.substring(0, 200)}`);
+      throw new Error(`Requête invalide (400). Vérifiez votre clé API.`);
     }
     if (response.status === 403) {
       throw new Error("Clé API Google AI invalide ou non autorisée (403).");
     }
-    throw new Error(`Erreur API Google AI: ${response.status}`);
+    throw new Error(`Erreur API Google AI: HTTP ${response.status}`);
   }
 
   let data: Record<string, unknown>;
   try {
     data = JSON.parse(responseText);
   } catch {
-    console.error("[GoogleAI] Failed to parse JSON response:", responseText.substring(0, 300));
+    console.error("[GoogleAI] Failed to parse JSON:", responseText.substring(0, 300));
     if (retryCount < 1) {
-      await new Promise(r => setTimeout(r, 1500));
+      await new Promise(r => setTimeout(r, 2000));
       return callGeminiApi(model, contents, retryCount + 1);
     }
     throw new Error("Impossible de lire la réponse de l'IA.");
@@ -162,9 +160,13 @@ async function callGeminiApi(
 
   console.log("[GoogleAI] Response keys:", Object.keys(data));
 
-  const error = data.error as { message?: string } | undefined;
+  const error = data.error as { message?: string; code?: number } | undefined;
   if (error?.message) {
-    console.error("[GoogleAI] API error:", error.message);
+    console.error("[GoogleAI] API error:", error.code, error.message);
+    if (error.code === 429 && retryCount < 2) {
+      await new Promise(r => setTimeout(r, 3000 * (retryCount + 1)));
+      return callGeminiApi(model, contents, retryCount + 1);
+    }
     throw new Error(`Erreur Google AI: ${error.message}`);
   }
 
@@ -181,16 +183,16 @@ async function callGeminiApi(
 
   const candidate = candidates?.[0];
   if (!candidate) {
-    console.error("[GoogleAI] No candidates in response:", JSON.stringify(data).substring(0, 500));
+    console.error("[GoogleAI] No candidates:", JSON.stringify(data).substring(0, 500));
     if (retryCount < 1) {
-      await new Promise(r => setTimeout(r, 1500));
+      await new Promise(r => setTimeout(r, 2000));
       return callGeminiApi(model, contents, retryCount + 1);
     }
     throw new Error("L'IA n'a retourné aucune réponse.");
   }
 
   if (candidate.finishReason === "SAFETY") {
-    console.warn("[GoogleAI] Response blocked for safety reasons");
+    console.warn("[GoogleAI] Blocked for safety");
     throw new Error("La réponse a été bloquée pour des raisons de sécurité.");
   }
 
@@ -199,9 +201,9 @@ async function callGeminiApi(
     .join("") ?? "";
 
   if (!result.trim()) {
-    console.error("[GoogleAI] Empty response text. Full:", JSON.stringify(data).substring(0, 500));
+    console.error("[GoogleAI] Empty response:", JSON.stringify(data).substring(0, 500));
     if (retryCount < 1) {
-      await new Promise(r => setTimeout(r, 1000));
+      await new Promise(r => setTimeout(r, 1500));
       return callGeminiApi(model, contents, retryCount + 1);
     }
     throw new Error("L'IA a retourné une réponse vide.");
@@ -214,14 +216,21 @@ async function callGeminiApi(
 export async function generateText(input: GenerateTextInput): Promise<string> {
   if (!GOOGLE_AI_API_KEY) {
     console.error("[GoogleAI] EXPO_PUBLIC_GOOGLE_AI_API_KEY is not set!");
-    throw new Error("Clé API Google AI non configurée. Ajoutez EXPO_PUBLIC_GOOGLE_AI_API_KEY.");
+    throw new Error("Clé API Google AI non configurée. Ajoutez EXPO_PUBLIC_GOOGLE_AI_API_KEY dans les variables d'environnement.");
   }
 
-  console.log("[GoogleAI] API key present, length:", GOOGLE_AI_API_KEY.length);
+  console.log("[GoogleAI] API key present, length:", GOOGLE_AI_API_KEY.length, "starts with:", GOOGLE_AI_API_KEY.substring(0, 6));
 
   const contents = buildGeminiContents(input);
   const hasImage = contents.some(c => c.parts.some(p => !!p.inlineData));
   console.log("[GoogleAI] Request has image:", hasImage, "| contents count:", contents.length);
+
+  if (hasImage) {
+    const imagePartSizes = contents.flatMap(c =>
+      c.parts.filter(p => !!p.inlineData).map(p => p.inlineData?.data?.length || 0)
+    );
+    console.log("[GoogleAI] Image data sizes:", imagePartSizes);
+  }
 
   for (let i = 0; i < MODELS.length; i++) {
     const model = MODELS[i];
@@ -245,6 +254,7 @@ export async function generateText(input: GenerateTextInput): Promise<string> {
 
       if (i < MODELS.length - 1) {
         console.log(`[GoogleAI] Falling back to next model...`);
+        await new Promise(r => setTimeout(r, 1000));
         continue;
       }
       throw error;
