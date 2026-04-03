@@ -33,27 +33,42 @@ interface BookInfo {
 type SummaryType = 'normal' | 'chapter' | null;
 
 async function convertImageViaFetch(uri: string): Promise<string> {
-  console.log("[ImageConvert] Using fetch + FileReader fallback for:", uri.substring(0, 80));
+  console.log("[ImageConvert] Using fetch + FileReader for:", uri.substring(0, 80));
   try {
-    const response = await fetch(uri);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30000);
+    const response = await fetch(uri, { signal: controller.signal });
+    clearTimeout(timeout);
+
+    if (!response.ok) {
+      throw new Error(`Fetch failed with status ${response.status}`);
+    }
+
     const blob = await response.blob();
+    console.log("[ImageConvert] Blob size:", blob.size, "type:", blob.type);
+
+    if (blob.size === 0) {
+      throw new Error('Empty blob received');
+    }
+
     const base64 = await new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
       reader.onloadend = () => {
-        if (typeof reader.result === 'string') {
+        if (typeof reader.result === 'string' && reader.result.length > 100) {
           resolve(reader.result);
         } else {
-          reject(new Error('FileReader result is not a string'));
+          reject(new Error('FileReader result is empty or invalid'));
         }
       };
       reader.onerror = () => reject(new Error('FileReader failed'));
       reader.readAsDataURL(blob);
     });
-    console.log("[ImageConvert] Fetch fallback successful, length:", base64.length);
+    console.log("[ImageConvert] Base64 conversion successful, length:", base64.length);
     return base64;
-  } catch (error) {
-    console.error("[ImageConvert] Fetch fallback also failed:", error);
-    throw new Error('Unable to read image file');
+  } catch (error: unknown) {
+    const errMsg = error instanceof Error ? error.message : String(error);
+    console.error("[ImageConvert] Conversion failed:", errMsg);
+    throw new Error(`Impossible de lire l'image: ${errMsg}`);
   }
 }
 
@@ -98,28 +113,33 @@ export default function SummaryScreen() {
 
   const { mutate: analyzeMutation, isPending: isAnalyzing, isError } = useMutation({
     mutationFn: async (uri: string) => {
-      console.log("Analyzing book cover with AI...", uri);
+      console.log("[Analyze] Starting book cover analysis...");
+      console.log("[Analyze] URI:", uri.substring(0, 100));
       
       let imageBase64 = uri;
       if (!uri.startsWith("data:")) {
-        console.log("[ImageConvert] Converting image to base64, platform:", Platform.OS);
+        console.log("[ImageConvert] Platform:", Platform.OS);
         
         if (Platform.OS !== 'web') {
           try {
             const ExpoFS = await import('expo-file-system');
-            const file = new ExpoFS.File(uri);
-            if (!file.exists) {
-              console.warn("[ImageConvert] File does not exist at URI, trying fetch fallback");
-              imageBase64 = await convertImageViaFetch(uri);
-            } else {
+            const fileInfo = await ExpoFS.getInfoAsync(uri);
+            console.log("[ImageConvert] File exists:", fileInfo.exists);
+            
+            if (fileInfo.exists) {
+              const file = new ExpoFS.File(uri);
               const base64Data = await file.base64();
               const ext = uri.split('.').pop()?.toLowerCase() || 'jpeg';
               const mimeType = ext === 'png' ? 'image/png' : 'image/jpeg';
               imageBase64 = `data:${mimeType};base64,${base64Data}`;
-              console.log("[ImageConvert] Native base64 conversion successful");
+              console.log("[ImageConvert] Native conversion OK, length:", imageBase64.length);
+            } else {
+              console.warn("[ImageConvert] File not found, using fetch fallback");
+              imageBase64 = await convertImageViaFetch(uri);
             }
-          } catch (fsError) {
-            console.warn("[ImageConvert] Native File API failed, trying fetch fallback:", fsError);
+          } catch (fsError: unknown) {
+            const fsMsg = fsError instanceof Error ? fsError.message : String(fsError);
+            console.warn("[ImageConvert] Native API failed:", fsMsg);
             imageBase64 = await convertImageViaFetch(uri);
           }
         } else {
@@ -127,10 +147,10 @@ export default function SummaryScreen() {
         }
       }
       
-      console.log("[ImageConvert] Final base64 length:", imageBase64.length, "starts with data:?", imageBase64.startsWith("data:"));
+      console.log("[ImageConvert] Final length:", imageBase64.length, "starts with data:?", imageBase64.startsWith("data:"));
       
       if (!imageBase64 || imageBase64.length < 100) {
-        throw new Error("Failed to convert image to base64");
+        throw new Error("Impossible de convertir l'image.");
       }
 
       console.log("Image prepared for AI analysis");
