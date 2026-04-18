@@ -16,6 +16,9 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useSubscription } from "@/contexts/SubscriptionContext";
+import { useScanLimit } from "@/contexts/ScanLimitContext";
+import { Paywall } from "@/components/Paywall";
 
 export default function ScanScreen() {
   const router = useRouter();
@@ -23,6 +26,9 @@ export default function ScanScreen() {
   const { t } = useLanguage();
   const [permission, requestPermission] = useCameraPermissions();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showPaywall, setShowPaywall] = useState<boolean>(false);
+  const { isPremium } = useSubscription();
+  const { scansToday, remainingFreeScans, hasReachedFreeLimit, dailyLimit, incrementScan } = useScanLimit();
   const cameraRef = useRef<CameraView>(null);
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const frameOpacity = useRef(new Animated.Value(0)).current;
@@ -121,9 +127,17 @@ export default function ScanScreen() {
   }, [pulseAnim, frameOpacity, corner1, corner2, corner3, corner4, framePulse, captureButtonGlow]);
 
   const processImage = async (uri: string) => {
+    if (!isPremium && hasReachedFreeLimit) {
+      console.log("[Scan] Free daily limit reached, showing paywall");
+      setShowPaywall(true);
+      return;
+    }
     setIsProcessing(true);
     console.log("Processing image:", uri);
-    
+    if (!isPremium) {
+      incrementScan();
+    }
+
     setTimeout(() => {
       setIsProcessing(false);
       router.push({
@@ -134,6 +148,10 @@ export default function ScanScreen() {
   };
 
   const takePicture = async () => {
+    if (!isPremium && hasReachedFreeLimit) {
+      setShowPaywall(true);
+      return;
+    }
     if (cameraRef.current && !isProcessing) {
       try {
         const photo = await cameraRef.current.takePictureAsync({
@@ -151,6 +169,10 @@ export default function ScanScreen() {
 
   const pickImage = async () => {
     if (isProcessing) return;
+    if (!isPremium && hasReachedFreeLimit) {
+      setShowPaywall(true);
+      return;
+    }
 
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
@@ -243,6 +265,17 @@ export default function ScanScreen() {
               <View style={{ width: 40 }} />
             </View>
 
+            {!isPremium && (
+              <View style={styles.limitBadge} testID="scan-limit-badge">
+                <Text style={styles.limitBadgeText}>
+                  {hasReachedFreeLimit
+                    ? `Limite quotidienne atteinte (${dailyLimit}/${dailyLimit})`
+                    : `${remainingFreeScans} scan${remainingFreeScans > 1 ? 's' : ''} restant${remainingFreeScans > 1 ? 's' : ''} aujourd'hui`}
+                </Text>
+                <Text style={styles.limitBadgeSub}>{scansToday}/{dailyLimit} utilisés • Plan gratuit</Text>
+              </View>
+            )}
+
             <View style={styles.centerContainer}>
               <Animated.View style={[styles.frame, { opacity: frameOpacity, transform: [{ scale: framePulse }] }]}>
                 <Animated.View style={[styles.corner, styles.topLeft, { opacity: corner1, transform: [{ scale: corner1 }] }]} />
@@ -303,6 +336,11 @@ export default function ScanScreen() {
           </SafeAreaView>
         </LinearGradient>
       </CameraView>
+      <Paywall
+        visible={showPaywall}
+        onClose={() => setShowPaywall(false)}
+        onSuccess={() => setShowPaywall(false)}
+      />
     </View>
   );
 }
@@ -487,5 +525,27 @@ const styles = StyleSheet.create({
     borderRadius: 34,
     justifyContent: "center",
     alignItems: "center",
+  },
+  limitBadge: {
+    alignSelf: "center",
+    marginTop: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: "rgba(0,0,0,0.55)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.15)",
+    alignItems: "center",
+  },
+  limitBadgeText: {
+    color: "#FFF",
+    fontSize: 13,
+    fontWeight: "700" as const,
+  },
+  limitBadgeSub: {
+    color: "rgba(255,255,255,0.75)",
+    fontSize: 11,
+    marginTop: 2,
+    fontWeight: "500" as const,
   },
 });

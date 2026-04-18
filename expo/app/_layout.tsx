@@ -9,6 +9,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { VoiceProvider } from "@/contexts/VoiceContext";
 import { UserProvider } from "@/contexts/UserContext";
 import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
+import { ScanLimitProvider } from "@/contexts/ScanLimitContext";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 void SplashScreen.preventAutoHideAsync();
@@ -42,9 +43,11 @@ export default function RootLayout() {
           <ThemeProvider>
             <UserProvider>
               <SubscriptionProvider>
-                <GestureHandlerRootView style={{ flex: 1 }}>
-                  <RootLayoutNav />
-                </GestureHandlerRootView>
+                <ScanLimitProvider>
+                  <GestureHandlerRootView style={{ flex: 1 }}>
+                    <RootLayoutNav />
+                  </GestureHandlerRootView>
+                </ScanLimitProvider>
               </SubscriptionProvider>
             </UserProvider>
           </ThemeProvider>
