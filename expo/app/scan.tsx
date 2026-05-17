@@ -18,6 +18,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { useScanLimit } from "@/contexts/ScanLimitContext";
+import { AnimatedBackground } from "@/components/AnimatedBackground";
 import { Paywall } from "@/components/Paywall";
 
 export default function ScanScreen() {
@@ -214,6 +215,7 @@ export default function ScanScreen() {
             style={styles.gradient}
           />
         )}
+        <AnimatedBackground />
         <SafeAreaView style={styles.safeArea}>
           <View style={styles.permissionContainer}>
             <Camera size={64} color={colors.primary} strokeWidth={2} />

@@ -15,6 +15,8 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import * as FileSystem from "expo-file-system/legacy";
+import { AnimatedBackground } from "@/components/AnimatedBackground";
 import { generateText } from "@/utils/openai";
 import { useMutation } from "@tanstack/react-query";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -37,60 +39,47 @@ async function convertImageToBase64(uri: string): Promise<string> {
 
   if (Platform.OS !== 'web') {
     try {
-      const { File } = await import('expo-file-system');
-      const file = new File(uri);
-      console.log("[ImageConvert] File exists:", file.exists, "size:", file.size);
-
-      if (file.exists && file.size > 0) {
-        const base64Data = await file.base64();
+      const base64Data = await FileSystem.readAsStringAsync(uri, {
+        encoding: 'base64' as FileSystem.EncodingType,
+      });
+      if (base64Data && base64Data.length > 0) {
         const ext = uri.split('.').pop()?.toLowerCase() || 'jpeg';
         const mimeType = ext === 'png' ? 'image/png' : 'image/jpeg';
         const result = `data:${mimeType};base64,${base64Data}`;
         console.log("[ImageConvert] Native base64 conversion OK, length:", result.length);
         return result;
       }
-      console.warn("[ImageConvert] File not found or empty, falling back to fetch");
+      throw new Error('Empty base64 result');
     } catch (fsError: unknown) {
       const fsMsg = fsError instanceof Error ? fsError.message : String(fsError);
-      console.warn("[ImageConvert] Native FS failed:", fsMsg, "- falling back to fetch");
+      console.error("[ImageConvert] Native FS failed:", fsMsg);
+      throw new Error(`Impossible de lire l'image: ${fsMsg}`);
     }
   }
 
-  console.log("[ImageConvert] Using fetch + FileReader for:", uri.substring(0, 80));
+  // Web fallback
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 30000);
     const response = await fetch(uri, { signal: controller.signal });
     clearTimeout(timeout);
-
-    if (!response.ok) {
-      throw new Error(`Fetch failed with status ${response.status}`);
-    }
-
+    if (!response.ok) throw new Error(`Fetch failed with status ${response.status}`);
     const blob = await response.blob();
-    console.log("[ImageConvert] Blob size:", blob.size, "type:", blob.type);
-
-    if (blob.size === 0) {
-      throw new Error('Empty blob received');
-    }
-
+    if (blob.size === 0) throw new Error('Empty blob received');
     const base64 = await new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
       reader.onloadend = () => {
-        if (typeof reader.result === 'string' && reader.result.length > 100) {
-          resolve(reader.result);
-        } else {
-          reject(new Error('FileReader result is empty or invalid'));
-        }
+        if (typeof reader.result === 'string' && reader.result.length > 100) resolve(reader.result);
+        else reject(new Error('FileReader result is empty or invalid'));
       };
       reader.onerror = () => reject(new Error('FileReader failed'));
       reader.readAsDataURL(blob);
     });
-    console.log("[ImageConvert] Fetch+FileReader conversion OK, length:", base64.length);
+    console.log("[ImageConvert] Web fetch+FileReader OK, length:", base64.length);
     return base64;
   } catch (error: unknown) {
     const errMsg = error instanceof Error ? error.message : String(error);
-    console.error("[ImageConvert] All conversion methods failed:", errMsg);
+    console.error("[ImageConvert] Web conversion failed:", errMsg);
     throw new Error(`Impossible de lire l'image: ${errMsg}`);
   }
 }
@@ -655,6 +644,7 @@ return (
           style={styles.gradient}
         />
       )}
+      <AnimatedBackground />
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
           <Animated.View style={{ transform: [{ scale: backButtonScale }] }}>

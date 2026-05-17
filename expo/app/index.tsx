@@ -4,6 +4,8 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { Camera, Settings, User, LogOut } from "lucide-react-native";
 import React, { useState } from "react";
+import { AnimatedBackground } from "@/components/AnimatedBackground";
+import { TitleUnderline } from "@/components/TitleUnderline";
 import {
   Animated,
   Easing,
@@ -18,6 +20,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useUser } from "@/contexts/UserContext";
 import { APP_THEMES, AppTheme } from "@/constants/appThemes";
+import { resolveThemeIcon } from "@/utils/themeIcon";
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -224,6 +227,7 @@ export default function HomeScreen() {
           style={styles.gradient}
         />
       )}
+      <AnimatedBackground />
       
       <Animated.View
         style={[
@@ -319,12 +323,19 @@ export default function HomeScreen() {
           <Animated.View style={styles.header}>
             <Animated.View style={{ transform: [{ scale: logoScale }, { translateY: logoFloat.interpolate({ inputRange: [0, 1], outputRange: [0, -6] }) }] }}>
               <Image
-                source={{ uri: colors.icon }}
+                source={resolveThemeIcon(colors.icon)}
                 style={styles.logo}
                 contentFit="contain"
               />
             </Animated.View>
-            <Animated.Text style={[styles.title, isDarkMode && styles.titleDark, { opacity: titleOpacity }]}>{t.home.title}</Animated.Text>
+            <View style={styles.titleBlock}>
+              <Animated.Text style={[styles.title, isDarkMode && styles.titleDark, { opacity: titleOpacity }]}>
+                {t.home.title}
+              </Animated.Text>
+              <Animated.View style={{ opacity: titleOpacity }}>
+                <TitleUnderline colors={colors} themeKey={appTheme} />
+              </Animated.View>
+            </View>
             <Animated.Text style={[styles.subtitle, isDarkMode && styles.subtitleDark, { opacity: titleOpacity, transform: [{ translateY: subtitleSlide }] }]}>
               {t.home.subtitle}
             </Animated.Text>
@@ -419,7 +430,7 @@ export default function HomeScreen() {
                     style={styles.themeOption}
                   >
                     <Image
-                      source={{ uri: APP_THEMES[theme].icon }}
+                      source={resolveThemeIcon(APP_THEMES[theme].icon)}
                       style={[
                         styles.themeIconPreview,
                         appTheme === theme && styles.themeIconSelected,
@@ -593,11 +604,15 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 8,
   },
+  titleBlock: {
+    alignItems: "center",
+    marginBottom: 12,
+  },
   title: {
     fontSize: 36,
     fontWeight: "800" as const,
     color: "#3E2723",
-    marginBottom: 16,
+    marginBottom: 2,
     textAlign: "center",
   },
   titleDark: {

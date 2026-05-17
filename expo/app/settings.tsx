@@ -1,7 +1,7 @@
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import { ArrowLeft, Globe, Moon, Sun, Palette, Scale, ChevronRight, Info, Crown, Bug } from "lucide-react-native";
+import { ArrowLeft, Globe, Moon, Sun, Palette, Scale, ChevronRight, Info, Crown, Sparkles, Zap } from "lucide-react-native";
 import Constants from 'expo-constants';
 import * as Haptics from "expo-haptics";
 import React, { useState, useRef, useEffect } from "react";
@@ -21,13 +21,17 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { APP_THEMES, AppTheme } from "@/constants/appThemes";
+import { Paywall } from "@/components/Paywall";
+import { AnimatedBackground } from "@/components/AnimatedBackground";
+import { resolveThemeIcon } from "@/utils/themeIcon";
 
 
 export default function SettingsScreen() {
   const router = useRouter();
-  const { isDarkMode, toggleTheme, colors, appTheme, changeAppTheme } = useTheme();
+  const { isDarkMode, toggleTheme, colors, appTheme, changeAppTheme, animatedBackground, toggleAnimatedBackground } = useTheme();
   const { language, changeLanguage, t } = useLanguage();
-  const { isPremium, hasRevenueCatPremium, premiumDebugOverride, setPremiumDebugAccess, refetchCustomerInfo, isLoading: isSubscriptionLoading } = useSubscription();
+  const { isPremium, restorePurchases, isRestoring, customerInfo } = useSubscription();
+  const [showPaywall, setShowPaywall] = useState(false);
   const [showThemeModal, setShowThemeModal] = useState(false);
   const appVersion = Constants.expoConfig?.version || '1.0.0';
   const section4Opacity = useRef(new Animated.Value(0)).current;
@@ -179,6 +183,7 @@ export default function SettingsScreen() {
           style={styles.gradient}
         />
       )}
+      <AnimatedBackground />
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
           <Animated.View style={{ transform: [{ scale: backBtnScale }] }}>
@@ -352,7 +357,7 @@ export default function SettingsScreen() {
               >
                 <View style={styles.colorPreviewContent}>
                   <Image
-                    source={{ uri: colors.icon }}
+                    source={resolveThemeIcon(colors.icon)}
                     style={styles.currentIcon}
                     contentFit="contain"
                   />
@@ -365,63 +370,117 @@ export default function SettingsScreen() {
             </Animated.View>
           </Animated.View>
 
+          {/* Section fond animé */}
+          <Animated.View style={[styles.section, isDarkMode && styles.sectionDark, { opacity: section4Opacity, transform: [{ translateY: section4Slide }] }]}>
+            <View style={styles.sectionHeader}>
+              <Zap size={24} color={colors.primary} strokeWidth={2.5} />
+              <Text style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
+                {language === 'fr' ? 'Fond animé' : 'Animated background'}
+              </Text>
+            </View>
+            <Pressable
+              onPress={() => {
+                void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                void toggleAnimatedBackground();
+              }}
+              style={[styles.option, isDarkMode && styles.optionDark, animatedBackground && { backgroundColor: `${colors.primary}1F` }]}
+            >
+              <Text style={[styles.optionText, isDarkMode && styles.optionTextDark]}>
+                {language === 'fr' ? 'Activer le fond animé' : 'Enable animated background'}
+              </Text>
+              <View style={[styles.toggleTrack, { backgroundColor: animatedBackground ? colors.primary : (isDarkMode ? '#555' : '#CCC') }]}>
+                <View style={[styles.toggleThumb, { transform: [{ translateX: animatedBackground ? 20 : 2 }] }]} />
+              </View>
+            </Pressable>
+            {animatedBackground && (
+              <Text style={[styles.animBgHint, isDarkMode && styles.animBgHintDark]}>
+                {language === 'fr'
+                  ? `Dégradé animé actif — thème ${appTheme}`
+                  : `Animated gradient active — ${appTheme} theme`}
+              </Text>
+            )}
+          </Animated.View>
+
           <Animated.View style={[styles.section, isDarkMode && styles.sectionDark, { opacity: section4Opacity, transform: [{ translateY: section4Slide }] }]}> 
             <View style={styles.sectionHeader}>
-              <Bug size={24} color={colors.primary} strokeWidth={2.5} />
+              <Crown size={24} color={colors.primary} strokeWidth={2.5} />
               <Text style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
-                {t.settings.premiumDebug}
+                {language === 'fr' ? 'Mon abonnement' : 'My subscription'}
               </Text>
             </View>
             <View style={[styles.debugCard, isDarkMode && styles.debugCardDark]}>
               <View style={styles.debugBadgeRow}>
                 <View style={[styles.debugBadge, { backgroundColor: isPremium ? colors.primary : "#8C8C8C" }]}>
                   <Text style={styles.debugBadgeText}>
-                    {isPremium ? t.settings.premiumDebugActive : t.settings.premiumDebugInactive}
+                    {isPremium ? 'Premium' : (language === 'fr' ? 'Gratuit' : 'Free')}
                   </Text>
                 </View>
-                {hasRevenueCatPremium ? (
-                  <View style={[styles.storeBadge, { borderColor: colors.primary }]}> 
+                {isPremium && (
+                  <View style={[styles.storeBadge, { borderColor: colors.primary }]}>
                     <Crown size={14} color={colors.primary} strokeWidth={2.5} />
-                    <Text style={[styles.storeBadgeText, { color: colors.primary }]}>RevenueCat</Text>
+                    <Text style={[styles.storeBadgeText, { color: colors.primary }]}>
+                      {language === 'fr' ? 'Actif' : 'Active'}
+                    </Text>
                   </View>
-                ) : premiumDebugOverride ? (
-                  <View style={[styles.storeBadge, { borderColor: colors.primary }]}> 
-                    <Bug size={14} color={colors.primary} strokeWidth={2.5} />
-                    <Text style={[styles.storeBadgeText, { color: colors.primary }]}>Debug</Text>
-                  </View>
-                ) : null}
+                )}
               </View>
-              <Text style={[styles.debugDescription, isDarkMode && styles.debugDescriptionDark]}>
-                {t.settings.premiumDebugDescription}
-              </Text>
-              <Pressable
-                onPress={() => void setPremiumDebugAccess(!premiumDebugOverride)}
-                style={styles.debugButton}
-                testID="premium-debug-toggle"
-              >
-                <LinearGradient
-                  colors={colors.gradient}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.debugButtonGradient}
-                >
-                  <Bug size={18} color="#FFF" strokeWidth={2.5} />
-                  <Text style={styles.debugButtonText}>
-                    {premiumDebugOverride ? t.settings.premiumDebugDisable : t.settings.premiumDebugEnable}
+
+              {isPremium ? (
+                <>
+                  <Text style={[styles.debugDescription, isDarkMode && styles.debugDescriptionDark]}>
+                    {language === 'fr' ? 'Vous bénéficiez de toutes les fonctionnalités premium.' : 'You have access to all premium features.'}
                   </Text>
-                </LinearGradient>
-              </Pressable>
-              <Pressable
-                onPress={() => void refetchCustomerInfo()}
-                style={[styles.debugSecondaryButton, isDarkMode && styles.debugSecondaryButtonDark]}
-                testID="premium-debug-refresh"
-              >
-                <Text style={[styles.debugSecondaryButtonText, isDarkMode && styles.debugSecondaryButtonTextDark]}>
-                  {isSubscriptionLoading ? `${t.settings.premiumDebugRefresh}...` : t.settings.premiumDebugRefresh}
-                </Text>
-              </Pressable>
+                  {customerInfo?.entitlements.active?.['premium']?.latestPurchaseDate && (
+                    <Text style={[styles.subscriptionDate, isDarkMode && styles.subscriptionDateDark]}>
+                      {language === 'fr' ? '📅 Abonné depuis le ' : '📅 Subscribed since '}
+                      {new Date(customerInfo.entitlements.active['premium'].latestPurchaseDate).toLocaleDateString(language === 'fr' ? 'fr-FR' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' })}
+                    </Text>
+                  )}
+                </>
+              ) : (
+                <>
+                  <Text style={[styles.debugDescription, isDarkMode && styles.debugDescriptionDark]}>
+                    {language === 'fr' ? 'Plan gratuit — 3 scans par jour.' : 'Free plan — 3 scans per day.'}
+                  </Text>
+                  <Pressable
+                    onPress={() => {
+                      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                      setShowPaywall(true);
+                    }}
+                    style={styles.upgradeButton}
+                  >
+                    <LinearGradient
+                      colors={colors.gradient}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 0 }}
+                      style={styles.upgradeButtonGradient}
+                    >
+                      <Sparkles size={18} color="#FFF" />
+                      <Text style={styles.upgradeButtonText}>
+                        {language === 'fr' ? 'Passer à Premium' : 'Upgrade to Premium'}
+                      </Text>
+                    </LinearGradient>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => void restorePurchases()}
+                    style={[styles.restoreButton, isDarkMode && styles.restoreButtonDark]}
+                  >
+                    <Text style={[styles.restoreButtonText, { color: colors.primary }]}>
+                      {isRestoring
+                        ? (language === 'fr' ? 'Restauration...' : 'Restoring...')
+                        : (language === 'fr' ? 'Restaurer les achats' : 'Restore purchases')}
+                    </Text>
+                  </Pressable>
+                </>
+              )}
             </View>
           </Animated.View>
+
+          <Paywall
+            visible={showPaywall}
+            onClose={() => setShowPaywall(false)}
+            onSuccess={() => setShowPaywall(false)}
+          />
 
           <Animated.View style={[styles.section, isDarkMode && styles.sectionDark, { opacity: section4Opacity, transform: [{ translateY: section4Slide }] }]}>
             <View style={styles.sectionHeader}>
@@ -508,7 +567,7 @@ export default function SettingsScreen() {
                     style={styles.themeOption}
                   >
                     <Image
-                      source={{ uri: APP_THEMES[theme].icon }}
+                      source={resolveThemeIcon(APP_THEMES[theme].icon)}
                       style={[
                         styles.themeIconPreview,
                         appTheme === theme && styles.themeIconSelected,
@@ -916,6 +975,73 @@ const styles = StyleSheet.create({
   },
   debugSecondaryButtonTextDark: {
     color: "#FFF",
+  },
+  restoreButton: {
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderRadius: 8,
+    backgroundColor: 'rgba(0,0,0,0.04)',
+  },
+  restoreButtonDark: {
+    backgroundColor: 'rgba(255,255,255,0.06)',
+  },
+  restoreButtonText: {
+    fontSize: 14,
+    fontWeight: '600' as const,
+    textDecorationLine: 'underline',
+  },
+  toggleTrack: {
+    width: 44,
+    height: 26,
+    borderRadius: 13,
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  toggleThumb: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: '#FFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  animBgHint: {
+    fontSize: 12,
+    color: '#8D6E63',
+    marginTop: 8,
+    fontStyle: 'italic',
+  },
+  animBgHintDark: {
+    color: '#999',
+  },
+  upgradeButton: {
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginTop: 4,
+  },
+  upgradeButtonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    gap: 8,
+  },
+  upgradeButtonText: {
+    fontSize: 16,
+    fontWeight: '700' as const,
+    color: '#FFF',
+  },
+  subscriptionDate: {
+    fontSize: 13,
+    color: '#8D6E63',
+    fontWeight: '500' as const,
+    marginTop: 4,
+  },
+  subscriptionDateDark: {
+    color: '#999',
   },
   legalOption: {
     flexDirection: "row",

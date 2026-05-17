@@ -6,6 +6,7 @@ import { APP_THEMES, AppTheme, ColorPalette } from "@/constants/appThemes";
 export const [ThemeProvider, useTheme] = createContextHook(() => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [appTheme, setAppTheme] = useState<AppTheme>('orange');
+  const [animatedBackground, setAnimatedBackground] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -16,12 +17,16 @@ export const [ThemeProvider, useTheme] = createContextHook(() => {
     try {
       const storedMode = await AsyncStorage.getItem("theme");
       const storedAppTheme = await AsyncStorage.getItem("appTheme");
+      const storedAnimBg = await AsyncStorage.getItem("animatedBackground");
       
       if (storedMode !== null) {
         setIsDarkMode(storedMode === "dark");
       }
       if (storedAppTheme !== null) {
         setAppTheme(storedAppTheme as AppTheme);
+      }
+      if (storedAnimBg !== null) {
+        setAnimatedBackground(storedAnimBg === "true");
       }
     } catch (error) {
       console.error("Error loading theme:", error);
@@ -49,6 +54,16 @@ export const [ThemeProvider, useTheme] = createContextHook(() => {
     }
   };
 
+  const toggleAnimatedBackground = async () => {
+    const newValue = !animatedBackground;
+    setAnimatedBackground(newValue);
+    try {
+      await AsyncStorage.setItem("animatedBackground", newValue ? "true" : "false");
+    } catch (error) {
+      console.error("Error saving animated background:", error);
+    }
+  };
+
   const colors: ColorPalette = APP_THEMES[appTheme];
 
   return {
@@ -58,5 +73,7 @@ export const [ThemeProvider, useTheme] = createContextHook(() => {
     changeAppTheme,
     colors,
     isLoading,
+    animatedBackground,
+    toggleAnimatedBackground,
   };
 });

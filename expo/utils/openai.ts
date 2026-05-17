@@ -1,7 +1,11 @@
-const OPENAI_API_KEY = process.env.EXPO_PUBLIC_OPENAI_API_KEY || "";
+const OPENAI_API_KEY = "";
 
 const MODEL = "gpt-4o-mini";
-const API_URL = "https://api.openai.com/v1/chat/completions";
+const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL
+  ? `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/chat`
+  : "https://api.openai.com/v1/chat/completions";
+
+const API_SECRET_TOKEN = process.env.EXPO_PUBLIC_API_SECRET_TOKEN || "";
 
 type TextPart = { type: "text"; text: string };
 type ImagePart = { type: "image"; image: string };
@@ -72,7 +76,8 @@ async function callOpenAIApi(
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
+        ...(API_URL.includes("openai.com") && { Authorization: `Bearer ${OPENAI_API_KEY}` }),
+        ...(API_SECRET_TOKEN && { "x-api-token": API_SECRET_TOKEN }),
       },
       body: JSON.stringify({
         model: MODEL,
@@ -170,18 +175,10 @@ async function callOpenAIApi(
 }
 
 export async function generateText(input: GenerateTextInput): Promise<string> {
-  if (!OPENAI_API_KEY) {
-    console.error("[OpenAI] EXPO_PUBLIC_OPENAI_API_KEY is not set!");
-    throw new Error("Clé API OpenAI non configurée. Ajoutez EXPO_PUBLIC_OPENAI_API_KEY dans les variables d'environnement.");
-  }
-
-  console.log("[OpenAI] API key present, length:", OPENAI_API_KEY.length, "starts with:", OPENAI_API_KEY.substring(0, 6));
-
   const messages = buildOpenAIMessages(input);
   const hasImage = messages.some(
     (m) => Array.isArray(m.content) && m.content.some((p) => p.type === "image_url")
   );
   console.log("[OpenAI] Request has image:", hasImage, "| messages count:", messages.length);
-
   return callOpenAIApi(messages);
 }

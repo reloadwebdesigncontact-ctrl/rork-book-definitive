@@ -31,6 +31,7 @@ export function Paywall({ visible, onClose, onSuccess }: PaywallProps) {
     isPurchasing,
     isRestoring,
     isLoading,
+    restorePurchases,
   } = useSubscription();
 
   const scaleAnim = React.useRef(new Animated.Value(1)).current;
@@ -310,6 +311,23 @@ export function Paywall({ visible, onClose, onSuccess }: PaywallProps) {
                 ? "Renouvellement automatique. Annulez à tout moment."
                 : 'Auto-renews. Cancel anytime.'}
             </Text>
+
+            <Pressable
+              onPress={async () => {
+                try {
+                  await restorePurchases();
+                  onSuccess?.();
+                  onClose();
+                } catch {}
+              }}
+              style={styles.restoreButton}
+            >
+              <Text style={[styles.restoreText, isDarkMode && styles.restoreTextDark]}>
+                {isRestoring
+                  ? (language === 'fr' ? 'Restauration...' : 'Restoring...')
+                  : (language === 'fr' ? 'Restaurer les achats' : 'Restore purchases')}
+              </Text>
+            </Pressable>
           </ScrollView>
         </View>
       </View>
@@ -589,6 +607,19 @@ const styles = StyleSheet.create({
     letterSpacing: 0.2,
   },
   disclaimerDark: {
+    color: '#666',
+  },
+  restoreButton: {
+    alignItems: 'center',
+    paddingVertical: 10,
+    marginTop: 4,
+  },
+  restoreText: {
+    fontSize: 13,
+    color: '#BDBDBD',
+    textDecorationLine: 'underline',
+  },
+  restoreTextDark: {
     color: '#666',
   },
 });

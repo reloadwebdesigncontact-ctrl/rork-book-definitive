@@ -43,10 +43,10 @@ function hasPremiumEntitlement(customerInfo: CustomerInfo | null | undefined) {
   const allEntitlement = customerInfo?.entitlements.all?.[PREMIUM_ENTITLEMENT_KEY];
   const entitlementByProduct = Object.values(customerInfo?.entitlements.all ?? {}).some((entitlement) => {
     const productIdentifier = entitlement.productIdentifier;
-    return productIdentifier === 'coverscan_premium_monthly' || productIdentifier === 'coverscan_premium_monthly:monthly';
+    return productIdentifier === 'cover_scan_mensuel' || productIdentifier === 'cover_scan_mensuel:forfait-de-base';
   });
   const hasActiveSubscription = customerInfo?.activeSubscriptions?.some((subscriptionId) => {
-    return subscriptionId === 'coverscan_premium_monthly' || subscriptionId === 'coverscan_premium_monthly:monthly';
+    return subscriptionId === 'cover_scan_mensuel' || subscriptionId === 'cover_scan_mensuel:forfait-de-base';
   });
 
   return Boolean(activeEntitlement ?? allEntitlement ?? entitlementByProduct ?? hasActiveSubscription);

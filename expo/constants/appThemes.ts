@@ -1,11 +1,15 @@
-export type AppTheme = 'orange' | 'red' | 'purple' | 'turquoise' | 'pink' | 'yellow' | 'coral' | 'lime' | 'sunset' | 'dreamy';
+export type AppTheme = 'orange' | 'red' | 'purple' | 'turquoise' | 'pink' | 'yellow' | 'coral' | 'lime' | 'sunset' | 'dreamy' | 'neon' | 'flamingo' | 'aurora' | 'ocean';
+
+export type ThemeIconSource = string | number;
 
 export interface ColorPalette {
   primary: string;
   secondary: string;
   tertiary: string;
   gradient: readonly [string, string, string];
-  icon: string;
+  icon: ThemeIconSource;
+  /** Variante plus lumineuse pour les orbes du fond animé */
+  animatedGradient?: readonly [string, string, string];
 }
 
 export const APP_THEMES: Record<AppTheme, ColorPalette> = {
@@ -79,5 +83,64 @@ export const APP_THEMES: Record<AppTheme, ColorPalette> = {
     gradient: ['#F98A97', '#C6AFEC', '#7EA5FF'] as const,
     icon: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/vkdo86p2qwci69aosht0m',
   },
-
+  neon: {
+    primary: '#39FF14',
+    secondary: '#AAFF00',
+    tertiary: '#CCFF00',
+    gradient: ['#39FF14', '#AAFF00', '#CCFF00'] as const,
+    icon: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/vkdo86p2qwci69aosht0m',
+  },
+  flamingo: {
+    primary: '#FF3D8B',
+    secondary: '#FF6B6B',
+    tertiary: '#FF8C42',
+    gradient: ['#FF3D8B', '#FF6B6B', '#FF8C42'] as const,
+    icon: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/vkdo86p2qwci69aosht0m',
+  },
+  aurora: {
+    primary: '#FFA500',
+    secondary: '#E879A0',
+    tertiary: '#C084FC',
+    gradient: ['#FFA500', '#E879A0', '#C084FC'] as const,
+    icon: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/vkdo86p2qwci69aosht0m',
+  },
+  ocean: {
+    primary: '#0EA5E9',
+    secondary: '#06B6D4',
+    tertiary: '#A8E6CF',
+    gradient: ['#0EA5E9', '#06B6D4', '#A8E6CF'] as const,
+    icon: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/vkdo86p2qwci69aosht0m',
+  },
+  neon: {
+    primary: '#A4FF00',
+    secondary: '#CCFF00',
+    tertiary: '#80FF00',
+    gradient: ['#80FF00', '#DFFF00', '#E4FF00'] as const,
+    animatedGradient: ['#7CFC00', '#ADFF2F', '#E4FF00'] as const,
+    icon: require('@/assets/theme-icons/neon.png'),
+  },
+  flamingo: {
+    primary: '#FF4E6E',
+    secondary: '#FF1493',
+    tertiary: '#FF8C31',
+    gradient: ['#FF8C8C', '#FF1493', '#D35400'] as const,
+    animatedGradient: ['#FF4E6E', '#FF0099', '#FF8C31'] as const,
+    icon: require('@/assets/theme-icons/flamingo.png'),
+  },
+  aurora: {
+    primary: '#00809D',
+    secondary: '#80E0D0',
+    tertiary: '#F0F9A7',
+    gradient: ['#00809D', '#76D7EA', '#F0F9A7'] as const,
+    animatedGradient: ['#006B85', '#89D1D2', '#FFFFCC'] as const,
+    icon: require('@/assets/theme-icons/aurora.png'),
+  },
+  ocean: {
+    primary: '#1A6D80',
+    secondary: '#3DA4B6',
+    tertiary: '#FDFCE0',
+    gradient: ['#1A6D80', '#89D1D2', '#FDFCE0'] as const,
+    animatedGradient: ['#007BB8', '#76D7EA', '#FFFFE0'] as const,
+    icon: require('@/assets/theme-icons/ocean.png'),
+  },
 };

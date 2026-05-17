@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
+import { AnimatedBackground } from "@/components/AnimatedBackground";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -269,6 +270,7 @@ export default function FullSummaryScreen() {
           style={fStyles.gradient}
         />
       )}
+      <AnimatedBackground />
       <SafeAreaView style={fStyles.safeArea}>
         <Animated.View style={[fStyles.header, { opacity: headerFade }]}>
           <Animated.View style={{ transform: [{ scale: closeButtonScale }] }}>

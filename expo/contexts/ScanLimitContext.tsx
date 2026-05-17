@@ -3,7 +3,7 @@ import createContextHook from '@nkzw/create-context-hook';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 const STORAGE_KEY = 'scan_limit_state_v1';
-export const FREE_DAILY_SCAN_LIMIT = 5;
+export const FREE_DAILY_SCAN_LIMIT = 3;
 
 interface ScanLimitState {
   date: string;

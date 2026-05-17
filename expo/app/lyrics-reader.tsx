@@ -17,6 +17,7 @@ import {
   Share,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { AnimatedBackground } from "@/components/AnimatedBackground";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useVoice } from "@/contexts/VoiceContext";
@@ -266,6 +267,7 @@ export default function LyricsReaderScreen() {
         end={{ x: 0, y: 1 }}
         style={styles.gradient}
       />
+      <AnimatedBackground />
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
           <Animated.View style={{ transform: [{ scale: backButtonScale }] }}>

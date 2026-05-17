@@ -2,7 +2,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
@@ -10,6 +10,7 @@ import { VoiceProvider } from "@/contexts/VoiceContext";
 import { UserProvider } from "@/contexts/UserContext";
 import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import { ScanLimitProvider } from "@/contexts/ScanLimitContext";
+import { AnimatedSplash } from "@/components/AnimatedSplash";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 void SplashScreen.preventAutoHideAsync();
@@ -32,6 +33,8 @@ function RootLayoutNav() {
 }
 
 export default function RootLayout() {
+  const [showSplash, setShowSplash] = useState(true);
+
   useEffect(() => {
     void SplashScreen.hideAsync();
   }, []);
@@ -46,6 +49,9 @@ export default function RootLayout() {
                 <ScanLimitProvider>
                   <GestureHandlerRootView style={{ flex: 1 }}>
                     <RootLayoutNav />
+                    {showSplash && (
+                      <AnimatedSplash onFinish={() => setShowSplash(false)} />
+                    )}
                   </GestureHandlerRootView>
                 </ScanLimitProvider>
               </SubscriptionProvider>
