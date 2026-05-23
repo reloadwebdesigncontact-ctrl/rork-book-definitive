@@ -1,4 +1,5 @@
 // template
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -11,8 +12,8 @@ import { UserProvider } from "@/contexts/UserContext";
 import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import { ScanLimitProvider } from "@/contexts/ScanLimitContext";
 import { AnimatedSplash } from "@/components/AnimatedSplash";
+import Onboarding from "@/components/Onboarding";
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
 void SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
@@ -34,10 +35,25 @@ function RootLayoutNav() {
 
 export default function RootLayout() {
   const [showSplash, setShowSplash] = useState(true);
+  const [showOnboarding, setShowOnboarding] = useState<boolean | null>(null);
 
   useEffect(() => {
     void SplashScreen.hideAsync();
   }, []);
+
+  useEffect(() => {
+    const checkOnboarding = async () => {
+      try {
+        const completed = await AsyncStorage.getItem("onboarding_completed");
+        setShowOnboarding(completed !== "true");
+      } catch {
+        setShowOnboarding(false);
+      }
+    };
+    void checkOnboarding();
+  }, []);
+
+  if (showOnboarding === null) return null;
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -51,6 +67,9 @@ export default function RootLayout() {
                     <RootLayoutNav />
                     {showSplash && (
                       <AnimatedSplash onFinish={() => setShowSplash(false)} />
+                    )}
+                    {showOnboarding && (
+                      <Onboarding onComplete={() => setShowOnboarding(false)} />
                     )}
                   </GestureHandlerRootView>
                 </ScanLimitProvider>

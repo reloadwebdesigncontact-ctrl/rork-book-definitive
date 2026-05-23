@@ -1,5 +1,5 @@
-import React from "react";
-import { StyleSheet, View, type StyleProp, type ViewStyle } from "react-native";
+import React, { useEffect, useRef } from "react";
+import { Animated, StyleSheet, View, type StyleProp, type ViewStyle } from "react-native";
 import Svg, { Defs, LinearGradient, Path, Stop } from "react-native-svg";
 import type { AppTheme, ColorPalette } from "@/constants/appThemes";
 
@@ -10,58 +10,78 @@ interface TitleUnderlineProps {
   style?: StyleProp<ViewStyle>;
 }
 
-/**
- * Trait de soulignement style coup de pinceau, en dégradé selon le thème actif.
- */
-export function TitleUnderline({ colors, themeKey, width = 228, style }: TitleUnderlineProps) {
-  const height = Math.round(width * 0.13);
-  const gradientStops = colors.animatedGradient ?? colors.gradient;
-  const gradientId = `title-underline-${themeKey}`;
+export function TitleUnderline({ colors, themeKey, width = 220, style }: TitleUnderlineProps) {
+  const height = Math.round(width * 0.18);
+  const gradientStops = colors.gradient;
+  const gradientId = `sig-${themeKey}`;
+
+  const scaleAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    scaleAnim.setValue(0);
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      friction: 7,
+      tension: 45,
+      useNativeDriver: true,
+    }).start();
+  }, [themeKey, scaleAnim]);
 
   return (
-    <View style={[styles.wrap, { width, height }, style]}>
-      <Svg width={width} height={height} viewBox="0 0 260 32" fill="none">
+    <Animated.View
+      style={[
+        styles.wrap,
+        { width, height },
+        style,
+        { transform: [{ scaleX: scaleAnim }] },
+      ]}
+    >
+      <Svg width={width} height={height} viewBox="0 0 220 40" fill="none">
         <Defs>
-          <LinearGradient id={gradientId} x1="0" y1="0" x2="260" y2="0" gradientUnits="userSpaceOnUse">
-            <Stop offset="0" stopColor={gradientStops[0]} />
-            <Stop offset="0.45" stopColor={gradientStops[1]} />
-            <Stop offset="1" stopColor={gradientStops[2]} />
+          <LinearGradient id={gradientId} x1="0" y1="0" x2="220" y2="0" gradientUnits="userSpaceOnUse">
+            <Stop offset="0" stopColor={gradientStops[0]} stopOpacity="0" />
+            <Stop offset="0.15" stopColor={gradientStops[0]} stopOpacity="1" />
+            <Stop offset="0.55" stopColor={gradientStops[1]} stopOpacity="1" />
+            <Stop offset="0.88" stopColor={gradientStops[2]} stopOpacity="0.9" />
+            <Stop offset="1" stopColor={gradientStops[2]} stopOpacity="0" />
           </LinearGradient>
         </Defs>
 
-        {/* Corps principal — épais à gauche, effilé à droite */}
+        {/* Trait principal style signature — courbe fluide avec variation d'épaisseur */}
         <Path
-          d="M 10 21.5 C 8 20.5 7.5 18.5 9.5 17.2 C 52 11.5 108 10 168 12.8 C 205 14.2 232 15.2 246 15.8 L 254 16.2 L 256 16.4 C 242 17.2 205 16 168 14.8 C 108 13.2 52 15.5 11 21.2 C 10.2 21.8 9.8 21.8 10 21.5 Z"
+          d="M 8 28
+             C 20 26 40 22 70 19
+             C 100 16 130 15 160 16.5
+             C 185 17.5 200 19 210 20.5
+             C 215 21.2 218 22 219 23
+             C 216 22.5 200 20.5 170 19
+             C 140 17.5 105 17 75 20
+             C 45 23 22 27 9 30
+             C 7.5 30.5 7 29.5 8 28 Z"
           fill={`url(#${gradientId})`}
         />
 
-        {/* Mèches fines à l'extrémité droite */}
+        {/* Petite boucle finale style signature */}
         <Path
-          d="M 248 15.6 C 252 15.8 256 16.2 258.5 16.8"
+          d="M 205 19.5 C 210 18.5 216 18 219 18.5 C 221 19 220 20.5 217 21.5 C 214 22.5 210 22.5 207 22"
           stroke={gradientStops[2]}
-          strokeWidth={1.4}
+          strokeWidth={1.2}
           strokeLinecap="round"
           fill="none"
-          opacity={0.85}
+          opacity={0.7}
         />
+
+        {/* Trait fin en dessous — ombre légère */}
         <Path
-          d="M 250 16.8 C 254 17 257.5 17.5 259.5 18.2"
-          stroke={gradientStops[2]}
-          strokeWidth={0.9}
-          strokeLinecap="round"
-          fill="none"
-          opacity={0.65}
-        />
-        <Path
-          d="M 251.5 18 C 255 18.3 258 18.8 260 19.5"
+          d="M 30 31 C 80 27 140 26 190 28 C 200 28.5 210 29.5 215 30.5"
           stroke={gradientStops[1]}
-          strokeWidth={0.55}
+          strokeWidth={0.8}
           strokeLinecap="round"
           fill="none"
-          opacity={0.45}
+          opacity={0.3}
         />
       </Svg>
-    </View>
+    </Animated.View>
   );
 }
 
