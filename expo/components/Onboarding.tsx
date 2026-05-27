@@ -221,6 +221,13 @@ function FeaturePage({ page, isFr }: { page: PageContent; isFr: boolean }) {
 }
 
 function ThemePickerPage({ isFr, appTheme, changeAppTheme, primaryColor }: { isFr: boolean; appTheme: AppTheme; changeAppTheme: (t: AppTheme) => void; primaryColor: string }) {
+  const [selected, setSelected] = useState<AppTheme>(appTheme);
+
+  const handleSelect = (key: AppTheme) => {
+    setSelected(key);
+    changeAppTheme(key);
+  };
+
   return (
     <View style={styles.pageInner}>
       <View style={styles.settingsIconWrap}>
@@ -233,11 +240,24 @@ function ThemePickerPage({ isFr, appTheme, changeAppTheme, primaryColor }: { isF
       <ScrollView contentContainerStyle={styles.themesGrid} showsVerticalScrollIndicator={false}>
         {THEME_KEYS.map((key) => {
           const palette = APP_THEMES[key];
-          const isSelected = key === appTheme;
+          const isSelected = key === selected;
           return (
-            <Pressable key={key} onPress={() => changeAppTheme(key)} style={[styles.themeCircle, isSelected && styles.themeCircleSelected]}>
-              <LinearGradient colors={[...palette.gradient] as [string, string, ...string[]]} style={StyleSheet.absoluteFill} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} />
-              {isSelected && <View style={styles.themeCheckOverlay}><Check size={16} color="#fff" strokeWidth={3} /></View>}
+            <Pressable
+              key={key}
+              onPress={() => handleSelect(key)}
+              style={[
+                styles.themeCircleWrapper,
+                isSelected && styles.themeCircleWrapperSelected,
+              ]}
+            >
+              <View style={styles.themeCircle}>
+                <LinearGradient colors={[...palette.gradient] as [string, string, ...string[]]} style={StyleSheet.absoluteFill} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} />
+                {isSelected && (
+                  <View style={styles.themeCheckOverlay}>
+                    <Check size={16} color="#fff" strokeWidth={3} />
+                  </View>
+                )}
+              </View>
             </Pressable>
           );
         })}
@@ -327,7 +347,9 @@ const styles = StyleSheet.create({
   featureDesc: { fontSize: 16, color: "rgba(255,255,255,0.82)", textAlign: "center", lineHeight: 25, maxWidth: 320 },
   settingsIconWrap: { width: 120, height: 120, borderRadius: 60, backgroundColor: "rgba(255,255,255,0.18)", alignItems: "center", justifyContent: "center", marginBottom: 28, borderWidth: 2, borderColor: "rgba(255,255,255,0.3)" },
   themesGrid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", gap: 14, paddingTop: 24, paddingBottom: 8 },
-  themeCircle: { width: 52, height: 52, borderRadius: 26, overflow: "hidden" },
+  themeCircleWrapper: { width: 52, height: 52, borderRadius: 26, padding: 2 },
+  themeCircleWrapperSelected: { borderWidth: 3, borderColor: "#fff", borderRadius: 26 },
+  themeCircle: { flex: 1, borderRadius: 22, overflow: "hidden" },
   themeCircleSelected: { borderWidth: 3, borderColor: "#fff" },
   themeCheckOverlay: { ...StyleSheet.absoluteFillObject, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(0,0,0,0.25)" },
   modeIconRow: { flexDirection: "row", gap: 20, marginBottom: 32 },

@@ -2,7 +2,7 @@
   "expo": {
     "name": "Cover Scan",
     "slug": "book-definitive",
-    "version": "1.0.6",
+    "version": "1.0.7",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "rork-app",
@@ -23,12 +23,13 @@
       }
     },
     "android": {
+      "icon": "./assets/images/icon.png",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#FF7A00"
       },
       "package": "app.coverscan",
-      "versionCode": 11,
+      "versionCode": 14,
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO",
