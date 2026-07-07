@@ -10,11 +10,12 @@ import {
   ScrollView,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { X, Crown, Check, Sparkles, BookOpen, FileText, Volume2, Zap } from 'lucide-react-native';
+import { X, Crown, Check, Sparkles, BookOpen, FileText, Volume2 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { logger } from '@/utils/logger';
 
 interface PaywallProps {
   visible: boolean;
@@ -39,7 +40,7 @@ export function Paywall({ visible, onClose, onSuccess }: PaywallProps) {
   const crownFloat = React.useRef(new Animated.Value(0)).current;
   const shimmerAnim = React.useRef(new Animated.Value(0)).current;
   const featureAnims = React.useRef(
-    [0, 1, 2, 3, 4].map(() => new Animated.Value(0))
+    [0, 1, 2, 3].map(() => new Animated.Value(0))
   ).current;
 
   useEffect(() => {
@@ -96,7 +97,7 @@ export function Paywall({ visible, onClose, onSuccess }: PaywallProps) {
       onClose();
     } catch (error: any) {
       if (!error.userCancelled) {
-        console.error('Purchase failed:', error);
+        logger.error('Purchase failed:', error);
       }
     }
   };
@@ -122,13 +123,11 @@ export function Paywall({ visible, onClose, onSuccess }: PaywallProps) {
     { icon: FileText, text: 'Fiches de lecture complètes', desc: 'Format académique' },
     { icon: Volume2, text: 'Lecture audio illimitée', desc: 'Écoute partout' },
     { icon: Sparkles, text: 'Flash cards interactives', desc: 'Teste tes connaissances' },
-    { icon: Zap, text: 'Toutes les fonctionnalités', desc: 'Accès complet' },
   ] : [
     { icon: BookOpen, text: 'Chapter-by-chapter summaries', desc: 'In-depth analysis' },
     { icon: FileText, text: 'Complete reading sheets', desc: 'Academic format' },
     { icon: Volume2, text: 'Unlimited audio reading', desc: 'Listen anywhere' },
     { icon: Sparkles, text: 'Interactive flash cards', desc: 'Test your knowledge' },
-    { icon: Zap, text: 'All features unlocked', desc: 'Full access' },
   ];
 
   const price = language === 'fr' ? '4,99 €' : '€4.99';
@@ -208,8 +207,8 @@ export function Paywall({ visible, onClose, onSuccess }: PaywallProps) {
               </Text>
               <Text style={[styles.subtitle, isDarkMode && styles.subtitleDark]}>
                 {language === 'fr'
-                  ? 'Débloquez tout le potentiel de Cover Scan'
-                  : 'Unlock the full potential of Cover Scan'}
+                  ? 'Débloquez tout le potentiel de Summshine'
+                  : 'Unlock the full potential of Summshine'}
               </Text>
             </View>
 
@@ -456,19 +455,19 @@ const styles = StyleSheet.create({
     color: '#999',
   },
   featuresCard: {
-    backgroundColor: '#FFF',
+    backgroundColor: 'rgba(0, 0, 0, 0.03)',
     borderRadius: 18,
     paddingHorizontal: 16,
     paddingVertical: 6,
     marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
-    elevation: 3,
+    shadowOpacity: 0,
+    elevation: 0,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(0,0,0,0.06)',
   },
   featuresCardDark: {
-    backgroundColor: 'rgba(255, 255, 255, 0.07)',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderColor: 'rgba(255,255,255,0.08)',
   },
   featureRow: {
     flexDirection: 'row',
@@ -518,18 +517,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   priceSection: {
-    backgroundColor: '#FFF',
+    backgroundColor: 'rgba(0, 0, 0, 0.03)',
     borderRadius: 18,
     padding: 18,
     marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
-    elevation: 3,
+    shadowOpacity: 0,
+    elevation: 0,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(0,0,0,0.06)',
   },
   priceSectionDark: {
-    backgroundColor: 'rgba(255, 255, 255, 0.07)',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderColor: 'rgba(255,255,255,0.08)',
   },
   priceRow: {
     flexDirection: 'row',
@@ -623,3 +622,4 @@ const styles = StyleSheet.create({
     color: '#666',
   },
 });
+

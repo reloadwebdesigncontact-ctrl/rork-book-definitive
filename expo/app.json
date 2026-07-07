@@ -1,42 +1,38 @@
 {
   "expo": {
-    "name": "Cover Scan",
+    "name": "Summshine",
     "slug": "book-definitive",
-    "version": "1.0.7",
+    "version": "1.2.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "rork-app",
+    "scheme": "coverscan",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "splash": {
-      "image": "./assets/images/splash-icon.png",
+      "image": "./assets/images/icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#FF7A00"
     },
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "app.coverscan",
       "infoPlist": {
-        "NSCameraUsageDescription": "Allow $(PRODUCT_NAME) to access your camera",
-        "NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to access your microphone",
-        "NSPhotoLibraryUsageDescription": "Allow $(PRODUCT_NAME) to access your photos"
+        "NSCameraUsageDescription": "Allow Summshine to access your camera to scan book covers.",
+        "NSMicrophoneUsageDescription": "Allow Summshine to access your microphone for audio reading.",
+        "NSPhotoLibraryUsageDescription": "Allow Summshine to access your photos to select a book cover."
       }
     },
     "android": {
       "icon": "./assets/images/icon.png",
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#FF7A00"
-      },
       "package": "app.coverscan",
-      "versionCode": 14,
+      "versionCode": 68,
+      "allowBackup": false,
+      "blockedPermissions": [],
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO",
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE",
-        "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO"
+        "android.permission.INTERNET"
       ]
     },
     "web": {
@@ -54,15 +50,39 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera",
-          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone",
+          "cameraPermission": "Allow Summshine to access your camera to scan book covers.",
+          "microphonePermission": "Allow Summshine to access your microphone for audio reading.",
           "recordAudioAndroid": true
         }
       ],
       [
         "expo-image-picker",
         {
-          "photosPermission": "The app accesses your photos to let you share them with your friends."
+          "photosPermission": "Allow Summshine to access your photos to select a book cover."
+        }
+      ],
+      "./plugins/withFixDynamicAppIconJvm.js",
+      "./plugins/withFixDynamicAppIcon.js",
+      [
+        "expo-dynamic-app-icon",
+        {
+          "orange":    { "image": "./assets/images/icon.png",      "prerendered": true },
+          "red":       { "image": "./assets/images/red.png",       "prerendered": true },
+          "purple":    { "image": "./assets/images/purple.png",    "prerendered": true },
+          "turquoise": { "image": "./assets/images/turquoise.png", "prerendered": true },
+          "pink":      { "image": "./assets/images/pink.png",      "prerendered": true },
+          "yellow":    { "image": "./assets/images/yellow.png",    "prerendered": true },
+          "coral":     { "image": "./assets/images/coral.png",     "prerendered": true },
+          "lime":      { "image": "./assets/images/lime.png",      "prerendered": true },
+          "sunset":    { "image": "./assets/images/sunset.png",    "prerendered": true },
+          "dreamy":    { "image": "./assets/images/dreamy.png",    "prerendered": true },
+          "neon":      { "image": "./assets/images/neon.png",      "prerendered": true },
+          "flamingo":  { "image": "./assets/images/flamingo.png",  "prerendered": true },
+          "aurora":    { "image": "./assets/images/aurora.png",    "prerendered": true },
+          "ocean":     { "image": "./assets/images/ocean.png",     "prerendered": true },
+          "silver":    { "image": "./assets/images/silver.png",    "prerendered": true },
+          "gold":      { "image": "./assets/images/gold.png",      "prerendered": true },
+          "tropical":  { "image": "./assets/images/tropical.png",  "prerendered": true }
         }
       ]
     ],
@@ -74,8 +94,9 @@
         "origin": "https://rork.com/"
       },
       "eas": {
-        "projectId": "63afcfe0-4a90-4bba-b780-67bb45414a9f"
+        "projectId": "81256874-6600-42e5-8c5c-cbb8eaaf7d6f"
       }
-    }
+    },
+    "owner": "reload_10"
   }
 }
