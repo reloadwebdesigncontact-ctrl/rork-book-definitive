@@ -17,7 +17,12 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as FileSystem from "expo-file-system/legacy";
 import { AnimatedBackground } from "@/components/AnimatedBackground";
+import { BookLoader } from "@/components/BookLoader";
+import { BookCoverGlow } from "@/components/BookCoverGlow";
+import { addToHistory } from "@/utils/history";
 import { generateText } from "@/utils/openai";
+import { logger } from "@/utils/logger";
+import { sanitizeAiResponse, sanitizeText, sanitizeUrl } from "@/utils/sanitize";
 import { useMutation } from "@tanstack/react-query";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -35,7 +40,7 @@ interface BookInfo {
 type SummaryType = 'normal' | 'chapter' | null;
 
 async function convertImageToBase64(uri: string): Promise<string> {
-  console.log("[ImageConvert] Converting image, platform:", Platform.OS, "uri:", uri.substring(0, 80));
+  logger.log("[ImageConvert] Converting image, platform:", Platform.OS);
 
   if (Platform.OS !== 'web') {
     try {
@@ -46,13 +51,13 @@ async function convertImageToBase64(uri: string): Promise<string> {
         const ext = uri.split('.').pop()?.toLowerCase() || 'jpeg';
         const mimeType = ext === 'png' ? 'image/png' : 'image/jpeg';
         const result = `data:${mimeType};base64,${base64Data}`;
-        console.log("[ImageConvert] Native base64 conversion OK, length:", result.length);
+        logger.log("[ImageConvert] Native base64 OK, length:", result.length);
         return result;
       }
       throw new Error('Empty base64 result');
     } catch (fsError: unknown) {
       const fsMsg = fsError instanceof Error ? fsError.message : String(fsError);
-      console.error("[ImageConvert] Native FS failed:", fsMsg);
+      logger.error("[ImageConvert] Native FS failed:", fsMsg);
       throw new Error(`Impossible de lire l'image: ${fsMsg}`);
     }
   }
@@ -75,11 +80,11 @@ async function convertImageToBase64(uri: string): Promise<string> {
       reader.onerror = () => reject(new Error('FileReader failed'));
       reader.readAsDataURL(blob);
     });
-    console.log("[ImageConvert] Web fetch+FileReader OK, length:", base64.length);
+    logger.log("[ImageConvert] Web OK, length:", base64.length);
     return base64;
   } catch (error: unknown) {
     const errMsg = error instanceof Error ? error.message : String(error);
-    console.error("[ImageConvert] Web conversion failed:", errMsg);
+    logger.error("[ImageConvert] Web conversion failed:", errMsg);
     throw new Error(`Impossible de lire l'image: ${errMsg}`);
   }
 }
@@ -125,21 +130,31 @@ export default function SummaryScreen() {
 
   const { mutate: analyzeMutation, isPending: isAnalyzing, isError } = useMutation({
     mutationFn: async (uri: string) => {
-      console.log("[Analyze] Starting book cover analysis...");
-      console.log("[Analyze] URI:", uri.substring(0, 100));
+      logger.log("[Analyze] Starting book cover analysis...");
       
       let imageBase64 = uri;
       if (!uri.startsWith("data:")) {
         imageBase64 = await convertImageToBase64(uri);
       }
       
-      console.log("[ImageConvert] Final length:", imageBase64.length, "starts with data:?", imageBase64.startsWith("data:"));
+      logger.log("[ImageConvert] Final length:", imageBase64.length);
       
       if (!imageBase64 || imageBase64.length < 100) {
         throw new Error("Impossible de convertir l'image.");
       }
 
-      console.log("Image prepared for AI analysis");
+      // Validation : taille max 10MB en base64 (≈ 7.5MB image réelle)
+      const MAX_BASE64_SIZE = 10 * 1024 * 1024; // 10MB
+      if (imageBase64.length > MAX_BASE64_SIZE) {
+        throw new Error("L'image est trop volumineuse. Veuillez en choisir une plus petite.");
+      }
+
+      // Validation : doit être un data URL image valide
+      if (!imageBase64.startsWith('data:image/')) {
+        throw new Error("Format d'image non supporté.");
+      }
+
+      logger.log("Image prepared for AI analysis");
 
       const extractionResult = await generateText({
         messages: [
@@ -161,7 +176,7 @@ export default function SummaryScreen() {
         ],
       });
 
-      console.log("Extraction result:", extractionResult);
+      logger.log("Extraction result received");
       
       let parsedInfo: { title: string; author: string };
       try {
@@ -170,17 +185,22 @@ export default function SummaryScreen() {
           .replace(/^```\s*/i, '')
           .replace(/```\s*$/i, '')
           .trim();
-        console.log("[JSON Clean] Cleaned JSON:", cleanedJson.substring(0, 200));
+        logger.log("[JSON Clean] Parsed OK");
         parsedInfo = JSON.parse(cleanedJson);
+        // Sanitise les champs extraits par l'IA
+        parsedInfo = {
+          title: sanitizeText(parsedInfo.title, 500) || (language === 'fr' ? "Titre inconnu" : "Unknown title"),
+          author: sanitizeText(parsedInfo.author, 200) || (language === 'fr' ? "Auteur inconnu" : "Unknown author"),
+        };
       } catch (parseErr) {
-        console.error("[JSON Parse] Failed to parse extraction result:", parseErr);
+        logger.error("[JSON Parse] Failed to parse extraction result:", parseErr);
         parsedInfo = {
           title: language === 'fr' ? "Le titre n'a pas pu être identifié" : "Title could not be identified",
           author: language === 'fr' ? "Auteur inconnu" : "Unknown author",
         };
       }
 
-      console.log("Searching Google Books API...");
+      logger.log("Searching Google Books API...");
       const searchQuery = encodeURIComponent(
         `${parsedInfo.title} ${parsedInfo.author}`
       );
@@ -197,32 +217,60 @@ export default function SummaryScreen() {
 
         if (data.items && data.items.length > 0) {
           const book = data.items[0].volumeInfo;
+
+          // Sanitisation des données reçues de l'API externe
+          const rawTitle = typeof book.title === 'string' ? book.title.slice(0, 500) : '';
+          const rawAuthor = typeof book.authors?.[0] === 'string' ? book.authors[0].slice(0, 200) : '';
+          const rawDescription = typeof book.description === 'string' ? book.description.slice(0, 5000) : undefined;
+
           let coverUrl = book.imageLinks?.extraLarge || 
                         book.imageLinks?.large || 
                         book.imageLinks?.medium || 
                         book.imageLinks?.thumbnail || 
                         book.imageLinks?.smallThumbnail;
           
-          if (coverUrl) {
-            coverUrl = coverUrl.replace('http://', 'https://').replace('&edge=curl', '').replace('zoom=1', 'zoom=2');
+          // N'accepter que les URLs https de Google Books
+          if (coverUrl && typeof coverUrl === 'string' && coverUrl.startsWith('http')) {
+            coverUrl = coverUrl
+              .replace('http://', 'https://')
+              .replace('&edge=curl', '')
+              .replace('zoom=1', 'zoom=2');
+            // Valider que l'URL vient bien de googleapis.com ou books.google.com
+            if (!coverUrl.includes('googleapis.com') && !coverUrl.includes('books.google.com')) {
+              coverUrl = undefined;
+            }
+          } else {
+            coverUrl = undefined;
           }
 
-          const isbn = book.industryIdentifiers?.find((id: { type: string; identifier: string }) => id.type === 'ISBN_13')?.identifier ||
-                       book.industryIdentifiers?.find((id: { type: string; identifier: string }) => id.type === 'ISBN_10')?.identifier;
-          const openLibraryCover = isbn
-            ? `https://covers.openlibrary.org/b/isbn/${isbn}-L.jpg`
+          const isbn = book.industryIdentifiers?.find(
+            (id: { type: string; identifier: string }) => id.type === 'ISBN_13'
+          )?.identifier ||
+            book.industryIdentifiers?.find(
+              (id: { type: string; identifier: string }) => id.type === 'ISBN_10'
+            )?.identifier;
+
+          // Valider l'ISBN (13 chiffres ou 10 chiffres/X)
+          const safeIsbn = typeof isbn === 'string' && /^[0-9X]{10,13}$/.test(isbn) ? isbn : undefined;
+          const openLibraryCover = safeIsbn
+            ? `https://covers.openlibrary.org/b/isbn/${safeIsbn}-L.jpg`
             : undefined;
           
           bookData = {
-            title: book.title || parsedInfo.title,
-            author: book.authors?.[0] || parsedInfo.author,
+            title: rawTitle || parsedInfo.title,
+            author: rawAuthor || parsedInfo.author,
             coverUrl: coverUrl,
-            coverUrlFallback: openLibraryCover || coverUrl,
-            description: book.description,
+            coverUrlFallback: openLibraryCover || coverUrl || uri,
+            description: rawDescription,
           };
         }
       } catch (error) {
-        console.error("Google Books API error:", error);
+        logger.error("Google Books API error:", error);
+      }
+
+      // Si aucune couverture trouvée, utiliser l'image scannée
+      if (!bookData.coverUrl && !bookData.coverUrlFallback) {
+        bookData = { ...bookData, coverUrl: uri, coverUrlFallback: uri };
       }
 
       return bookData;
@@ -256,7 +304,7 @@ export default function SummaryScreen() {
     mutationFn: async (type: SummaryType) => {
       if (!bookInfo || !type) throw new Error('Missing book info or type');
       
-      console.log(`Generating ${type} summary with AI...`);
+      logger.log(`Generating ${type} summary with AI...`);
 
       let summaryPrompt = '';
       
@@ -279,7 +327,8 @@ export default function SummaryScreen() {
       }
 
       const summary = await generateText(summaryPrompt);
-      return summary;
+      // Sanitise la réponse IA avant de la retourner
+      return sanitizeAiResponse(summary);
     },
     onSuccess: (data, variables) => {
       const copyrightKeywords = [
@@ -302,6 +351,15 @@ export default function SummaryScreen() {
       }
       
       setSelectedSummary(data);
+      // Sauvegarder dans l'historique
+      if (bookInfo) {
+        void addToHistory({
+          title: bookInfo.title,
+          author: bookInfo.author,
+          coverUrl: bookInfo.coverUrl || bookInfo.coverUrlFallback,
+          summary: data,
+        });
+      }
       Animated.timing(selectionFade, {
         toValue: 0,
         duration: 300,
@@ -402,7 +460,7 @@ const { mutate: generateFiche, isPending: isGeneratingFiche } = useMutation({
     mutationFn: async () => {
       if (!bookInfo) return "";
       
-      console.log("Génération de la fiche de lecture complète...");
+      logger.log("Génération de la fiche de lecture complète...");
       
       const fichePrompt = language === 'fr'
         ? `Génère une fiche de lecture complète et détaillée pour le livre "${bookInfo.title}" de ${bookInfo.author}.
@@ -457,7 +515,7 @@ The sheet must follow EXACTLY this format with clear and structured sections:
 Be precise, detailed and faithful to the book. Use your in-depth knowledge of the book to create a complete academic reading sheet.`;
 
       const fiche = await generateText(fichePrompt);
-      return fiche;
+      return sanitizeAiResponse(fiche);
     },
     onSuccess: (data) => {
       router.push({
@@ -675,39 +733,13 @@ return (
 
         {isAnalyzing ? (
           <View style={styles.loadingContainer}>
-            <Animated.View style={[styles.loadingIconWrap, { opacity: loadingPulse }]}>
-              <Animated.View
-                style={{
-                  transform: [
-                    {
-                      rotate: loadingRotation.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: ['0deg', '360deg'],
-                      }),
-                    },
-                  ],
-                }}
-              >
-                <Loader2 size={48} color={colors.primary} />
-              </Animated.View>
-            </Animated.View>
+            <BookLoader />
             <Text style={[styles.loadingText, isDarkMode && styles.loadingTextDark]}>
               {t.summary.generating}
             </Text>
             <Text style={[styles.loadingSubtext, isDarkMode && styles.loadingSubtextDark]}>
               {language === 'fr' ? 'Identification du livre et génération du résumé' : 'Book identification and summary generation'}
             </Text>
-            <View style={styles.loadingDotsRow}>
-              {[loadingDotScale1, loadingDotScale2, loadingDotScale3].map((dot, i) => (
-                <Animated.View
-                  key={i}
-                  style={[
-                    styles.loadingDot,
-                    { backgroundColor: colors.primary, opacity: dot, transform: [{ scale: dot }] },
-                  ]}
-                />
-              ))}
-            </View>
           </View>
         ) : isError ? (
           <View style={styles.errorContainer}>
@@ -741,12 +773,12 @@ return (
               <View style={[styles.bookCard, isDarkMode && styles.bookCardDark]}>
                 {(bookInfo.coverUrl || bookInfo.coverUrlFallback) && (
                   <Animated.View style={{ transform: [{ scale: coverScale }] }}>
-                    <Image
-                      source={{ uri: coverLoadFailed ? (bookInfo.coverUrlFallback || bookInfo.coverUrl) : bookInfo.coverUrl }}
-                      style={styles.coverImage}
-                      contentFit="cover"
+                    <BookCoverGlow
+                      uri={coverLoadFailed ? (bookInfo.coverUrlFallback || bookInfo.coverUrl) : bookInfo.coverUrl}
+                      height={320}
+                      borderRadius={12}
                       onError={() => {
-                        console.log('Cover image failed to load, trying fallback...');
+                        logger.log('Cover image failed to load, trying fallback...');
                         if (!coverLoadFailed) setCoverLoadFailed(true);
                       }}
                       cachePolicy="memory-disk"
@@ -933,12 +965,12 @@ return (
               <View style={[styles.bookCard, isDarkMode && styles.bookCardDark]}>
                 {(bookInfo.coverUrl || bookInfo.coverUrlFallback) && (
                   <Animated.View style={{ transform: [{ scale: coverScale }] }}>
-                    <Image
-                      source={{ uri: coverLoadFailed ? (bookInfo.coverUrlFallback || bookInfo.coverUrl) : bookInfo.coverUrl }}
-                      style={styles.coverImage}
-                      contentFit="cover"
+                    <BookCoverGlow
+                      uri={coverLoadFailed ? (bookInfo.coverUrlFallback || bookInfo.coverUrl) : bookInfo.coverUrl}
+                      height={320}
+                      borderRadius={12}
                       onError={() => {
-                        console.log('Cover image failed to load (summary view), trying fallback...');
+                        logger.log('Cover image failed to load (summary view), trying fallback...');
                         if (!coverLoadFailed) setCoverLoadFailed(true);
                       }}
                       cachePolicy="memory-disk"
@@ -1049,6 +1081,7 @@ return (
                   </Text>
                 </View>
 
+                {/* Bouton principal — pleine largeur */}
                 <Animated.View style={{ transform: [{ scale: buttonScale1 }] }}>
                   <Pressable
                     onPress={handleGenerateFiche}
@@ -1081,11 +1114,12 @@ return (
                             : 'Complete analysis, key ideas, and reading insights.'}
                         </Text>
                       </View>
-                      <Sparkles size={18} color="#FFF" />
+                      <Sparkles size={20} color="#FFF" />
                     </LinearGradient>
                   </Pressable>
                 </Animated.View>
 
+                {/* Deux boutons carrés côte à côte */}
                 <View style={styles.secondaryActionsRow}>
                   <Animated.View style={[styles.secondaryActionColumn, { transform: [{ scale: buttonScale2 }] }]}>
                     <Pressable
@@ -1093,20 +1127,31 @@ return (
                       style={styles.secondaryActionButton}
                       testID="audio-reading-button"
                     >
-                      <View style={styles.glowingBorderPremium}>
-                        <LinearGradient
-                          colors={colors.gradient}
-                          start={{ x: 0, y: 0 }}
-                          end={{ x: 1, y: 1 }}
-                          style={styles.secondaryActionGradient}
-                        >
-                          <Volume2 size={20} color="#FFF" />
-                          <Text style={styles.secondaryActionTitle}>{t.summary.animatedReading}</Text>
-                          <Text style={styles.secondaryActionSubtitle}>
-                            {language === 'fr' ? 'Écoute le résumé' : 'Listen to the summary'}
-                          </Text>
-                        </LinearGradient>
-                      </View>
+                      <LinearGradient
+                        colors={colors.gradient}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={styles.squareActionGradient}
+                      >
+                        {/* Icône en haut */}
+                        <View style={styles.squareActionIconWrap}>
+                          <Volume2 size={22} color="#FFF" />
+                        </View>
+                        {/* Titre */}
+                        <Text style={styles.squareActionTitle}>{t.summary.animatedReading}</Text>
+                        {/* Séparateur */}
+                        <View style={styles.squareActionDivider} />
+                        {/* Description */}
+                        <Text style={styles.squareActionSubtitle}>
+                          {language === 'fr' ? 'Écoute le résumé' : 'Listen to the summary'}
+                        </Text>
+                        {/* Flèche en bas à droite */}
+                        <View style={styles.squareActionArrowWrap}>
+                          <View style={styles.squareActionArrow}>
+                            <Text style={[styles.squareActionArrowText, { color: colors.primary }]}>›</Text>
+                          </View>
+                        </View>
+                      </LinearGradient>
                     </Pressable>
                   </Animated.View>
 
@@ -1116,20 +1161,33 @@ return (
                       style={styles.secondaryActionButton}
                       testID="flashcard-generate-button"
                     >
-                      <View style={styles.glowingBorderPremium}>
-                        <LinearGradient
-                          colors={colors.gradient}
-                          start={{ x: 0, y: 0 }}
-                          end={{ x: 1, y: 1 }}
-                          style={styles.secondaryActionGradient}
-                        >
-                          <Sparkles size={20} color="#FFF" />
-                          <Text style={styles.secondaryActionTitle}>{t.summary.flashcards}</Text>
-                          <Text style={styles.secondaryActionSubtitle}>
-                            {language === 'fr' ? 'Teste ta compréhension avec des questions sur le livre.' : 'Test your understanding with questions about the book.'}
-                          </Text>
-                        </LinearGradient>
-                      </View>
+                      <LinearGradient
+                        colors={colors.gradient}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={styles.squareActionGradient}
+                      >
+                        {/* Icône en haut */}
+                        <View style={styles.squareActionIconWrap}>
+                          <Sparkles size={22} color="#FFF" />
+                        </View>
+                        {/* Titre */}
+                        <Text style={styles.squareActionTitle}>{t.summary.flashcards}</Text>
+                        {/* Séparateur */}
+                        <View style={styles.squareActionDivider} />
+                        {/* Description */}
+                        <Text style={styles.squareActionSubtitle}>
+                          {language === 'fr'
+                            ? 'Teste ta compréhension avec des questions sur le livre.'
+                            : 'Test your understanding with questions about the book.'}
+                        </Text>
+                        {/* Flèche en bas à droite */}
+                        <View style={styles.squareActionArrowWrap}>
+                          <View style={styles.squareActionArrow}>
+                            <Text style={[styles.squareActionArrowText, { color: colors.primary }]}>›</Text>
+                          </View>
+                        </View>
+                      </LinearGradient>
                     </Pressable>
                   </Animated.View>
                 </View>
@@ -1291,6 +1349,8 @@ const styles = StyleSheet.create({
   },
   bookCardDark: {
     backgroundColor: "rgba(255, 255, 255, 0.1)",
+    elevation: 0,
+    shadowOpacity: 0,
   },
   coverImage: {
     width: "100%",
@@ -1383,6 +1443,8 @@ const styles = StyleSheet.create({
   },
   summaryCardDark: {
     backgroundColor: "rgba(255, 255, 255, 0.1)",
+    elevation: 0,
+    shadowOpacity: 0,
   },
   summaryTitle: {
     fontSize: 22,
@@ -1405,7 +1467,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     padding: 18,
     borderRadius: 20,
-    backgroundColor: "rgba(255, 255, 255, 0.88)",
+    backgroundColor: "#FFF",
     gap: 14,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 10 },
@@ -1415,6 +1477,8 @@ const styles = StyleSheet.create({
   },
   actionsSectionDark: {
     backgroundColor: "rgba(255, 255, 255, 0.08)",
+    elevation: 0,
+    shadowOpacity: 0,
   },
   actionsSectionHeader: {
     gap: 4,
@@ -1477,6 +1541,7 @@ const styles = StyleSheet.create({
   },
   secondaryActionButton: {
     borderRadius: 16,
+    overflow: "hidden",
   },
   secondaryActionGradient: {
     minHeight: 138,
@@ -1494,6 +1559,61 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 18,
     color: "rgba(255, 255, 255, 0.86)",
+  },
+  // Nouveaux styles carte carrée (image de référence)
+  squareActionGradient: {
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 18,
+    minHeight: 200,
+    gap: 8,
+  },
+  squareActionIconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: "rgba(255, 255, 255, 0.22)",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 4,
+  },
+  squareActionTitle: {
+    fontSize: 16,
+    fontWeight: "700" as const,
+    color: "#FFF",
+    lineHeight: 22,
+  },
+  squareActionDivider: {
+    height: 2,
+    width: 28,
+    borderRadius: 2,
+    backgroundColor: "rgba(255, 255, 255, 0.4)",
+    marginVertical: 4,
+  },
+  squareActionSubtitle: {
+    fontSize: 13,
+    lineHeight: 18,
+    color: "rgba(255, 255, 255, 0.88)",
+    flex: 1,
+  },
+  squareActionArrowWrap: {
+    alignItems: "flex-end",
+    marginTop: 8,
+  },
+  squareActionArrow: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#FFF",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  squareActionArrowText: {
+    fontSize: 22,
+    fontWeight: "700" as const,
+    color: "#FF7A00",
+    lineHeight: 26,
+    marginTop: -2,
   },
   glowingBorder: {
     borderRadius: 12,
@@ -1547,6 +1667,8 @@ const styles = StyleSheet.create({
   },
   selectionCardDark: {
     backgroundColor: "rgba(255, 255, 255, 0.1)",
+    elevation: 0,
+    shadowOpacity: 0,
   },
   selectionTitle: {
     fontSize: 22,

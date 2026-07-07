@@ -1,0 +1,7 @@
+{
+  "name": "app-icon-module",
+  "platforms": ["android"],
+  "android": {
+    "modules": ["app.coverscan.appicon.AppIconModule"]
+  }
+}

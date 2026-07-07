@@ -2,11 +2,12 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import createContextHook from "@nkzw/create-context-hook";
 import { useEffect, useState } from "react";
 import { APP_THEMES, AppTheme, ColorPalette } from "@/constants/appThemes";
+import { logger } from "@/utils/logger";
 
 export const [ThemeProvider, useTheme] = createContextHook(() => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [appTheme, setAppTheme] = useState<AppTheme>('orange');
-  const [animatedBackground, setAnimatedBackground] = useState(false);
+  const [animatedBackground, setAnimatedBackground] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -17,19 +18,15 @@ export const [ThemeProvider, useTheme] = createContextHook(() => {
     try {
       const storedMode = await AsyncStorage.getItem("theme");
       const storedAppTheme = await AsyncStorage.getItem("appTheme");
-      const storedAnimBg = await AsyncStorage.getItem("animatedBackground");
-      
+
       if (storedMode !== null) {
         setIsDarkMode(storedMode === "dark");
       }
       if (storedAppTheme !== null) {
         setAppTheme(storedAppTheme as AppTheme);
       }
-      if (storedAnimBg !== null) {
-        setAnimatedBackground(storedAnimBg === "true");
-      }
     } catch (error) {
-      console.error("Error loading theme:", error);
+      logger.error("Error loading theme:", error);
     } finally {
       setIsLoading(false);
     }
@@ -41,7 +38,7 @@ export const [ThemeProvider, useTheme] = createContextHook(() => {
     try {
       await AsyncStorage.setItem("theme", newMode ? "dark" : "light");
     } catch (error) {
-      console.error("Error saving theme:", error);
+      logger.error("Error saving theme:", error);
     }
   };
 
@@ -50,18 +47,12 @@ export const [ThemeProvider, useTheme] = createContextHook(() => {
     try {
       await AsyncStorage.setItem("appTheme", theme);
     } catch (error) {
-      console.error("Error saving app theme:", error);
+      logger.error("Error saving app theme:", error);
     }
   };
 
   const toggleAnimatedBackground = async () => {
-    const newValue = !animatedBackground;
-    setAnimatedBackground(newValue);
-    try {
-      await AsyncStorage.setItem("animatedBackground", newValue ? "true" : "false");
-    } catch (error) {
-      console.error("Error saving animated background:", error);
-    }
+    // Le fond animé est toujours actif — cette fonction ne fait rien
   };
 
   const colors: ColorPalette = APP_THEMES[appTheme];

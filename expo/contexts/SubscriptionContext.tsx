@@ -5,11 +5,15 @@ import { Alert } from 'react-native';
 import { Platform } from 'react-native';
 import Purchases, { CustomerInfo, PurchasesPackage } from 'react-native-purchases';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { logger } from '@/utils/logger';
 
 const PREMIUM_DEBUG_STORAGE_KEY = 'premium_debug_override';
 const CUSTOMER_INFO_QUERY_KEY = ['customerInfo'] as const;
 const OFFERINGS_QUERY_KEY = ['offerings'] as const;
 const PREMIUM_ENTITLEMENT_KEY = 'premium';
+
+// Le debug override n'est disponible qu'en développement
+const IS_DEV = __DEV__;
 
 function getRCToken() {
   if (__DEV__ || Platform.OS === 'web') {
@@ -30,12 +34,12 @@ if (revenueCatApiKey) {
   try {
     Purchases.configure({ apiKey: revenueCatApiKey });
     revenueCatConfigured = true;
-    console.log('RevenueCat configured successfully with platform key');
+    logger.log('RevenueCat configured successfully with platform key');
   } catch (error) {
-    console.error('Error configuring RevenueCat:', error);
+    logger.error('Error configuring RevenueCat:', error);
   }
 } else {
-  console.log('RevenueCat skipped because no API key was found');
+  logger.log('RevenueCat skipped because no API key was found');
 }
 
 function hasPremiumEntitlement(customerInfo: CustomerInfo | null | undefined) {
@@ -54,7 +58,7 @@ function hasPremiumEntitlement(customerInfo: CustomerInfo | null | undefined) {
 
 async function syncCustomerInfoAfterPurchase() {
   const refreshedCustomerInfo = await Purchases.getCustomerInfo();
-  console.log('Customer info synced after purchase/restore:', refreshedCustomerInfo.entitlements.active, refreshedCustomerInfo.activeSubscriptions);
+  logger.log('Customer info synced after purchase/restore');
   return refreshedCustomerInfo;
 }
 
@@ -65,16 +69,17 @@ export const [SubscriptionProvider, useSubscription] = createContextHook(() => {
 
   useEffect(() => {
     const loadPremiumDebugOverride = async () => {
+      // En production, le debug override est ignoré
+      if (!IS_DEV) return;
       try {
         const storedValue = await AsyncStorage.getItem(PREMIUM_DEBUG_STORAGE_KEY);
         const nextValue = storedValue === 'true';
-        console.log('Premium debug override loaded:', nextValue);
+        logger.log('Premium debug override loaded:', nextValue);
         setPremiumDebugOverride(nextValue);
       } catch (error) {
-        console.error('Error loading premium debug override:', error);
+        logger.error('Error loading premium debug override:', error);
       }
     };
-
     void loadPremiumDebugOverride();
   }, []);
 
@@ -84,10 +89,10 @@ export const [SubscriptionProvider, useSubscription] = createContextHook(() => {
       if (!isConfigured) return null;
       try {
         const info = await Purchases.getCustomerInfo();
-        console.log("Customer info fetched:", info.entitlements.active);
+        logger.log("Customer info fetched, premium:", hasPremiumEntitlement(info));
         return info;
       } catch (error) {
-        console.error("Error fetching customer info:", error);
+        logger.error("Error fetching customer info:", error);
         return null;
       }
     },
@@ -100,10 +105,10 @@ export const [SubscriptionProvider, useSubscription] = createContextHook(() => {
       if (!isConfigured) return null;
       try {
         const offeringsData = await Purchases.getOfferings();
-        console.log("Offerings fetched:", offeringsData.current?.identifier);
+        logger.log("Offerings fetched:", offeringsData.current?.identifier);
         return offeringsData;
       } catch (error) {
-        console.error("Error fetching offerings:", error);
+        logger.error("Error fetching offerings:", error);
         return null;
       }
     },
@@ -112,15 +117,14 @@ export const [SubscriptionProvider, useSubscription] = createContextHook(() => {
 
   const purchaseMutation = useMutation({
     mutationFn: async (packageToPurchase: PurchasesPackage) => {
-      console.log('Purchasing package:', packageToPurchase.identifier, packageToPurchase.product.priceString);
+      logger.log('Purchasing package:', packageToPurchase.identifier);
       const { customerInfo: purchasedCustomerInfo } = await Purchases.purchasePackage(packageToPurchase);
-      console.log('Customer info returned by purchase:', purchasedCustomerInfo.entitlements.active, purchasedCustomerInfo.activeSubscriptions);
 
       const syncedCustomerInfo = await syncCustomerInfoAfterPurchase();
       const finalCustomerInfo = syncedCustomerInfo ?? purchasedCustomerInfo;
       const premiumUnlocked = hasPremiumEntitlement(finalCustomerInfo);
 
-      console.log('Premium unlocked after purchase validation:', premiumUnlocked);
+      logger.log('Premium unlocked after purchase validation:', premiumUnlocked);
 
       if (!premiumUnlocked) {
         throw new Error('Premium entitlement not active after successful purchase');
@@ -131,13 +135,13 @@ export const [SubscriptionProvider, useSubscription] = createContextHook(() => {
     onSuccess: (newCustomerInfo) => {
       queryClient.setQueryData(CUSTOMER_INFO_QUERY_KEY, newCustomerInfo);
       void queryClient.invalidateQueries({ queryKey: CUSTOMER_INFO_QUERY_KEY });
-      console.log('Purchase successful, premium entitlement status:', hasPremiumEntitlement(newCustomerInfo));
+      logger.log('Purchase successful');
     },
     onError: (error: any) => {
       if (error.userCancelled) {
-        console.log("User cancelled purchase");
+        logger.log("User cancelled purchase");
       } else {
-        console.error("Purchase error:", error);
+        logger.error("Purchase error:", error);
         Alert.alert('Achat incomplet', "L'abonnement a été payé mais le mode premium n'a pas encore été activé. Réessayez dans un instant.");
       }
     },
@@ -145,22 +149,23 @@ export const [SubscriptionProvider, useSubscription] = createContextHook(() => {
 
   const restoreMutation = useMutation({
     mutationFn: async () => {
-      console.log('Restoring purchases...');
+      logger.log('Restoring purchases...');
       await Purchases.restorePurchases();
       const restoredInfo = await syncCustomerInfoAfterPurchase();
       return restoredInfo;
     },
     onSuccess: (restoredInfo) => {
       queryClient.setQueryData(CUSTOMER_INFO_QUERY_KEY, restoredInfo);
-      console.log('Purchases restored successfully, premium entitlement status:', hasPremiumEntitlement(restoredInfo));
+      logger.log('Purchases restored, premium:', hasPremiumEntitlement(restoredInfo));
     },
     onError: (error) => {
-      console.error("Restore error:", error);
+      logger.error("Restore error:", error);
     },
   });
 
   const hasRevenueCatPremium = hasPremiumEntitlement(customerInfo);
-  const isPremium = hasRevenueCatPremium || premiumDebugOverride;
+  // En production, le debug override est complètement désactivé
+  const isPremium = IS_DEV ? (hasRevenueCatPremium || premiumDebugOverride) : hasRevenueCatPremium;
 
   const currentOffering = offerings?.current;
 
@@ -179,7 +184,7 @@ export const [SubscriptionProvider, useSubscription] = createContextHook(() => {
     if (!isConfigured) return;
 
     const listener = (info: CustomerInfo) => {
-      console.log('Customer info updated via listener, premium entitlement status:', hasPremiumEntitlement(info));
+      logger.log('Customer info updated via listener');
       queryClient.setQueryData(CUSTOMER_INFO_QUERY_KEY, info);
     };
 
@@ -190,12 +195,13 @@ export const [SubscriptionProvider, useSubscription] = createContextHook(() => {
   }, [isConfigured, queryClient]);
 
   const setPremiumDebugAccess = useCallback(async (enabled: boolean) => {
-    console.log('Setting premium debug override:', enabled);
+    if (!IS_DEV) return; // Désactivé en production
+    logger.log('Setting premium debug override:', enabled);
     setPremiumDebugOverride(enabled);
     try {
       await AsyncStorage.setItem(PREMIUM_DEBUG_STORAGE_KEY, enabled ? 'true' : 'false');
     } catch (error) {
-      console.error('Error saving premium debug override:', error);
+      logger.error('Error saving premium debug override:', error);
     }
   }, []);
 

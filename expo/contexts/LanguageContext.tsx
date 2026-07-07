@@ -2,6 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import createContextHook from "@nkzw/create-context-hook";
 import { useEffect, useState } from "react";
 import { Language, translations, Translations } from "@/constants/translations";
+import { logger } from "@/utils/logger";
 
 export const [LanguageProvider, useLanguage] = createContextHook(() => {
   const [language, setLanguage] = useState<Language>('fr');
@@ -18,7 +19,7 @@ export const [LanguageProvider, useLanguage] = createContextHook(() => {
         setLanguage(storedLanguage as Language);
       }
     } catch (error) {
-      console.error("Error loading language:", error);
+      logger.error("Error loading language:", error);
     } finally {
       setIsLoading(false);
     }
@@ -29,7 +30,7 @@ export const [LanguageProvider, useLanguage] = createContextHook(() => {
     try {
       await AsyncStorage.setItem("language", newLanguage);
     } catch (error) {
-      console.error("Error saving language:", error);
+      logger.error("Error saving language:", error);
     }
   };
 
@@ -42,3 +43,4 @@ export const [LanguageProvider, useLanguage] = createContextHook(() => {
     isLoading,
   };
 });
+

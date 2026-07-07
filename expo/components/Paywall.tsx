@@ -8,14 +8,16 @@ import {
   ActivityIndicator,
   Animated,
   ScrollView,
+  Image,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { X, Crown, Check, Sparkles, BookOpen, FileText, Volume2 } from 'lucide-react-native';
+import { X, Crown, Check, Sparkles, BookOpen, FileText, Volume2, Smartphone } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { logger } from '@/utils/logger';
+import { ICON_OPTIONS, ICON_PREVIEWS, changeAppIcon, getSavedIcon, type AppIconKey } from '@/utils/appIcon';
 
 interface PaywallProps {
   visible: boolean;
@@ -33,14 +35,23 @@ export function Paywall({ visible, onClose, onSuccess }: PaywallProps) {
     isRestoring,
     isLoading,
     restorePurchases,
+    isPremium,
   } = useSubscription();
+
+  const [selectedIcon, setSelectedIcon] = React.useState<AppIconKey>('orange');
+
+  React.useEffect(() => {
+    if (visible && isPremium) {
+      void getSavedIcon().then(icon => setSelectedIcon(icon as AppIconKey));
+    }
+  }, [visible, isPremium]);
 
   const scaleAnim = React.useRef(new Animated.Value(1)).current;
   const closeButtonScale = React.useRef(new Animated.Value(1)).current;
   const crownFloat = React.useRef(new Animated.Value(0)).current;
   const shimmerAnim = React.useRef(new Animated.Value(0)).current;
   const featureAnims = React.useRef(
-    [0, 1, 2, 3].map(() => new Animated.Value(0))
+    [0, 1, 2, 3, 4].map(() => new Animated.Value(0))
   ).current;
 
   useEffect(() => {
@@ -123,11 +134,13 @@ export function Paywall({ visible, onClose, onSuccess }: PaywallProps) {
     { icon: FileText, text: 'Fiches de lecture complètes', desc: 'Format académique' },
     { icon: Volume2, text: 'Lecture audio illimitée', desc: 'Écoute partout' },
     { icon: Sparkles, text: 'Flash cards interactives', desc: 'Teste tes connaissances' },
+    { icon: Smartphone, text: 'Icône de l\'app personnalisée', desc: '17 icônes au choix' },
   ] : [
     { icon: BookOpen, text: 'Chapter-by-chapter summaries', desc: 'In-depth analysis' },
     { icon: FileText, text: 'Complete reading sheets', desc: 'Academic format' },
     { icon: Volume2, text: 'Unlimited audio reading', desc: 'Listen anywhere' },
     { icon: Sparkles, text: 'Interactive flash cards', desc: 'Test your knowledge' },
+    { icon: Smartphone, text: 'Custom app icon', desc: '17 icons to choose from' },
   ];
 
   const price = language === 'fr' ? '4,99 €' : '€4.99';
@@ -272,6 +285,47 @@ export function Paywall({ visible, onClose, onSuccess }: PaywallProps) {
             {isLoading ? (
               <View style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color={colors.primary} />
+              </View>
+            ) : isPremium ? (
+              /* Utilisateur déjà premium — affiche le sélecteur d'icône */
+              <View style={[styles.iconPickerSection, isDarkMode && styles.iconPickerSectionDark]}>
+                <Text style={[styles.iconPickerTitle, isDarkMode && styles.iconPickerTitleDark]}>
+                  {language === 'fr' ? '🎨 Choisir l\'icône de l\'app' : '🎨 Choose app icon'}
+                </Text>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.iconScrollContent}
+                >
+                  {ICON_OPTIONS.map((option) => (
+                    <Pressable
+                      key={option.key}
+                      onPress={async () => {
+                        void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        setSelectedIcon(option.key);
+                        await changeAppIcon(option.key);
+                      }}
+                      style={[
+                        styles.iconOption,
+                        selectedIcon === option.key && {
+                          borderColor: colors.primary,
+                          borderWidth: 3,
+                        },
+                      ]}
+                    >
+                      <Image
+                        source={ICON_PREVIEWS[option.key]}
+                        style={styles.iconPreviewImg}
+                        resizeMode="contain"
+                      />
+                      {selectedIcon === option.key && (
+                        <View style={[styles.iconCheckBadge, { backgroundColor: colors.primary }]}>
+                          <Check size={9} color="#FFF" strokeWidth={3} />
+                        </View>
+                      )}
+                    </Pressable>
+                  ))}
+                </ScrollView>
               </View>
             ) : (
               <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
@@ -620,6 +674,55 @@ const styles = StyleSheet.create({
   },
   restoreTextDark: {
     color: '#666',
+  },
+  iconPickerSection: {
+    backgroundColor: 'rgba(0, 0, 0, 0.03)',
+    borderRadius: 18,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(0,0,0,0.06)',
+  },
+  iconPickerSectionDark: {
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderColor: 'rgba(255,255,255,0.08)',
+  },
+  iconPickerTitle: {
+    fontSize: 15,
+    fontWeight: '600' as const,
+    color: '#3E2723',
+    marginBottom: 14,
+    textAlign: 'center',
+  },
+  iconPickerTitleDark: {
+    color: '#FFF',
+  },
+  iconScrollContent: {
+    gap: 10,
+    paddingHorizontal: 4,
+  },
+  iconOption: {
+    width: 58,
+    height: 58,
+    borderRadius: 14,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  iconPreviewImg: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 12,
+  },
+  iconCheckBadge: {
+    position: 'absolute',
+    bottom: 2,
+    right: 2,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

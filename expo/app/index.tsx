@@ -2,10 +2,11 @@ import { Image } from "expo-image";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import { Camera, Settings, User, LogOut } from "lucide-react-native";
+import { Camera, Settings, User, LogOut, Clock } from "lucide-react-native";
 import React, { useState } from "react";
 import { AnimatedBackground } from "@/components/AnimatedBackground";
 import { TitleUnderline } from "@/components/TitleUnderline";
+import { SummshineTitle } from "@/components/SummshineTitle";
 import {
   Animated,
   Easing,
@@ -314,24 +315,29 @@ export default function HomeScreen() {
               <LogOut size={20} color={colors.primary} strokeWidth={2.5} />
             </TopButton>
           )}
-          <TopButton onPress={() => router.push('/settings')} isDarkMode={isDarkMode}>
-            <Settings size={20} color={colors.primary} strokeWidth={2.5} />
-          </TopButton>
+          <View style={styles.rightButtons}>
+            <TopButton onPress={() => router.push('/settings')} isDarkMode={isDarkMode}>
+              <Settings size={20} color={colors.primary} strokeWidth={2.5} />
+            </TopButton>
+            <TopButton onPress={() => router.push('/history' as never)} isDarkMode={isDarkMode}>
+              <Clock size={20} color={colors.primary} strokeWidth={2.5} />
+            </TopButton>
+          </View>
         </Animated.View>
 
         <View style={styles.content}>
           <Animated.View style={styles.header}>
             <Animated.View style={{ transform: [{ scale: logoScale }, { translateY: logoFloat.interpolate({ inputRange: [0, 1], outputRange: [0, -6] }) }] }}>
               <Image
-                source={resolveThemeIcon(colors.icon)}
+                source={resolveThemeIcon(colors.icon, appTheme)}
                 style={styles.logo}
                 contentFit="contain"
               />
             </Animated.View>
             <View style={styles.titleBlock}>
-              <Animated.Text style={[styles.title, isDarkMode && styles.titleDark, { opacity: titleOpacity }]}>
-                {t.home.title}
-              </Animated.Text>
+              <Animated.View style={{ opacity: titleOpacity }}>
+                <SummshineTitle colors={colors} themeKey={appTheme} />
+              </Animated.View>
               <Animated.View style={{ opacity: titleOpacity }}>
                 <TitleUnderline colors={colors} themeKey={appTheme} />
               </Animated.View>
@@ -430,7 +436,7 @@ export default function HomeScreen() {
                     style={styles.themeOption}
                   >
                     <Image
-                      source={resolveThemeIcon(APP_THEMES[theme].icon)}
+                      source={resolveThemeIcon(APP_THEMES[theme].icon, theme)}
                       style={[
                         styles.themeIconPreview,
                         appTheme === theme && styles.themeIconSelected,
@@ -639,7 +645,7 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   featureItemInnerHighlighted: {
-    backgroundColor: "rgba(255, 255, 255, 0.72)",
+    backgroundColor: "#FFF",
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 14,
@@ -651,6 +657,8 @@ const styles = StyleSheet.create({
   },
   featureItemInnerHighlightedDark: {
     backgroundColor: "rgba(255, 255, 255, 0.12)",
+    elevation: 0,
+    shadowOpacity: 0,
   },
   featureTextContainer: {
     position: "relative",
@@ -729,6 +737,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 12,
   },
+  rightButtons: {
+    flexDirection: "column",
+    gap: 10,
+  },
   themeButton: {},
   themeButtonInner: {
     backgroundColor: "#FFF",
@@ -742,6 +754,8 @@ const styles = StyleSheet.create({
   },
   themeButtonInnerDark: {
     backgroundColor: "rgba(255, 255, 255, 0.15)",
+    elevation: 0,
+    shadowOpacity: 0,
   },
   modalOverlay: {
     flex: 1,
@@ -763,6 +777,8 @@ const styles = StyleSheet.create({
   },
   modalContentDark: {
     backgroundColor: "rgba(30, 30, 30, 0.95)",
+    elevation: 0,
+    shadowOpacity: 0,
   },
   modalTitle: {
     fontSize: 22,
@@ -831,6 +847,8 @@ const styles = StyleSheet.create({
   },
   googleButtonDark: {
     backgroundColor: "rgba(255, 255, 255, 0.1)",
+    elevation: 0,
+    shadowOpacity: 0,
   },
   googleButtonText: {
     fontSize: 16,
@@ -857,6 +875,8 @@ const styles = StyleSheet.create({
   },
   userInfoCardDark: {
     backgroundColor: "rgba(255, 255, 255, 0.1)",
+    elevation: 0,
+    shadowOpacity: 0,
   },
   userAvatar: {
     width: 40,

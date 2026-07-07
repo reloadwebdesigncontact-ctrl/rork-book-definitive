@@ -1,7 +1,7 @@
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import { ArrowLeft, Globe, Moon, Sun, Palette, Scale, ChevronRight, Info, Crown, Sparkles, Zap } from "lucide-react-native";
+import { ArrowLeft, Globe, Moon, Sun, Palette, Scale, ChevronRight, Info, Crown, Sparkles, Smartphone } from "lucide-react-native";
 import Constants from 'expo-constants';
 import * as Haptics from "expo-haptics";
 import React, { useState, useRef, useEffect } from "react";
@@ -13,7 +13,6 @@ import {
   StyleSheet,
   Text,
   View,
-  Modal,
   Linking,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -24,7 +23,7 @@ import { APP_THEMES, AppTheme } from "@/constants/appThemes";
 import { Paywall } from "@/components/Paywall";
 import { AnimatedBackground } from "@/components/AnimatedBackground";
 import { resolveThemeIcon } from "@/utils/themeIcon";
-
+import { changeAppIcon, getSavedIcon, ICON_OPTIONS, ICON_PREVIEWS, type AppIconKey } from "@/utils/appIcon";
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -32,7 +31,12 @@ export default function SettingsScreen() {
   const { language, changeLanguage, t } = useLanguage();
   const { isPremium, restorePurchases, isRestoring, customerInfo } = useSubscription();
   const [showPaywall, setShowPaywall] = useState(false);
-  const [showThemeModal, setShowThemeModal] = useState(false);
+  const [selectedIcon, setSelectedIcon] = useState<AppIconKey>('orange');
+
+  React.useEffect(() => {
+    void getSavedIcon().then(icon => setSelectedIcon(icon as AppIconKey));
+  }, []);
+
   const appVersion = Constants.expoConfig?.version || '1.0.0';
   const section4Opacity = useRef(new Animated.Value(0)).current;
   const section4Slide = useRef(new Animated.Value(30)).current;
@@ -172,11 +176,7 @@ export default function SettingsScreen() {
   return (
     <View style={styles.container}>
       {isDarkMode ? (
-        <Image
-          source={{ uri: "https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/boof1ttrhv3930fdbb014" }}
-          style={styles.backgroundImage}
-          contentFit="cover"
-        />
+        <View style={[styles.backgroundImage, { backgroundColor: '#0D0D0D' }]} />
       ) : (
         <LinearGradient
           colors={["#F7E9E3", "#F0DDD5", "#E8D0C5"]}
@@ -351,13 +351,13 @@ export default function SettingsScreen() {
               <Pressable
                 onPress={() => {
                   animateOptionPress(colorPreviewScale);
-                  setShowThemeModal(true);
+                  router.push('/theme-picker');
                 }}
                 style={[styles.colorPreview, isDarkMode && styles.colorPreviewDark]}
               >
                 <View style={styles.colorPreviewContent}>
                   <Image
-                    source={resolveThemeIcon(colors.icon)}
+                    source={resolveThemeIcon(colors.icon, appTheme)}
                     style={styles.currentIcon}
                     contentFit="contain"
                   />
@@ -370,34 +370,71 @@ export default function SettingsScreen() {
             </Animated.View>
           </Animated.View>
 
-          {/* Section fond animé */}
-          <Animated.View style={[styles.section, isDarkMode && styles.sectionDark, { opacity: section4Opacity, transform: [{ translateY: section4Slide }] }]}>
+          {/* Section fond animé — supprimée, le fond animé est toujours actif */}
+
+          {/* Section Icône de l'app */}
+          <Animated.View style={[styles.section, isDarkMode && styles.sectionDark, { opacity: section3Opacity, transform: [{ translateY: section3Slide }] }]}>
             <View style={styles.sectionHeader}>
-              <Zap size={24} color={colors.primary} strokeWidth={2.5} />
+              <Smartphone size={24} color={colors.primary} strokeWidth={2.5} />
               <Text style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
-                {language === 'fr' ? 'Fond animé' : 'Animated background'}
+                {language === 'fr' ? 'Icône de l\'app' : 'App icon'}
               </Text>
+              {!isPremium && (
+                <View style={[styles.premiumBadge, { backgroundColor: colors.primary }]}>
+                  <Crown size={10} color="#FFF" />
+                  <Text style={styles.premiumBadgeText}>Premium</Text>
+                </View>
+              )}
             </View>
-            <Pressable
-              onPress={() => {
-                void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                void toggleAnimatedBackground();
-              }}
-              style={[styles.option, isDarkMode && styles.optionDark, animatedBackground && { backgroundColor: `${colors.primary}1F` }]}
-            >
-              <Text style={[styles.optionText, isDarkMode && styles.optionTextDark]}>
-                {language === 'fr' ? 'Activer le fond animé' : 'Enable animated background'}
-              </Text>
-              <View style={[styles.toggleTrack, { backgroundColor: animatedBackground ? colors.primary : (isDarkMode ? '#555' : '#CCC') }]}>
-                <View style={[styles.toggleThumb, { transform: [{ translateX: animatedBackground ? 20 : 2 }] }]} />
-              </View>
-            </Pressable>
-            {animatedBackground && (
-              <Text style={[styles.animBgHint, isDarkMode && styles.animBgHintDark]}>
-                {language === 'fr'
-                  ? `Dégradé animé actif — thème ${appTheme}`
-                  : `Animated gradient active — ${appTheme} theme`}
-              </Text>
+            {!isPremium ? (
+              <Pressable
+                onPress={() => setShowPaywall(true)}
+                style={[styles.option, isDarkMode && styles.optionDark]}
+              >
+                <Text style={[styles.optionText, isDarkMode && styles.optionTextDark]}>
+                  {language === 'fr' ? 'Déverrouillez avec Premium' : 'Unlock with Premium'}
+                </Text>
+                <Crown size={18} color={colors.primary} strokeWidth={2.5} />
+              </Pressable>
+            ) : (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.iconGrid}
+              >
+                {ICON_OPTIONS.map((option) => (
+                  <Pressable
+                    key={option.key}
+                    onPress={async () => {
+                      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      setSelectedIcon(option.key);
+                      await changeAppIcon(option.key);
+                    }}
+                    style={[
+                      styles.iconOption,
+                      selectedIcon === option.key && {
+                        borderColor: colors.primary,
+                        borderWidth: 3,
+                        shadowColor: colors.primary,
+                        shadowOpacity: 0.5,
+                        shadowRadius: 6,
+                        elevation: 6,
+                      },
+                    ]}
+                  >
+                    <Image
+                      source={ICON_PREVIEWS[option.key]}
+                      style={styles.iconPreviewImg}
+                      contentFit="contain"
+                    />
+                    {selectedIcon === option.key && (
+                      <View style={[styles.iconCheckBadge, { backgroundColor: colors.primary }]}>
+                        <Text style={styles.iconCheckText}>✓</Text>
+                      </View>
+                    )}
+                  </Pressable>
+                ))}
+              </ScrollView>
             )}
           </Animated.View>
 
@@ -430,12 +467,24 @@ export default function SettingsScreen() {
                   <Text style={[styles.debugDescription, isDarkMode && styles.debugDescriptionDark]}>
                     {language === 'fr' ? 'Vous bénéficiez de toutes les fonctionnalités premium.' : 'You have access to all premium features.'}
                   </Text>
-                  {customerInfo?.entitlements.active?.['premium']?.latestPurchaseDate && (
-                    <Text style={[styles.subscriptionDate, isDarkMode && styles.subscriptionDateDark]}>
-                      {language === 'fr' ? '📅 Abonné depuis le ' : '📅 Subscribed since '}
-                      {new Date(customerInfo.entitlements.active['premium'].latestPurchaseDate).toLocaleDateString(language === 'fr' ? 'fr-FR' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' })}
-                    </Text>
-                  )}
+                  {(() => {
+                    const activeEntitlements = customerInfo?.entitlements.active;
+                    const firstEntitlement = activeEntitlements
+                      ? Object.values(activeEntitlements)[0]
+                      : null;
+                    const purchaseDate = firstEntitlement?.latestPurchaseDate
+                      || firstEntitlement?.originalPurchaseDate;
+                    if (!purchaseDate) return null;
+                    return (
+                      <Text style={[styles.subscriptionDate, isDarkMode && styles.subscriptionDateDark]}>
+                        {language === 'fr' ? '📅 Abonné depuis le ' : '📅 Subscribed since '}
+                        {new Date(purchaseDate).toLocaleDateString(
+                          language === 'fr' ? 'fr-FR' : 'en-US',
+                          { day: 'numeric', month: 'long', year: 'numeric' }
+                        )}
+                      </Text>
+                    );
+                  })()}
                 </>
               ) : (
                 <>
@@ -481,6 +530,39 @@ export default function SettingsScreen() {
             onClose={() => setShowPaywall(false)}
             onSuccess={() => setShowPaywall(false)}
           />
+
+          <Animated.View style={[styles.section, isDarkMode && styles.sectionDark, { opacity: section4Opacity, transform: [{ translateY: section4Slide }] }]}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.rateStarIcon}>⭐</Text>
+              <Text style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
+                {language === 'fr' ? 'Évaluer l\'application' : 'Rate the app'}
+              </Text>
+            </View>
+            <Text style={[styles.rateDescription, isDarkMode && styles.rateDescriptionDark]}>
+              {language === 'fr'
+                ? 'Vous aimez Summshine ? Laissez un avis sur le Play Store, ça nous aide beaucoup !'
+                : 'Enjoying Summshine? Leave a review on the Play Store, it helps us a lot!'}
+            </Text>
+            <Pressable
+              onPress={() => {
+                void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                void Linking.openURL('https://play.google.com/store/apps/details?id=app.coverscan');
+              }}
+              style={styles.rateButton}
+            >
+              <LinearGradient
+                colors={colors.gradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.rateButtonGradient}
+              >
+                <Text style={styles.rateButtonText}>
+                  {language === 'fr' ? '⭐ Laisser un avis' : '⭐ Leave a review'}
+                </Text>
+                <ChevronRight size={18} color="#FFF" strokeWidth={2.5} />
+              </LinearGradient>
+            </Pressable>
+          </Animated.View>
 
           <Animated.View style={[styles.section, isDarkMode && styles.sectionDark, { opacity: section4Opacity, transform: [{ translateY: section4Slide }] }]}>
             <View style={styles.sectionHeader}>
@@ -541,50 +623,6 @@ export default function SettingsScreen() {
           </Animated.View>
 
         </ScrollView>
-
-        <Modal
-          visible={showThemeModal}
-          transparent
-          animationType="fade"
-          onRequestClose={() => setShowThemeModal(false)}
-        >
-          <Pressable 
-            style={styles.modalOverlay}
-            onPress={() => setShowThemeModal(false)}
-          >
-            <View style={[styles.modalContent, isDarkMode && styles.modalContentDark]}>
-              <Text style={[styles.modalTitle, isDarkMode && styles.modalTitleDark]}>
-                {t.settings.appColor}
-              </Text>
-              <View style={styles.themeGrid}>
-                {(Object.keys(APP_THEMES) as AppTheme[]).map((theme) => (
-                  <Pressable
-                    key={theme}
-                    onPress={() => {
-                      void changeAppTheme(theme);
-                      setShowThemeModal(false);
-                    }}
-                    style={styles.themeOption}
-                  >
-                    <Image
-                      source={resolveThemeIcon(APP_THEMES[theme].icon)}
-                      style={[
-                        styles.themeIconPreview,
-                        appTheme === theme && styles.themeIconSelected,
-                      ]}
-                      contentFit="contain"
-                    />
-                    {appTheme === theme && (
-                      <View style={[styles.selectedBadge, { backgroundColor: colors.primary }]}>
-                        <Text style={styles.selectedBadgeText}>✓</Text>
-                      </View>
-                    )}
-                  </Pressable>
-                ))}
-              </View>
-            </View>
-          </Pressable>
-        </Modal>
 
         
       </SafeAreaView>
@@ -651,7 +689,10 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   sectionDark: {
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    backgroundColor: "rgba(255, 255, 255, 0.07)",
+    shadowOpacity: 0,
+    elevation: 0,
+    borderWidth: 0,
   },
   sectionHeader: {
     flexDirection: "row",
@@ -688,6 +729,14 @@ const styles = StyleSheet.create({
   },
   optionTextDark: {
     color: "#FFF",
+  },
+  optionSubtext: {
+    fontSize: 12,
+    color: "#8D6E63",
+    marginTop: 2,
+  },
+  optionSubtextDark: {
+    color: "#999",
   },
   checkmark: {
     width: 24,
@@ -1010,8 +1059,7 @@ const styles = StyleSheet.create({
   },
   animBgHint: {
     fontSize: 12,
-    color: '#8D6E63',
-    marginTop: 8,
+    color: '#8D6E63',    marginTop: 8,
     fontStyle: 'italic',
   },
   animBgHintDark: {
@@ -1150,6 +1198,41 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     marginTop: 8,
   },
+  iconGrid: {
+    flexDirection: 'row',
+    gap: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+  },
+  iconOption: {
+    width: 70,
+    height: 70,
+    borderRadius: 16,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: 'transparent',
+    position: 'relative',
+  },
+  iconPreviewImg: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 14,
+  },
+  iconCheckBadge: {
+    position: 'absolute',
+    bottom: 2,
+    right: 2,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  iconCheckText: {
+    color: '#FFF',
+    fontSize: 11,
+    fontWeight: '700' as const,
+  },
   versionContainerDark: {
     opacity: 0.8,
   },
@@ -1161,4 +1244,89 @@ const styles = StyleSheet.create({
   versionTextDark: {
     color: "#666",
   },
+  rateButton: {
+    borderRadius: 14,
+    overflow: 'hidden',
+    marginBottom: 16,
+    width: '100%',
+  },
+  rateButtonGradient: {
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  rateButtonText: {
+    fontSize: 16,
+    fontWeight: '700' as const,
+    color: '#FFF',
+    letterSpacing: 0.3,
+  },
+  rateStarIcon: {
+    fontSize: 22,
+  },
+  rateDescription: {
+    fontSize: 14,
+    color: '#5D4037',
+    lineHeight: 20,
+    marginBottom: 16,
+  },
+  rateDescriptionDark: {
+    color: '#CCC',
+  },
+  premiumBadge: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 3,
+    borderRadius: 8,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    marginLeft: 8,
+  },
+  premiumBadgeText: {
+    fontSize: 10,
+    fontWeight: '700' as const,
+    color: '#FFF',
+  },
+  iconGrid: {
+    flexDirection: 'row' as const,
+    gap: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+  },
+  iconOption: {
+    width: 64,
+    height: 64,
+    borderRadius: 16,
+    overflow: 'hidden' as const,
+    borderWidth: 2,
+    borderColor: 'transparent',
+    position: 'relative' as const,
+  },
+  iconPreviewImg: {
+    width: '100%' as const,
+    height: '100%' as const,
+    borderRadius: 14,
+  },
+  iconCheckBadge: {
+    position: 'absolute' as const,
+    top: -4,
+    right: -4,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    borderWidth: 2,
+    borderColor: '#FFF',
+  },
+  iconCheckText: {
+    color: '#FFF',
+    fontSize: 11,
+    fontWeight: '700' as const,
+  },
 });
+
+

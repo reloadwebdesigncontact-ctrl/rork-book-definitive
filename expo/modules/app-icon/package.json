@@ -1,0 +1,7 @@
+{
+  "name": "app-icon-module",
+  "version": "1.0.0",
+  "description": "Local native module to change app icon via activity aliases",
+  "main": "index.ts",
+  "private": true
+}

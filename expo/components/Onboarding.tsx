@@ -76,7 +76,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
   const { colors, appTheme, changeAppTheme, isDarkMode, toggleTheme, animatedBackground, toggleAnimatedBackground } = useTheme();
 
   const isFr = language === "fr";
-  const TOTAL_PAGES = 7;
+  const TOTAL_PAGES = 6;
   const [currentPage, setCurrentPage] = useState(0);
 
   const slideAnim = useRef(new Animated.Value(0)).current;
@@ -148,7 +148,6 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
         {currentPage >= 1 && currentPage <= 3 && <FeaturePage page={FEATURE_PAGES[currentPage - 1]} isFr={isFr} />}
         {currentPage === 4 && <ThemePickerPage isFr={isFr} appTheme={appTheme} changeAppTheme={changeAppTheme} primaryColor={colors.primary} />}
         {currentPage === 5 && <DarkModePage isFr={isFr} isDarkMode={isDarkMode} toggleTheme={toggleTheme} primaryColor={colors.primary} />}
-        {currentPage === 6 && <AnimatedBgPage isFr={isFr} animatedBackground={animatedBackground} toggleAnimatedBackground={toggleAnimatedBackground} primaryColor={colors.primary} />}
       </Animated.View>
 
       <View style={styles.bottomControls}>
@@ -183,7 +182,7 @@ function WelcomePage({ isFr, pulseAnim, floatAnim }: { isFr: boolean; pulseAnim:
         <View style={styles.orbitDot2} />
       </Animated.View>
       <Text style={styles.welcomeTitle}>{isFr ? "Bienvenue sur" : "Welcome to"}</Text>
-      <Text style={styles.appName}>Cover Scan</Text>
+      <Text style={styles.appName}>Summshine</Text>
       <Text style={styles.welcomeSubtitle}>
         {isFr
           ? "Transformez n'importe quelle couverture de livre en résumé instantané grâce à l'intelligence artificielle."
@@ -368,3 +367,4 @@ const styles = StyleSheet.create({
   nextButtonInner: { flexDirection: "row", alignItems: "center", gap: 6 },
   nextButtonText: { fontSize: 17, fontWeight: "700", letterSpacing: 0.2 },
 });
+

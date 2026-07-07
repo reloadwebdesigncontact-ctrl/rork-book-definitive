@@ -20,6 +20,7 @@ import { useSubscription } from "@/contexts/SubscriptionContext";
 import { useScanLimit } from "@/contexts/ScanLimitContext";
 import { AnimatedBackground } from "@/components/AnimatedBackground";
 import { Paywall } from "@/components/Paywall";
+import { logger } from "@/utils/logger";
 
 export default function ScanScreen() {
   const router = useRouter();
@@ -129,23 +130,34 @@ export default function ScanScreen() {
 
   const processImage = async (uri: string) => {
     if (!isPremium && hasReachedFreeLimit) {
-      console.log("[Scan] Free daily limit reached, showing paywall");
+      logger.log("[Scan] Free daily limit reached, showing paywall");
       setShowPaywall(true);
       return;
     }
-    setIsProcessing(true);
-    console.log("Processing image:", uri);
-    if (!isPremium) {
-      incrementScan();
+
+    // Validation basique de l'URI avant de continuer
+    if (!uri || typeof uri !== 'string' || uri.length < 5) {
+      Alert.alert(t.scan.error, "Image invalide.");
+      return;
     }
 
+    setIsProcessing(true);
+    logger.log("Processing image");
+
+    // On n'incrémente le compteur QU'APRÈS avoir déclenché la navigation
+    // pour éviter de consommer un scan sur une navigation annulée
+    const shouldCount = !isPremium;
+
     setTimeout(() => {
+      if (shouldCount) {
+        incrementScan();
+      }
       setIsProcessing(false);
       router.push({
         pathname: "/summary",
         params: { imageUri: uri },
       });
-    }, 1500);
+    }, 500); // Réduit de 1500ms à 500ms — le délai n'a pas de justification sécuritaire
   };
 
   const takePicture = async () => {
@@ -162,7 +174,7 @@ export default function ScanScreen() {
           await processImage(photo.uri);
         }
       } catch (error) {
-        console.error("Error taking picture:", error);
+        logger.error("Error taking picture:", error);
         Alert.alert(t.scan.error, "Impossible de prendre la photo");
       }
     }
@@ -187,7 +199,7 @@ export default function ScanScreen() {
         await processImage(result.assets[0].uri);
       }
     } catch (error) {
-      console.error("Error picking image:", error);
+      logger.error("Error picking image:", error);
       Alert.alert(t.scan.error, "Impossible de sélectionner l'image");
     }
   };

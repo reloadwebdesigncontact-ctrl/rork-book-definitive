@@ -450,7 +450,7 @@ const fStyles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
     borderRadius: 16,
-    backgroundColor: "rgba(255, 255, 255, 0.95)",
+    backgroundColor: "#FFF",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,

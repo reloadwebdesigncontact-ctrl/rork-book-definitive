@@ -12,10 +12,10 @@ const BASE = 'https://raw.githubusercontent.com/reloadwebdesigncontact-ctrl/rork
 
 export const APP_THEMES: Record<AppTheme, ColorPalette> = {
   orange: {
-    primary: '#FF9A3C',
-    secondary: '#FFB347',
-    tertiary: '#C084FC',
-    gradient: ['#FF9A3C', '#FFB347', '#C084FC'] as const,
+    primary: '#FF8C00',
+    secondary: '#FFA030',
+    tertiary: '#FFB860',
+    gradient: ['#FF8C00', '#FFA030', '#FFB860'] as const,
     icon: `${BASE}/icon.png`,
   },
   red: {
@@ -47,17 +47,17 @@ export const APP_THEMES: Record<AppTheme, ColorPalette> = {
     icon: `${BASE}/pink.png`,
   },
   yellow: {
-    primary: '#FFD700',
-    secondary: '#FFE040',
-    tertiary: '#FFF176',
-    gradient: ['#FFD700', '#FFE040', '#FFF176'] as const,
+    primary: '#FFE55A',
+    secondary: '#FFED7A',
+    tertiary: '#FFF59D',
+    gradient: ['#FFE55A', '#FFED7A', '#FFF59D'] as const,
     icon: `${BASE}/yellow.png`,
   },
   coral: {
-    primary: '#FF8C42',
-    secondary: '#FFB347',
-    tertiary: '#FFCC80',
-    gradient: ['#FF8C42', '#FFB347', '#C084A0'] as const,
+    primary: '#A0522D',
+    secondary: '#B8632A',
+    tertiary: '#CD853F',
+    gradient: ['#A0522D', '#B8632A', '#CD853F'] as const,
     icon: `${BASE}/coral.png`,
   },
   lime: {
@@ -98,8 +98,8 @@ export const APP_THEMES: Record<AppTheme, ColorPalette> = {
   aurora: {
     primary: '#FF9A3C',
     secondary: '#E879A0',
-    tertiary: '#C084FC',
-    gradient: ['#FF9A3C', '#E879A0', '#C084FC'] as const,
+    tertiary: '#D06ECC',
+    gradient: ['#FF9A3C', '#E879A0', '#D06ECC'] as const,
     icon: `${BASE}/aurora.png`,
   },
   ocean: {

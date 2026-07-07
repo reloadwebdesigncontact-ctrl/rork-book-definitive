@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import createContextHook from '@nkzw/create-context-hook';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { logger } from '@/utils/logger';
 
 const STORAGE_KEY = 'scan_limit_state_v1';
 export const FREE_DAILY_SCAN_LIMIT = 3;
@@ -36,7 +37,7 @@ export const [ScanLimitProvider, useScanLimit] = createContextHook(() => {
           }
         }
       } catch (error) {
-        console.error('Error loading scan limit:', error);
+        logger.error('Error loading scan limit:', error);
       } finally {
         setIsLoaded(true);
       }
@@ -48,7 +49,7 @@ export const [ScanLimitProvider, useScanLimit] = createContextHook(() => {
     try {
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
     } catch (error) {
-      console.error('Error saving scan limit:', error);
+      logger.error('Error saving scan limit:', error);
     }
   }, []);
 
@@ -58,7 +59,7 @@ export const [ScanLimitProvider, useScanLimit] = createContextHook(() => {
       const base: ScanLimitState = prev.date === today ? prev : { date: today, count: 0 };
       const next: ScanLimitState = { date: today, count: base.count + 1 };
       void persist(next);
-      console.log('[ScanLimit] Scan count incremented:', next.count);
+      logger.log('[ScanLimit] Scan count incremented:', next.count);
       return next;
     });
   }, [persist]);

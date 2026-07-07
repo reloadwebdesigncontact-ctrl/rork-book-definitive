@@ -1,0 +1,11 @@
+# Ignorer les fichiers inutiles pour le build EAS
+node_modules
+.git
+*.log
+*.map
+android
+ios
+web-build
+dist
+.expo
+rork-book-definitive-main

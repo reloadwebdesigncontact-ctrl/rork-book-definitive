@@ -1,6 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import createContextHook from "@nkzw/create-context-hook";
 import { useEffect, useState } from "react";
+import { logger } from "@/utils/logger";
 
 export type VoiceType = 'male' | 'female';
 
@@ -19,7 +20,7 @@ export const [VoiceProvider, useVoice] = createContextHook(() => {
         setVoiceType(storedVoice as VoiceType);
       }
     } catch (error) {
-      console.error("Error loading voice type:", error);
+      logger.error("Error loading voice type:", error);
     } finally {
       setIsLoading(false);
     }
@@ -30,7 +31,7 @@ export const [VoiceProvider, useVoice] = createContextHook(() => {
     try {
       await AsyncStorage.setItem("voiceType", newVoice);
     } catch (error) {
-      console.error("Error saving voice type:", error);
+      logger.error("Error saving voice type:", error);
     }
   };
 
@@ -40,3 +41,4 @@ export const [VoiceProvider, useVoice] = createContextHook(() => {
     isLoading,
   };
 });
+

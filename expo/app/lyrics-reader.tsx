@@ -17,10 +17,11 @@ import {
   Share,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { AnimatedBackground } from "@/components/AnimatedBackground";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useVoice } from "@/contexts/VoiceContext";
+import { logger } from "@/utils/logger";
+import { sanitizeAiResponse, sanitizeText } from "@/utils/sanitize";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -66,13 +67,17 @@ export default function LyricsReaderScreen() {
   const activeColor = colors.primary;
   const darkenedColor = darkenColor(activeColor, 20);
 
+  // Sanitise les paramètres reçus en navigation (peuvent venir de sources externes)
+  const safeSummary = sanitizeAiResponse(summary);
+  const safeTitle = sanitizeText(title, 500);
+  const safeAuthor = sanitizeText(author, 200);
+
   useEffect(() => {
-    if (summary) {
-      const cleanedText = summary.replace(/\*/g, '');
-      const paragraphArray = cleanedText
+    if (safeSummary) {
+      const paragraphArray = safeSummary
         .split(/\n\n+/)
         .map(p => p.trim())
-        .filter(p => p.length > 0);
+        .filter(p => p.length > 0 && p.length < 5000); // Limite la taille de chaque paragraphe
       setParagraphs(paragraphArray);
       
       paragraphArray.forEach((_, index) => {
@@ -97,7 +102,7 @@ export default function LyricsReaderScreen() {
         }).start();
       });
     }, 300);
-  }, [summary, fadeAnim, paragraphAnimations]);
+  }, [safeSummary, fadeAnim, paragraphAnimations]);
 
   const handlePlayPause = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -125,21 +130,20 @@ export default function LyricsReaderScreen() {
   };
 
   const startReading = () => {
-    if (!summary || paragraphs.length === 0) return;
+    if (!safeSummary || paragraphs.length === 0) return;
 
     setIsPlaying(true);
     isPlayingRef.current = true;
     setCurrentParagraphIndex(-1);
 
     const languageCode = language === 'fr' ? 'fr-FR' : 'en-US';
-    const cleanedText = summary.replace(/\*/g, '');
     
     const voiceSettings = voiceType === 'male' 
       ? { pitch: 0.7, rate: 0.85 }
       : { pitch: 1.15, rate: 0.9 };
 
     const totalParagraphs = paragraphs.length;
-    const avgCharsPerParagraph = cleanedText.length / totalParagraphs;
+    const avgCharsPerParagraph = safeSummary.length / totalParagraphs;
     const baseTimePerChar = 60;
     const rateMultiplier = 1 / voiceSettings.rate;
     const timePerParagraph = avgCharsPerParagraph * baseTimePerChar * rateMultiplier;
@@ -176,7 +180,7 @@ export default function LyricsReaderScreen() {
 
     setTimeout(startParagraphSync, 300);
 
-    Speech.speak(cleanedText, {
+    Speech.speak(safeSummary, {
       language: languageCode,
       pitch: voiceSettings.pitch,
       rate: voiceSettings.rate,
@@ -230,19 +234,18 @@ export default function LyricsReaderScreen() {
     ]).start();
     
     try {
-      const cleanedText = summary?.replace(/\*/g, '').trim() || '';
-      const shareContent = `${title || t.audio.title}\n${t.audio.by} ${author || t.audio.author}\n\n${cleanedText}`;
+      const shareContent = `${safeTitle || t.audio.title}\n${t.audio.by} ${safeAuthor || t.audio.author}\n\n${safeSummary}`;
 
       if (Platform.OS === 'web' && typeof navigator !== 'undefined' && navigator.share) {
         await navigator.share({
-          title: title || t.audio.title,
+          title: safeTitle || t.audio.title,
           text: shareContent,
         });
         Alert.alert(t.fiche.pdfSuccess, t.fiche.shareSuccess);
       } else {
         const result = await Share.share({
           message: shareContent,
-          title: title || t.audio.title,
+          title: safeTitle || t.audio.title,
         });
         
         if (result.action === Share.sharedAction) {
@@ -251,7 +254,7 @@ export default function LyricsReaderScreen() {
       }
     } catch (error: any) {
       if (error.message && !error.message.includes('cancel') && !error.message.includes('dismissed')) {
-        console.error("Error sharing text:", error);
+        logger.error("Error sharing text:", error);
         Alert.alert(t.fiche.pdfError, t.fiche.shareErrorMessage);
       }
     } finally {
@@ -267,7 +270,6 @@ export default function LyricsReaderScreen() {
         end={{ x: 0, y: 1 }}
         style={styles.gradient}
       />
-      <AnimatedBackground />
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
           <Animated.View style={{ transform: [{ scale: backButtonScale }] }}>
@@ -293,8 +295,8 @@ export default function LyricsReaderScreen() {
             </Pressable>
           </Animated.View>
           <View style={styles.headerCenter}>
-            <Text style={styles.headerTitle} numberOfLines={1}>{title}</Text>
-            <Text style={styles.headerSubtitle} numberOfLines={1}>{author}</Text>
+            <Text style={styles.headerTitle} numberOfLines={1}>{safeTitle}</Text>
+            <Text style={styles.headerSubtitle} numberOfLines={1}>{safeAuthor}</Text>
           </View>
           <Animated.View style={{ transform: [{ scale: shareButtonScale }] }}>
             <Pressable 

@@ -20,6 +20,7 @@ import { AnimatedBackground } from "@/components/AnimatedBackground";
 import * as Haptics from "expo-haptics";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { logger } from "@/utils/logger";
 
 export default function FicheScreen() {
   const router = useRouter();
@@ -85,7 +86,7 @@ export default function FicheScreen() {
       }
     } catch (error: any) {
       if (error.message && !error.message.includes('cancel') && !error.message.includes('dismissed')) {
-        console.error("Error sharing text:", error);
+        logger.error("Error sharing text:", error);
         Alert.alert(t.fiche.pdfError, t.fiche.shareErrorMessage);
       }
     } finally {

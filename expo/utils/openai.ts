@@ -1,11 +1,16 @@
-const OPENAI_API_KEY = "";
+import { logger } from './logger';
 
 const MODEL = "gpt-4o-mini";
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL
   ? `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/chat`
-  : "https://api.openai.com/v1/chat/completions";
+  : null; // En prod, on n'appelle JAMAIS OpenAI directement
 
 const API_SECRET_TOKEN = process.env.EXPO_PUBLIC_API_SECRET_TOKEN || "";
+
+// Sanity check au démarrage
+if (!API_URL) {
+  logger.error("[OpenAI] EXPO_PUBLIC_BACKEND_URL is not set — requests will fail");
+}
 
 type TextPart = { type: "text"; text: string };
 type ImagePart = { type: "image"; image: string };
@@ -65,7 +70,11 @@ async function callOpenAIApi(
   messages: OpenAIMessage[],
   retryCount: number = 0
 ): Promise<string> {
-  console.log(`[OpenAI] Calling model: ${MODEL}, retry: ${retryCount}`);
+  if (!API_URL) {
+    throw new Error("Service d'IA non configuré. Contactez le support.");
+  }
+
+  logger.log(`[OpenAI] Calling model: ${MODEL}, retry: ${retryCount}`);
 
   let response: Response;
   try {
@@ -76,7 +85,6 @@ async function callOpenAIApi(
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...(API_URL.includes("openai.com") && { Authorization: `Bearer ${OPENAI_API_KEY}` }),
         ...(API_SECRET_TOKEN && { "x-api-token": API_SECRET_TOKEN }),
       },
       body: JSON.stringify({
@@ -91,56 +99,57 @@ async function callOpenAIApi(
     clearTimeout(timeout);
   } catch (networkError: unknown) {
     const errMsg = networkError instanceof Error ? networkError.message : String(networkError);
-    console.error(`[OpenAI] Network error:`, errMsg);
+    logger.error(`[OpenAI] Network error:`, errMsg);
 
     if (retryCount < 2) {
-      console.log(`[OpenAI] Retrying in ${(retryCount + 1) * 2}s...`);
+      logger.log(`[OpenAI] Retrying in ${(retryCount + 1) * 2}s...`);
       await new Promise((r) => setTimeout(r, 2000 * (retryCount + 1)));
       return callOpenAIApi(messages, retryCount + 1);
     }
-    throw new Error(`Erreur réseau. Vérifiez votre connexion internet. (${errMsg})`);
+    throw new Error(`Erreur réseau. Vérifiez votre connexion internet.`);
   }
 
   let responseText = "";
   try {
     responseText = await response.text();
   } catch {
-    console.error("[OpenAI] Failed to read response text");
+    logger.error("[OpenAI] Failed to read response text");
   }
 
-  console.log(`[OpenAI] HTTP status: ${response.status}, response length: ${responseText.length}`);
+  logger.log(`[OpenAI] HTTP status: ${response.status}`);
 
   if (!response.ok) {
-    console.error(`[OpenAI] HTTP ${response.status}:`, responseText.substring(0, 500));
+    // Ne pas logguer le contenu de la réponse en prod (peut contenir des infos sensibles)
+    logger.error(`[OpenAI] HTTP ${response.status}`);
 
     if (response.status === 429) {
       if (retryCount < 2) {
         await new Promise((r) => setTimeout(r, 3000 * (retryCount + 1)));
         return callOpenAIApi(messages, retryCount + 1);
       }
-      throw new Error("Limite de requêtes OpenAI atteinte. Réessayez dans un instant.");
+      throw new Error("Service temporairement surchargé. Réessayez dans un instant.");
     }
     if (response.status === 401) {
-      throw new Error("Clé API OpenAI invalide ou non autorisée (401).");
+      throw new Error("Service non autorisé. Contactez le support.");
     }
     if (response.status === 403) {
-      throw new Error("Accès refusé par OpenAI (403).");
+      throw new Error("Accès refusé. Contactez le support.");
     }
     if (response.status >= 500 && retryCount < 2) {
       await new Promise((r) => setTimeout(r, 2000 * (retryCount + 1)));
       return callOpenAIApi(messages, retryCount + 1);
     }
     if (response.status === 400) {
-      throw new Error(`Requête invalide (400): ${responseText.substring(0, 200)}`);
+      throw new Error(`Requête invalide. Réessayez avec une autre image.`);
     }
-    throw new Error(`Erreur API OpenAI: HTTP ${response.status}`);
+    throw new Error(`Erreur du service IA. Réessayez plus tard.`);
   }
 
   let data: Record<string, unknown>;
   try {
     data = JSON.parse(responseText);
   } catch {
-    console.error("[OpenAI] Failed to parse JSON:", responseText.substring(0, 300));
+    logger.error("[OpenAI] Failed to parse JSON");
     if (retryCount < 1) {
       await new Promise((r) => setTimeout(r, 2000));
       return callOpenAIApi(messages, retryCount + 1);
@@ -150,8 +159,8 @@ async function callOpenAIApi(
 
   const error = data.error as { message?: string; code?: string } | undefined;
   if (error?.message) {
-    console.error("[OpenAI] API error:", error.code, error.message);
-    throw new Error(`Erreur OpenAI: ${error.message}`);
+    logger.error("[OpenAI] API error:", error.code);
+    throw new Error(`Erreur du service IA. Réessayez plus tard.`);
   }
 
   const choices = data.choices as Array<{
@@ -162,7 +171,7 @@ async function callOpenAIApi(
   const content = choices?.[0]?.message?.content ?? "";
 
   if (!content.trim()) {
-    console.error("[OpenAI] Empty response:", JSON.stringify(data).substring(0, 500));
+    logger.error("[OpenAI] Empty response");
     if (retryCount < 1) {
       await new Promise((r) => setTimeout(r, 1500));
       return callOpenAIApi(messages, retryCount + 1);
@@ -170,7 +179,7 @@ async function callOpenAIApi(
     throw new Error("L'IA a retourné une réponse vide.");
   }
 
-  console.log(`[OpenAI] Success, length: ${content.length}`);
+  logger.log(`[OpenAI] Success, length: ${content.length}`);
   return content;
 }
 
@@ -179,6 +188,6 @@ export async function generateText(input: GenerateTextInput): Promise<string> {
   const hasImage = messages.some(
     (m) => Array.isArray(m.content) && m.content.some((p) => p.type === "image_url")
   );
-  console.log("[OpenAI] Request has image:", hasImage, "| messages count:", messages.length);
+  logger.log("[OpenAI] Request has image:", hasImage, "| messages count:", messages.length);
   return callOpenAIApi(messages);
 }

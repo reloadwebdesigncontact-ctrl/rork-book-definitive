@@ -11,7 +11,7 @@ interface TitleUnderlineProps {
 }
 
 export function TitleUnderline({ colors, themeKey, width = 200, style }: TitleUnderlineProps) {
-  const height = 28;
+  const height = 18;
   const gradientStops = colors.gradient;
   const gradientId = `sig-${themeKey}`;
 
@@ -35,7 +35,7 @@ export function TitleUnderline({ colors, themeKey, width = 200, style }: TitleUn
         { transform: [{ scaleX: scaleAnim }] },
       ]}
     >
-      <Svg width={width} height={height} viewBox="0 0 200 28" fill="none">
+      <Svg width={width} height={height} viewBox="0 0 200 18" fill="none">
         <Defs>
           <LinearGradient id={gradientId} x1="0" y1="0" x2="200" y2="0" gradientUnits="userSpaceOnUse">
             <Stop offset="0" stopColor={gradientStops[0]} stopOpacity="0" />
@@ -48,7 +48,7 @@ export function TitleUnderline({ colors, themeKey, width = 200, style }: TitleUn
 
         {/* Courbe fine style signature — monte légèrement puis se termine en pointe */}
         <Path
-          d="M 5 20 C 40 18 80 14 130 12 C 160 11 180 11.5 196 12.5"
+          d="M 5 12 C 40 10 80 6 130 4 C 160 3 180 3.5 196 4.5"
           stroke={`url(#${gradientId})`}
           strokeWidth="2.2"
           strokeLinecap="round"

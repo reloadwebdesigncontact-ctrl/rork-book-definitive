@@ -3,15 +3,18 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ArrowLeft, CheckCircle2, Crown, Loader2, Sparkles, XCircle } from "lucide-react-native";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Animated, Easing, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, Animated, Easing, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { generateText } from "@/utils/openai";
 import { useMutation } from "@tanstack/react-query";
 import { Paywall } from "@/components/Paywall";
+import { BookLoader } from "@/components/BookLoader";
 import { AnimatedBackground } from "@/components/AnimatedBackground";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { logger } from "@/utils/logger";
+import { sanitizeAiResponse, sanitizeText } from "@/utils/sanitize";
 
 interface FlashcardQuestion {
   question: string;
@@ -40,6 +43,8 @@ export default function FlashcardsScreen() {
   const [currentFlashcardIndex, setCurrentFlashcardIndex] = useState<number>(0);
   const [selectedFlashcardAnswer, setSelectedFlashcardAnswer] = useState<string | null>(null);
   const [showPaywall, setShowPaywall] = useState<boolean>(!isPremium);
+  const [regenerateCount, setRegenerateCount] = useState<number>(0);
+  const MAX_REGENERATIONS = 3;
 
   const buttonScale = useRef(new Animated.Value(1)).current;
   const backButtonScale = useRef(new Animated.Value(1)).current;
@@ -71,7 +76,8 @@ export default function FlashcardsScreen() {
   const orbPulse2 = useRef(new Animated.Value(1)).current;
 
   const cleanedSummary = useMemo(() => {
-    return typeof summary === "string" ? summary.replace(/\*/g, "") : "";
+    // Sanitise le résumé reçu en paramètre avant utilisation dans les prompts
+    return sanitizeAiResponse(typeof summary === "string" ? summary : "");
   }, [summary]);
 
   const currentFlashcard = useMemo(() => {
@@ -265,12 +271,7 @@ export default function FlashcardsScreen() {
         throw new Error(language === "fr" ? "Résumé introuvable." : "Summary not found.");
       }
 
-      console.log("Generating flash cards on dedicated screen...", {
-        title,
-        mode,
-        refreshToken,
-        previousQuestionsCount: previousQuestions.length,
-      });
+      logger.log("Generating flash cards...");
 
       const previousQuestionsText = previousQuestions.length > 0
         ? previousQuestions.map((question, index) => `${index + 1}. ${question}`).join("\n")
@@ -281,18 +282,39 @@ export default function FlashcardsScreen() {
         : `Based on this summary of the book "${title || "Book"}" by ${author || "Unknown author"}, generate 5 revision multiple-choice questions. Each question must have exactly 3 possible answers and only one correct answer. Wrong answers should still be plausible. Respond ONLY with valid JSON in this format: {"questions":[{"question":"...","options":["...","...","..."],"correctAnswer":"..."}]}. Make sure correctAnswer matches exactly one of the options.${mode === "refresh" ? ` This is a regeneration. Create a NEW batch with different wording and different focus. Do not reuse these previous questions:\n${previousQuestionsText}\nUse this unique token to force a fresh generation: ${refreshToken}.` : ` Use this unique token: ${refreshToken}.`} Summary: ${cleanedSummary}`;
 
       const response = await generateText(flashcardPrompt);
-      console.log("Flash cards raw response on dedicated screen:", response);
+      logger.log("Flash cards response received, length:", response?.length);
 
       const cleanedResponse = response.trim().replace(/^```json\s*/i, "").replace(/^```/i, "").replace(/```$/i, "");
-      const parsedResponse = JSON.parse(cleanedResponse) as { questions?: FlashcardQuestion[] };
+
+      let parsedResponse: { questions?: FlashcardQuestion[] };
+      try {
+        parsedResponse = JSON.parse(cleanedResponse) as { questions?: FlashcardQuestion[] };
+      } catch {
+        throw new Error(language === "fr" ? "Réponse IA invalide." : "Invalid AI response.");
+      }
+
       const questions = Array.isArray(parsedResponse.questions) ? parsedResponse.questions : [];
-      const sanitizedQuestions = questions.filter((item) => {
-        return typeof item.question === "string"
-          && Array.isArray(item.options)
-          && item.options.length === 3
-          && typeof item.correctAnswer === "string"
-          && item.options.includes(item.correctAnswer);
-      });
+      const MAX_Q_LENGTH = 500;
+      const MAX_OPT_LENGTH = 300;
+
+      const sanitizedQuestions = questions
+        .filter((item) => {
+          return typeof item.question === "string"
+            && item.question.length > 0
+            && Array.isArray(item.options)
+            && item.options.length === 3
+            && typeof item.correctAnswer === "string"
+            && item.options.includes(item.correctAnswer)
+            && item.options.every((o: unknown) => typeof o === "string" && o.length > 0);
+        })
+        .map((item) => ({
+          // Sanitise chaque champ retourné par l'IA
+          question: item.question.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '').slice(0, MAX_Q_LENGTH),
+          options: item.options.map((o: string) =>
+            o.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '').slice(0, MAX_OPT_LENGTH)
+          ) as [string, string, string],
+          correctAnswer: item.correctAnswer.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '').slice(0, MAX_OPT_LENGTH),
+        }));
 
       if (sanitizedQuestions.length === 0) {
         throw new Error(language === "fr" ? "Aucune flash card valide générée." : "No valid flash cards were generated.");
@@ -312,7 +334,7 @@ export default function FlashcardsScreen() {
       });
     },
     onError: (mutationError) => {
-      console.error("Flash cards generation error on dedicated screen:", mutationError);
+      logger.error("Flash cards generation error:", mutationError);
     },
   });
 
@@ -328,10 +350,21 @@ export default function FlashcardsScreen() {
   }, [cleanedSummary, flashcards.length, generateFlashcards, isPending, isPremium]);
 
   const handleRegenerate = () => {
+    if (regenerateCount >= MAX_REGENERATIONS) {
+      Alert.alert(
+        language === 'fr' ? 'Limite atteinte' : 'Limit reached',
+        language === 'fr'
+          ? `Vous avez utilisé vos ${MAX_REGENERATIONS} régénérations pour ce livre.`
+          : `You have used all ${MAX_REGENERATIONS} regenerations for this book.`,
+        [{ text: 'OK' }]
+      );
+      return;
+    }
     animateButton();
     reset();
     setSelectedFlashcardAnswer(null);
     setCurrentFlashcardIndex(0);
+    setRegenerateCount(prev => prev + 1);
     cardOpacity.setValue(0);
     cardEntrance.setValue(24);
     generateFlashcards({
@@ -447,14 +480,30 @@ export default function FlashcardsScreen() {
           <Animated.View style={{ transform: [{ scale: buttonScale }] }}>
             <Pressable
               onPress={handleRegenerate}
-              style={[styles.refreshButton, isDarkMode && styles.refreshButtonDark]}
+              style={[
+                styles.refreshButton,
+                isDarkMode && styles.refreshButtonDark,
+                regenerateCount >= MAX_REGENERATIONS && styles.refreshButtonDisabled,
+              ]}
               testID="flashcard-regenerate-button"
               disabled={!isPremium || isPending}
             >
               {isPending ? (
                 <Loader2 size={18} color={colors.primary} />
               ) : (
-                <Sparkles size={18} color={colors.primary} />
+                <View style={styles.refreshButtonInner}>
+                  <Sparkles
+                    size={18}
+                    color={regenerateCount >= MAX_REGENERATIONS ? '#AAA' : colors.primary}
+                  />
+                  {/* Compteur restant */}
+                  <Text style={[
+                    styles.refreshCount,
+                    { color: regenerateCount >= MAX_REGENERATIONS ? '#AAA' : colors.primary }
+                  ]}>
+                    {MAX_REGENERATIONS - regenerateCount}
+                  </Text>
+                </View>
               )}
             </Pressable>
           </Animated.View>
@@ -477,26 +526,10 @@ export default function FlashcardsScreen() {
           {/* Loading */}
           {isPending && flashcards.length === 0 && (
             <View style={styles.centerContainer}>
-              <Animated.View style={[styles.loadingIconWrap, {
-                opacity: loadingShimmer.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0.4, 1, 0.4] }),
-              }]}>
-                <LinearGradient colors={colors.gradient} style={styles.loadingIconGradient}>
-                  <Sparkles size={32} color="#FFF" />
-                </LinearGradient>
-              </Animated.View>
+              <BookLoader />
               <Text style={[styles.loadingText, isDarkMode && styles.loadingTextDark]}>
                 {t.summary.flashcardsGenerating}
               </Text>
-              <View style={styles.shimmerRow}>
-                {[0, 1, 2].map((i) => (
-                  <Animated.View key={i} style={[styles.shimmerBar, isDarkMode && styles.shimmerBarDark, {
-                    opacity: loadingShimmer.interpolate({
-                      inputRange: [0, 0.5, 1],
-                      outputRange: i === 1 ? [0.3, 0.8, 0.3] : [0.5, 0.3, 0.5],
-                    }),
-                  }]} />
-                ))}
-              </View>
             </View>
           )}
 
@@ -713,6 +746,19 @@ const styles = StyleSheet.create({
   refreshButtonDark: {
     backgroundColor: "rgba(255,255,255,0.1)",
   },
+  refreshButtonDisabled: {
+    opacity: 0.4,
+  },
+  refreshButtonInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+  },
+  refreshCount: {
+    fontSize: 12,
+    fontWeight: '700' as const,
+    lineHeight: 14,
+  },
   progressBarWrap: {
     flexDirection: "row",
     alignItems: "center",
@@ -789,7 +835,7 @@ const styles = StyleSheet.create({
   messageCard: {
     borderRadius: 20,
     padding: 24,
-    backgroundColor: "rgba(255,255,255,0.9)",
+    backgroundColor: "#FFF",
     alignItems: "center",
     gap: 12,
     shadowColor: "#000",
@@ -800,6 +846,8 @@ const styles = StyleSheet.create({
   },
   messageCardDark: {
     backgroundColor: "rgba(255,255,255,0.07)",
+    elevation: 0,
+    shadowOpacity: 0,
   },
   messageTitle: {
     fontSize: 18,
@@ -833,7 +881,7 @@ const styles = StyleSheet.create({
   questionCard: {
     borderRadius: 24,
     padding: 24,
-    backgroundColor: "rgba(255,255,255,0.95)",
+    backgroundColor: "#FFF",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
@@ -844,6 +892,8 @@ const styles = StyleSheet.create({
   },
   questionCardDark: {
     backgroundColor: "rgba(255,255,255,0.08)",
+    elevation: 0,
+    shadowOpacity: 0,
   },
   questionText: {
     fontSize: 20,

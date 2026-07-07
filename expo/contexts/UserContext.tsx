@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
 import { Platform } from 'react-native';
+import { logger } from '@/utils/logger';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -44,7 +45,7 @@ export const [UserProvider, useUser] = createContextHook(() => {
         setUser(JSON.parse(storedUser));
       }
     } catch (error) {
-      console.error('Error loading user:', error);
+      logger.error('Error loading user:', error);
     } finally {
       setIsLoading(false);
     }
@@ -67,13 +68,13 @@ export const [UserProvider, useUser] = createContextHook(() => {
       setUser(userData);
       await AsyncStorage.setItem('user', JSON.stringify(userData));
     } catch (error) {
-      console.error('Error fetching user info:', error);
+      logger.error('Error fetching user info:', error);
     }
   };
 
   const signInWithGoogle = async () => {
     if (Platform.OS === 'web') {
-      console.log('Google Sign-In on web requires additional configuration');
+      logger.log('Google Sign-In on web requires additional configuration');
       const mockUser: User = {
         id: 'demo-user',
         email: 'demo@example.com',
@@ -88,7 +89,7 @@ export const [UserProvider, useUser] = createContextHook(() => {
     try {
       await promptAsync();
     } catch (error) {
-      console.error('Error signing in with Google:', error);
+      logger.error('Error signing in with Google:', error);
     }
   };
 
@@ -97,7 +98,7 @@ export const [UserProvider, useUser] = createContextHook(() => {
       setUser(null);
       await AsyncStorage.removeItem('user');
     } catch (error) {
-      console.error('Error signing out:', error);
+      logger.error('Error signing out:', error);
     }
   };
 
@@ -109,3 +110,4 @@ export const [UserProvider, useUser] = createContextHook(() => {
     isSignedIn: !!user,
   };
 });
+
