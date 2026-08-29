@@ -147,20 +147,35 @@ export default function FicheScreen() {
       const isSectionTitle = line.startsWith('**') && line.endsWith('**');
       const isListItem = line.trim().startsWith('-') || line.trim().startsWith('•');
 
-      elements.push(
-        <Text
-          key={`line-${lineIndex}`}
-          style={[
-            styles.textLine,
-            isSectionTitle && styles.sectionTitle,
-            isListItem && styles.listItem,
-            isDarkMode && styles.textLineDark,
-            isDarkMode && isSectionTitle && styles.sectionTitleDark,
-          ]}
-        >
-          {parts}
-        </Text>
-      );
+      if (isSectionTitle) {
+        elements.push(
+          <View
+            key={`line-${lineIndex}`}
+            style={[
+              styles.sectionTitleWrap,
+              { backgroundColor: `${colors.primary}20`, borderLeftColor: colors.primary },
+              isDarkMode && { backgroundColor: `${colors.primary}30`, borderLeftColor: colors.tertiary },
+            ]}
+          >
+            <Text style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark, { color: isDarkMode ? colors.tertiary : colors.primary }]}>
+              {parts}
+            </Text>
+          </View>
+        );
+      } else {
+        elements.push(
+          <Text
+            key={`line-${lineIndex}`}
+            style={[
+              styles.textLine,
+              isListItem && styles.listItem,
+              isDarkMode && styles.textLineDark,
+            ]}
+          >
+            {parts}
+          </Text>
+        );
+      }
     });
 
     return elements;
@@ -170,14 +185,16 @@ export default function FicheScreen() {
     boldText: {
       fontSize: 16,
       fontWeight: "700" as const,
-      color: colors.primary,
-      backgroundColor: `${colors.primary}1F`,
-      paddingHorizontal: 4,
-      paddingVertical: 2,
+      color: isDarkMode ? '#FFFFFF' : '#1A1A1A',
+      backgroundColor: `${colors.primary}35`,
+      paddingHorizontal: 5,
+      paddingVertical: 1,
+      borderRadius: 4,
+      overflow: 'hidden' as const,
     },
     boldTextDark: {
-      color: colors.tertiary,
-      backgroundColor: `${colors.tertiary}33`,
+      color: '#FFFFFF',
+      backgroundColor: `${colors.primary}50`,
     },
     titleContainerDynamic: {
       marginBottom: 32,
@@ -398,12 +415,18 @@ const styles = StyleSheet.create({
   },
   boldText: {},
   boldTextDark: {},
+  sectionTitleWrap: {
+    marginTop: 24,
+    marginBottom: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
+    borderLeftWidth: 4,
+  },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "800" as const,
     color: "#3E2723",
-    marginTop: 24,
-    marginBottom: 12,
     paddingLeft: 0,
   },
   sectionTitleDark: {
