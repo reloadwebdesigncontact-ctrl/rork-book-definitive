@@ -2,7 +2,7 @@ import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
 import * as ImagePicker from "expo-image-picker";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { ArrowLeft, Camera, Image as ImageIcon, Loader2 } from "lucide-react-native";
 import React, { useState, useRef } from "react";
 import {
@@ -24,6 +24,7 @@ import { logger } from "@/utils/logger";
 
 export default function ScanScreen() {
   const router = useRouter();
+  const { feature } = useLocalSearchParams<{ feature?: string }>();
   const { isDarkMode, colors } = useTheme();
   const { t } = useLanguage();
   const [permission, requestPermission] = useCameraPermissions();
@@ -155,7 +156,7 @@ export default function ScanScreen() {
       setIsProcessing(false);
       router.push({
         pathname: "/summary",
-        params: { imageUri: uri },
+        params: { imageUri: uri, feature: feature || '' },
       });
     }, 500); // Réduit de 1500ms à 500ms — le délai n'a pas de justification sécuritaire
   };

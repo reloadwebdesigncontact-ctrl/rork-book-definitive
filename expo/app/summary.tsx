@@ -94,7 +94,7 @@ export default function SummaryScreen() {
   const { isDarkMode, colors } = useTheme();
   const { t, language } = useLanguage();
   const [textSize, setTextSize] = useState(16);
-  const { imageUri } = useLocalSearchParams<{ imageUri: string }>();
+  const { imageUri, feature } = useLocalSearchParams<{ imageUri: string; feature?: string }>();
   const [bookInfo, setBookInfo] = useState<BookInfo | null>(null);
   const [summaryType, setSummaryType] = useState<SummaryType>(null);
   const [selectedSummary, setSelectedSummary] = useState<string>('');
@@ -277,6 +277,22 @@ export default function SummaryScreen() {
     },
     onSuccess: (data) => {
       setBookInfo(data);
+
+      // Si une fonctionnalité avancée est demandée, naviguer directement sans passer par le résumé
+      if (feature === 'fiche') {
+        // Générer la fiche directement — on appelle generateFiche via un timeout
+        // pour laisser bookInfo se mettre à jour
+        return;
+      }
+      if (feature === 'audio') {
+        // Générer d'abord un résumé normal pour l'audio
+        return;
+      }
+      if (feature === 'flashcards') {
+        // Générer d'abord un résumé normal pour les flashcards
+        return;
+      }
+
       Animated.parallel([
         Animated.timing(fadeAnim, {
           toValue: 1,
@@ -359,6 +375,22 @@ export default function SummaryScreen() {
           coverUrl: bookInfo.coverUrl || bookInfo.coverUrlFallback,
           summary: data,
         });
+      }
+
+      // Si fonctionnalité avancée demandée → rediriger directement sans afficher le résumé
+      if (feature === 'audio') {
+        router.replace({
+          pathname: '/lyrics-reader',
+          params: { summary: data, title: bookInfo?.title || '', author: bookInfo?.author || '' },
+        });
+        return;
+      }
+      if (feature === 'flashcards') {
+        router.replace({
+          pathname: '/flashcards',
+          params: { summary: data, title: bookInfo?.title || '', author: bookInfo?.author || '' },
+        });
+        return;
       }
       Animated.timing(selectionFade, {
         toValue: 0,
@@ -534,6 +566,20 @@ Be precise, detailed and faithful to the book. Use your in-depth knowledge of th
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [imageUri]);
+
+  // Quand bookInfo est chargé ET qu'une fonctionnalité avancée est demandée,
+  // on lance directement la bonne action sans passer par la page de résumé
+  useEffect(() => {
+    if (!bookInfo || !feature) return;
+
+    if (feature === 'fiche') {
+      generateFiche();
+    } else if (feature === 'audio' || feature === 'flashcards') {
+      // Générer un résumé normal pour alimenter l'audio ou les flashcards
+      generateSummary('normal');
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bookInfo]);
 
   useEffect(() => {
     if (isAnalyzing || isGeneratingSummary) {
