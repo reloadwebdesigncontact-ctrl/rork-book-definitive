@@ -124,10 +124,10 @@ export const APP_THEMES: Record<AppTheme, ColorPalette> = {
     icon: `${BASE}/gold.png`,
   },
   tropical: {
-    primary: '#C850C0',
-    secondary: '#F64F59',
-    tertiary: '#FFCC70',
-    gradient: ['#4158D0', '#C850C0', '#FFCC70'] as const,
+    primary: '#4158D0',
+    secondary: '#C850C0',
+    tertiary: '#F64F8B',
+    gradient: ['#4158D0', '#C850C0', '#F64F8B'] as const,
     icon: `${BASE}/tropical.png`,
   },
 };
