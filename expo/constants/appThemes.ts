@@ -12,10 +12,10 @@ const BASE = 'https://raw.githubusercontent.com/reloadwebdesigncontact-ctrl/rork
 
 export const APP_THEMES: Record<AppTheme, ColorPalette> = {
   orange: {
-    primary: '#FF8C00',
-    secondary: '#FFA030',
-    tertiary: '#FFB860',
-    gradient: ['#FF8C00', '#FFA030', '#FFB860'] as const,
+    primary: '#FF6B00',
+    secondary: '#FF8C2A',
+    tertiary: '#FFAA55',
+    gradient: ['#FF6B00', '#FF8C2A', '#FFAA55'] as const,
     icon: `${BASE}/icon.png`,
   },
   red: {

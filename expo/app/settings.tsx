@@ -1,7 +1,7 @@
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import { ArrowLeft, Globe, Moon, Sun, Palette, Scale, ChevronRight, Info, Crown, Sparkles, Smartphone } from "lucide-react-native";
+import { ArrowLeft, Globe, Moon, Sun, Palette, Scale, ChevronRight, Info, Crown, Sparkles, Smartphone, Clock } from "lucide-react-native";
 import Constants from 'expo-constants';
 import * as Haptics from "expo-haptics";
 import React, { useState, useRef, useEffect } from "react";
@@ -371,6 +371,25 @@ export default function SettingsScreen() {
           </Animated.View>
 
           {/* Section fond animé — supprimée, le fond animé est toujours actif */}
+
+          {/* Section Historique */}
+          <Animated.View style={[styles.section, isDarkMode && styles.sectionDark, { opacity: section3Opacity, transform: [{ translateY: section3Slide }] }]}>
+            <View style={styles.sectionHeader}>
+              <Clock size={24} color={colors.primary} strokeWidth={2.5} />
+              <Text style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
+                {language === 'fr' ? 'Historique' : 'History'}
+              </Text>
+            </View>
+            <Pressable
+              onPress={() => router.push('/history')}
+              style={[styles.colorPreview, isDarkMode && styles.colorPreviewDark]}
+            >
+              <Text style={[styles.colorPreviewText, isDarkMode && styles.colorPreviewTextDark]}>
+                {language === 'fr' ? 'Voir l\'historique des scans' : 'View scan history'}
+              </Text>
+              <Text style={[styles.arrow, isDarkMode && styles.arrowDark]}>›</Text>
+            </Pressable>
+          </Animated.View>
 
           {/* Section Icône de l'app */}
           <Animated.View style={[styles.section, isDarkMode && styles.sectionDark, { opacity: section3Opacity, transform: [{ translateY: section3Slide }] }]}>

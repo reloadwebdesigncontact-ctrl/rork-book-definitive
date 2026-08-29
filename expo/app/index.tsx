@@ -2,7 +2,7 @@ import { Image } from "expo-image";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import { Camera, Settings, User, LogOut, Clock } from "lucide-react-native";
+import { Camera, Settings, User, LogOut, Sparkles } from "lucide-react-native";
 import React, { useState } from "react";
 import { AnimatedBackground } from "@/components/AnimatedBackground";
 import { TitleUnderline } from "@/components/TitleUnderline";
@@ -319,8 +319,8 @@ export default function HomeScreen() {
             <TopButton onPress={() => router.push('/settings')} isDarkMode={isDarkMode}>
               <Settings size={20} color={colors.primary} strokeWidth={2.5} />
             </TopButton>
-            <TopButton onPress={() => router.push('/history' as never)} isDarkMode={isDarkMode}>
-              <Clock size={20} color={colors.primary} strokeWidth={2.5} />
+            <TopButton onPress={() => router.push('/premium-features' as never)} isDarkMode={isDarkMode}>
+              <Sparkles size={20} color={colors.primary} strokeWidth={2.5} />
             </TopButton>
           </View>
         </Animated.View>
