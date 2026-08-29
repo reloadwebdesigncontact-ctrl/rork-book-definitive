@@ -32,6 +32,7 @@ function RootLayoutNav() {
       <Stack.Screen name="settings" options={{ headerShown: false }} />
       <Stack.Screen name="history" options={{ headerShown: false }} />
       <Stack.Screen name="theme-picker" options={{ headerShown: false }} />
+      <Stack.Screen name="premium-features" options={{ headerShown: false }} />
     </Stack>
   );
 }

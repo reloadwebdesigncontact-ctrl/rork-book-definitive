@@ -54,10 +54,10 @@ export const APP_THEMES: Record<AppTheme, ColorPalette> = {
     icon: `${BASE}/yellow.png`,
   },
   coral: {
-    primary: '#A0522D',
-    secondary: '#B8632A',
-    tertiary: '#CD853F',
-    gradient: ['#A0522D', '#B8632A', '#CD853F'] as const,
+    primary: '#C4845A',
+    secondary: '#D4906A',
+    tertiary: '#E4A880',
+    gradient: ['#C4845A', '#D4906A', '#E4A880'] as const,
     icon: `${BASE}/coral.png`,
   },
   lime: {

@@ -34,6 +34,8 @@ export default function ScanScreen() {
   const { scansToday, remainingFreeScans, hasReachedFreeLimit, dailyLimit, incrementScan } = useScanLimit();
   const cameraRef = useRef<CameraView>(null);
   const pulseAnim = useRef(new Animated.Value(1)).current;
+  const backBtnScale = useRef(new Animated.Value(1)).current;
+  const limitBadgePulse = useRef(new Animated.Value(1)).current;
   const frameOpacity = useRef(new Animated.Value(0)).current;
   const corner1 = useRef(new Animated.Value(0)).current;
   const corner2 = useRef(new Animated.Value(0)).current;
@@ -122,12 +124,21 @@ export default function ScanScreen() {
     );
     glowAnim.start();
 
+    const limitBadgePulseAnim = Animated.loop(
+      Animated.sequence([
+        Animated.timing(limitBadgePulse, { toValue: 1.03, duration: 1200, useNativeDriver: true }),
+        Animated.timing(limitBadgePulse, { toValue: 1, duration: 1200, useNativeDriver: true }),
+      ])
+    );
+    limitBadgePulseAnim.start();
+
     return () => {
       pulse.stop();
       framePulseAnim.stop();
       glowAnim.stop();
+      limitBadgePulseAnim.stop();
     };
-  }, [pulseAnim, frameOpacity, corner1, corner2, corner3, corner4, framePulse, captureButtonGlow]);
+  }, [pulseAnim, frameOpacity, corner1, corner2, corner3, corner4, framePulse, captureButtonGlow, limitBadgePulse]);
 
   const processImage = async (uri: string) => {
     if (!isPremium && hasReachedFreeLimit) {
@@ -268,27 +279,31 @@ export default function ScanScreen() {
         >
           <SafeAreaView style={styles.safeArea}>
             <View style={styles.topBar}>
+              <Animated.View style={{ transform: [{ scale: backBtnScale }] }}>
               <Pressable
                 onPress={() => router.back()}
+                onPressIn={() => Animated.spring(backBtnScale, { toValue: 0.85, useNativeDriver: true }).start()}
+                onPressOut={() => Animated.spring(backBtnScale, { toValue: 1, friction: 3, tension: 40, useNativeDriver: true }).start()}
                 style={styles.backButton}
               >
                 <View style={styles.iconButton}>
                   <ArrowLeft size={24} color="#FFF" strokeWidth={2.5} />
                 </View>
               </Pressable>
+              </Animated.View>
               <Text style={styles.topBarText}>Cadrez la couverture</Text>
               <View style={{ width: 40 }} />
             </View>
 
             {!isPremium && (
-              <View style={styles.limitBadge} testID="scan-limit-badge">
+              <Animated.View style={[styles.limitBadge, { transform: [{ scale: limitBadgePulse }] }]} testID="scan-limit-badge">
                 <Text style={styles.limitBadgeText}>
                   {hasReachedFreeLimit
                     ? `Limite quotidienne atteinte (${dailyLimit}/${dailyLimit})`
                     : `${remainingFreeScans} scan${remainingFreeScans > 1 ? 's' : ''} restant${remainingFreeScans > 1 ? 's' : ''} aujourd'hui`}
                 </Text>
                 <Text style={styles.limitBadgeSub}>{scansToday}/{dailyLimit} utilisés • Plan gratuit</Text>
-              </View>
+              </Animated.View>
             )}
 
             <View style={styles.centerContainer}>

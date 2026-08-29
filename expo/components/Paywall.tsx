@@ -50,6 +50,15 @@ export function Paywall({ visible, onClose, onSuccess }: PaywallProps) {
   const scaleAnim = React.useRef(new Animated.Value(1)).current;
   const closeButtonScale = React.useRef(new Animated.Value(1)).current;
   const crownFloat = React.useRef(new Animated.Value(0)).current;
+  const pillPulse = React.useRef(new Animated.Value(1)).current;
+  const planScales = React.useRef([
+    new Animated.Value(1),
+    new Animated.Value(1),
+    new Animated.Value(1),
+  ]).current;
+  const iconScales = React.useRef(
+    Array.from({ length: 17 }, () => new Animated.Value(1))
+  ).current;
   const featureAnims = React.useRef(
     [0, 1, 2, 3, 4].map(() => new Animated.Value(0))
   ).current;
@@ -60,6 +69,14 @@ export function Paywall({ visible, onClose, onSuccess }: PaywallProps) {
         Animated.sequence([
           Animated.timing(crownFloat, { toValue: 1, duration: 2000, useNativeDriver: true }),
           Animated.timing(crownFloat, { toValue: 0, duration: 2000, useNativeDriver: true }),
+        ])
+      ).start();
+
+      // Pulse discret sur le badge PREMIUM
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(pillPulse, { toValue: 1.06, duration: 900, useNativeDriver: true }),
+          Animated.timing(pillPulse, { toValue: 1, duration: 900, useNativeDriver: true }),
         ])
       ).start();
 
@@ -75,8 +92,9 @@ export function Paywall({ visible, onClose, onSuccess }: PaywallProps) {
     } else {
       featureAnims.forEach((anim) => anim.setValue(0));
       crownFloat.setValue(0);
+      pillPulse.setValue(1);
     }
-  }, [visible, crownFloat, featureAnims]);
+  }, [visible, crownFloat, pillPulse, featureAnims]);
 
   // Packages RevenueCat
   const monthlyPackage = currentOffering?.availablePackages.find(p => p.identifier === '$rc_monthly');
@@ -167,10 +185,12 @@ export function Paywall({ visible, onClose, onSuccess }: PaywallProps) {
           <View style={styles.topBar}>
             <View style={{ width: 40 }} />
             <View style={styles.pillBadge}>
+              <Animated.View style={{ transform: [{ scale: pillPulse }] }}>
               <LinearGradient colors={colors.gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.pillGradient}>
                 <Sparkles size={12} color="#FFF" />
                 <Text style={styles.pillText}>PREMIUM</Text>
               </LinearGradient>
+              </Animated.View>
             </View>
             <Animated.View style={{ transform: [{ scale: closeButtonScale }] }}>
               <Pressable
@@ -241,11 +261,21 @@ export function Paywall({ visible, onClose, onSuccess }: PaywallProps) {
                   {language === 'fr' ? "🎨 Choisir l'icône de l'app" : '🎨 Choose app icon'}
                 </Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.iconScrollContent}>
-                  {ICON_OPTIONS.map((option) => (
-                    <Pressable
+                  {ICON_OPTIONS.map((option, iconIndex) => (
+                    <Animated.View
                       key={option.key}
+                      style={{ transform: [{ scale: iconScales[iconIndex] ?? new Animated.Value(1) }] }}
+                    >
+                    <Pressable
                       onPress={async () => {
                         void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        const s = iconScales[iconIndex];
+                        if (s) {
+                          Animated.sequence([
+                            Animated.spring(s, { toValue: 0.88, useNativeDriver: true }),
+                            Animated.spring(s, { toValue: 1, friction: 3, tension: 40, useNativeDriver: true }),
+                          ]).start();
+                        }
                         setSelectedIcon(option.key);
                         await changeAppIcon(option.key);
                       }}
@@ -258,6 +288,7 @@ export function Paywall({ visible, onClose, onSuccess }: PaywallProps) {
                         </View>
                       )}
                     </Pressable>
+                    </Animated.View>
                   ))}
                 </ScrollView>
               </View>
@@ -265,15 +296,24 @@ export function Paywall({ visible, onClose, onSuccess }: PaywallProps) {
               <>
                 {/* Sélecteur de plan */}
                 <View style={styles.plansContainer}>
-                  {plans.map((plan) => {
+                  {plans.map((plan, planIndex) => {
                     const isSelected = selectedPlan === plan.key;
                     const isPopular = plan.key === 'annual';
                     return (
-                      <Pressable
+                      <Animated.View
                         key={plan.key}
+                        style={{ transform: [{ scale: planScales[planIndex] }] }}
+                      >
+                      <Pressable
                         onPress={() => {
                           void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                           setSelectedPlan(plan.key);
+                        }}
+                        onPressIn={() => {
+                          Animated.spring(planScales[planIndex], { toValue: 0.96, useNativeDriver: true }).start();
+                        }}
+                        onPressOut={() => {
+                          Animated.spring(planScales[planIndex], { toValue: 1, friction: 3, tension: 40, useNativeDriver: true }).start();
                         }}
                         style={[
                           styles.planCard,
@@ -309,6 +349,7 @@ export function Paywall({ visible, onClose, onSuccess }: PaywallProps) {
                           </View>
                         </View>
                       </Pressable>
+                      </Animated.View>
                     );
                   })}
                 </View>

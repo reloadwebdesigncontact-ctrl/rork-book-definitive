@@ -59,6 +59,10 @@ export default function SettingsScreen() {
   const legalOption2Scale = useRef(new Animated.Value(1)).current;
   const legalOption3Scale = useRef(new Animated.Value(1)).current;
   const versionFade = useRef(new Animated.Value(0)).current;
+  const upgradeButtonScale = useRef(new Animated.Value(1)).current;
+  const restoreButtonScale = useRef(new Animated.Value(1)).current;
+  const rateButtonScale = useRef(new Animated.Value(1)).current;
+  const historyScale = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     Animated.parallel([
@@ -510,11 +514,14 @@ export default function SettingsScreen() {
                   <Text style={[styles.debugDescription, isDarkMode && styles.debugDescriptionDark]}>
                     {language === 'fr' ? 'Plan gratuit — 3 scans par jour.' : 'Free plan — 3 scans per day.'}
                   </Text>
+                  <Animated.View style={{ transform: [{ scale: upgradeButtonScale }] }}>
                   <Pressable
                     onPress={() => {
                       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                       setShowPaywall(true);
                     }}
+                    onPressIn={() => Animated.spring(upgradeButtonScale, { toValue: 0.95, useNativeDriver: true }).start()}
+                    onPressOut={() => Animated.spring(upgradeButtonScale, { toValue: 1, friction: 3, tension: 40, useNativeDriver: true }).start()}
                     style={styles.upgradeButton}
                   >
                     <LinearGradient
@@ -529,8 +536,12 @@ export default function SettingsScreen() {
                       </Text>
                     </LinearGradient>
                   </Pressable>
+                  </Animated.View>
+                  <Animated.View style={{ transform: [{ scale: restoreButtonScale }] }}>
                   <Pressable
                     onPress={() => void restorePurchases()}
+                    onPressIn={() => Animated.spring(restoreButtonScale, { toValue: 0.95, useNativeDriver: true }).start()}
+                    onPressOut={() => Animated.spring(restoreButtonScale, { toValue: 1, friction: 3, tension: 40, useNativeDriver: true }).start()}
                     style={[styles.restoreButton, isDarkMode && styles.restoreButtonDark]}
                   >
                     <Text style={[styles.restoreButtonText, { color: colors.primary }]}>
@@ -539,6 +550,7 @@ export default function SettingsScreen() {
                         : (language === 'fr' ? 'Restaurer les achats' : 'Restore purchases')}
                     </Text>
                   </Pressable>
+                  </Animated.View>
                 </>
               )}
             </View>
@@ -562,11 +574,14 @@ export default function SettingsScreen() {
                 ? 'Vous aimez Summshine ? Laissez un avis sur le Play Store, ça nous aide beaucoup !'
                 : 'Enjoying Summshine? Leave a review on the Play Store, it helps us a lot!'}
             </Text>
+            <Animated.View style={{ transform: [{ scale: rateButtonScale }] }}>
             <Pressable
               onPress={() => {
                 void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                 void Linking.openURL('https://play.google.com/store/apps/details?id=app.coverscan');
               }}
+              onPressIn={() => Animated.spring(rateButtonScale, { toValue: 0.95, useNativeDriver: true }).start()}
+              onPressOut={() => Animated.spring(rateButtonScale, { toValue: 1, friction: 3, tension: 40, useNativeDriver: true }).start()}
               style={styles.rateButton}
             >
               <LinearGradient
@@ -581,6 +596,7 @@ export default function SettingsScreen() {
                 <ChevronRight size={18} color="#FFF" strokeWidth={2.5} />
               </LinearGradient>
             </Pressable>
+            </Animated.View>
           </Animated.View>
 
           <Animated.View style={[styles.section, isDarkMode && styles.sectionDark, { opacity: section4Opacity, transform: [{ translateY: section4Slide }] }]}>
