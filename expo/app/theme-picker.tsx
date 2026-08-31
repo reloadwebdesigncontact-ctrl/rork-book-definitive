@@ -39,6 +39,7 @@ const THEME_LABELS: Record<AppTheme, { fr: string; en: string }> = {
   silver:    { fr: 'Argent',    en: 'Silver' },
   gold:      { fr: 'Or',        en: 'Gold' },
   tropical:  { fr: 'Tropical',  en: 'Tropical' },
+  peach:     { fr: 'Pêche',     en: 'Peach' },
 };
 
 // Thèmes réservés aux utilisateurs Premium

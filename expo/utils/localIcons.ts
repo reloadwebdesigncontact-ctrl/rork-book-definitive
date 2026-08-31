@@ -9,4 +9,5 @@ export const LOCAL_ICONS: Record<string, ReturnType<typeof require>> = {
   flamingo: require('@/assets/images/flamingo.png'),
   aurora: require('@/assets/images/aurora.png'),
   ocean: require('@/assets/images/ocean.png'),
+  peach: require('@/assets/images/peach.png'),
 };
