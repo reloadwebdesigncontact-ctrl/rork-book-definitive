@@ -107,70 +107,86 @@ export default function FicheScreen() {
         return;
       }
 
-      const parts: React.ReactElement[] = [];
-      let lastIndex = 0;
-      const boldPattern = /\*\*([^*]+)\*\*/g;
-      let match;
+      const isSectionTitle = line.trim().startsWith('**') && line.trim().endsWith('**');
+      const isListItem = line.trim().startsWith('-') || line.trim().startsWith('•');
+      const isSubTitle = line.trim().startsWith('###') || line.trim().startsWith('##');
 
-      while ((match = boldPattern.exec(line)) !== null) {
-        if (match.index > lastIndex) {
+      // Construire les parties inline (texte normal + mots surlignés)
+      const buildParts = (rawLine: string): React.ReactElement[] => {
+        const parts: React.ReactElement[] = [];
+        let lastIndex = 0;
+        const boldPattern = /\*\*([^*]+)\*\*/g;
+        let match;
+
+        while ((match = boldPattern.exec(rawLine)) !== null) {
+          if (match.index > lastIndex) {
+            parts.push(
+              <Text key={`text-${key++}`} style={[styles.normalText, isDarkMode && styles.normalTextDark]}>
+                {rawLine.substring(lastIndex, match.index)}
+              </Text>
+            );
+          }
+          parts.push(
+            <Text key={`bold-${key++}`} style={[dynamicStyles.boldText, isDarkMode && dynamicStyles.boldTextDark]}>
+              {match[1]}
+            </Text>
+          );
+          lastIndex = match.index + match[0].length;
+        }
+
+        if (lastIndex < rawLine.length) {
           parts.push(
             <Text key={`text-${key++}`} style={[styles.normalText, isDarkMode && styles.normalTextDark]}>
-              {line.substring(lastIndex, match.index)}
+              {rawLine.substring(lastIndex)}
             </Text>
           );
         }
-
-        parts.push(
-          <Text
-            key={`bold-${key++}`}
-            style={[
-              dynamicStyles.boldText,
-              isDarkMode && dynamicStyles.boldTextDark,
-            ]}
-          >
-            {match[1]}
-          </Text>
-        );
-
-        lastIndex = match.index + match[0].length;
-      }
-
-      if (lastIndex < line.length) {
-        parts.push(
-          <Text key={`text-${key++}`} style={[styles.normalText, isDarkMode && styles.normalTextDark]}>
-            {line.substring(lastIndex)}
-          </Text>
-        );
-      }
-
-      const isSectionTitle = line.startsWith('**') && line.endsWith('**');
-      const isListItem = line.trim().startsWith('-') || line.trim().startsWith('•');
+        return parts;
+      };
 
       if (isSectionTitle) {
+        // Titre de section : fond coloré + bordure gauche + icône
+        const cleanTitle = line.trim().replace(/\*\*/g, '');
         elements.push(
           <View
-            key={`line-${lineIndex}`}
+            key={`section-${lineIndex}`}
             style={[
               styles.sectionTitleWrap,
-              { backgroundColor: `${colors.primary}20`, borderLeftColor: colors.primary },
-              isDarkMode && { backgroundColor: `${colors.primary}30`, borderLeftColor: colors.tertiary },
+              { backgroundColor: `${colors.primary}22`, borderLeftColor: colors.primary },
+              isDarkMode && { backgroundColor: `${colors.primary}35`, borderLeftColor: colors.tertiary },
             ]}
           >
-            <Text style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark, { color: isDarkMode ? colors.tertiary : colors.primary }]}>
+            <Text style={[styles.sectionTitle, { color: isDarkMode ? colors.tertiary : colors.primary }]}>
+              {cleanTitle}
+            </Text>
+          </View>
+        );
+      } else if (isListItem) {
+        // Élément de liste : puce colorée + fond léger
+        const cleanLine = line.trim().replace(/^[-•]\s*/, '');
+        const parts = buildParts(cleanLine);
+        elements.push(
+          <View
+            key={`list-${lineIndex}`}
+            style={[
+              styles.listItemWrap,
+              { borderLeftColor: `${colors.secondary}80` },
+              isDarkMode && styles.listItemWrapDark,
+            ]}
+          >
+            <View style={[styles.listBullet, { backgroundColor: colors.primary }]} />
+            <Text style={[styles.listItemText, isDarkMode && styles.listItemTextDark]}>
               {parts}
             </Text>
           </View>
         );
       } else {
+        // Texte normal avec mots importants surlignés
+        const parts = buildParts(line);
         elements.push(
           <Text
             key={`line-${lineIndex}`}
-            style={[
-              styles.textLine,
-              isListItem && styles.listItem,
-              isDarkMode && styles.textLineDark,
-            ]}
+            style={[styles.textLine, isDarkMode && styles.textLineDark]}
           >
             {parts}
           </Text>
@@ -183,18 +199,18 @@ export default function FicheScreen() {
 
   const dynamicStyles = {
     boldText: {
-      fontSize: 16,
+      fontSize: 15,
       fontWeight: "700" as const,
-      color: isDarkMode ? '#FFFFFF' : '#1A1A1A',
-      backgroundColor: `${colors.primary}35`,
-      paddingHorizontal: 5,
-      paddingVertical: 1,
-      borderRadius: 4,
+      color: isDarkMode ? '#FFF' : '#1A1A1A',
+      backgroundColor: isDarkMode ? `${colors.primary}55` : `${colors.primary}28`,
+      paddingHorizontal: 6,
+      paddingVertical: 2,
+      borderRadius: 5,
       overflow: 'hidden' as const,
     },
     boldTextDark: {
-      color: '#FFFFFF',
-      backgroundColor: `${colors.primary}50`,
+      color: '#FFF',
+      backgroundColor: `${colors.primary}55`,
     },
     titleContainerDynamic: {
       marginBottom: 32,
@@ -435,6 +451,36 @@ const styles = StyleSheet.create({
   listItem: {
     paddingLeft: 16,
     marginVertical: 2,
+  },
+  listItemWrap: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginVertical: 3,
+    borderRadius: 8,
+    borderLeftWidth: 3,
+    backgroundColor: 'rgba(0,0,0,0.025)',
+    gap: 10,
+  },
+  listItemWrapDark: {
+    backgroundColor: 'rgba(255,255,255,0.05)',
+  },
+  listBullet: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    marginTop: 6,
+    flexShrink: 0,
+  },
+  listItemText: {
+    flex: 1,
+    fontSize: 15,
+    color: '#3E2723',
+    lineHeight: 23,
+  },
+  listItemTextDark: {
+    color: '#E0E0E0',
   },
   lineSpace: {
     height: 12,

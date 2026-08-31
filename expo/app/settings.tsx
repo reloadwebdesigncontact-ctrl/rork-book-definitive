@@ -381,7 +381,7 @@ export default function SettingsScreen() {
             <View style={styles.sectionHeader}>
               <Clock size={24} color={colors.primary} strokeWidth={2.5} />
               <Text style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
-                {language === 'fr' ? 'Historique' : 'History'}
+                {language === 'fr' ? 'Bibliothèque' : 'Library'}
               </Text>
             </View>
             <Pressable
@@ -389,7 +389,7 @@ export default function SettingsScreen() {
               style={[styles.colorPreview, isDarkMode && styles.colorPreviewDark]}
             >
               <Text style={[styles.colorPreviewText, isDarkMode && styles.colorPreviewTextDark]}>
-                {language === 'fr' ? 'Voir l\'historique des scans' : 'View scan history'}
+                {language === 'fr' ? 'Voir ma bibliothèque' : 'View my library'}
               </Text>
               <Text style={[styles.arrow, isDarkMode && styles.arrowDark]}>›</Text>
             </Pressable>

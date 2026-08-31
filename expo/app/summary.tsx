@@ -280,8 +280,8 @@ export default function SummaryScreen() {
 
       // Si une fonctionnalité avancée est demandée, naviguer directement sans passer par le résumé
       if (feature === 'fiche') {
-        // Générer la fiche directement — on appelle generateFiche via un timeout
-        // pour laisser bookInfo se mettre à jour
+        // Générer la fiche directement avec les données fraîchement récupérées
+        generateFicheWithData(data);
         return;
       }
       if (feature === 'audio') {
@@ -489,17 +489,18 @@ export default function SummaryScreen() {
   });
 
 const { mutate: generateFiche, isPending: isGeneratingFiche } = useMutation({
-    mutationFn: async () => {
-      if (!bookInfo) return "";
+    mutationFn: async (bookData?: typeof bookInfo) => {
+      const book = bookData || bookInfo;
+      if (!book) return "";
       
       logger.log("Génération de la fiche de lecture complète...");
       
       const fichePrompt = language === 'fr'
-        ? `Génère une fiche de lecture complète et détaillée pour le livre "${bookInfo.title}" de ${bookInfo.author}.
+        ? `Génère une fiche de lecture complète et détaillée pour le livre "${book.title}" de ${book.author}.
 
 La fiche doit suivre EXACTEMENT ce format avec des sections claires et structurées:
 
-**Fiche de Lecture : ${bookInfo.title}**
+**Fiche de Lecture : ${book.title}**
 
 **Informations Générales**
 - **Auteur**: [nom de l'auteur]
@@ -520,11 +521,11 @@ La fiche doit suivre EXACTEMENT ce format avec des sections claires et structur�
 [Liste des thèmes avec explications]
 
 Sois précis, détaillé et fidèle au livre. Utilise tes connaissances approfondies du livre pour créer une fiche de lecture académique complète.`
-        : `Generate a complete and detailed reading sheet for the book "${bookInfo.title}" by ${bookInfo.author}.
+        : `Generate a complete and detailed reading sheet for the book "${book.title}" by ${book.author}.
 
 The sheet must follow EXACTLY this format with clear and structured sections:
 
-**Reading Sheet: ${bookInfo.title}**
+**Reading Sheet: ${book.title}**
 
 **General Information**
 - **Author**: [author name]
@@ -572,14 +573,16 @@ Be precise, detailed and faithful to the book. Use your in-depth knowledge of th
   useEffect(() => {
     if (!bookInfo || !feature) return;
 
-    if (feature === 'fiche') {
-      generateFiche();
-    } else if (feature === 'audio' || feature === 'flashcards') {
+    if (feature === 'audio' || feature === 'flashcards') {
       // Générer un résumé normal pour alimenter l'audio ou les flashcards
       generateSummary('normal');
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bookInfo]);
+
+  const generateFicheWithData = (bookData: BookInfo) => {
+    generateFiche(bookData);
+  };
 
   useEffect(() => {
     if (isAnalyzing || isGeneratingSummary) {
