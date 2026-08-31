@@ -1,4 +1,4 @@
-export type AppTheme = 'orange' | 'red' | 'purple' | 'turquoise' | 'pink' | 'yellow' | 'coral' | 'lime' | 'sunset' | 'dreamy' | 'neon' | 'flamingo' | 'aurora' | 'ocean' | 'silver' | 'gold' | 'tropical';
+export type AppTheme = 'orange' | 'red' | 'purple' | 'turquoise' | 'pink' | 'yellow' | 'coral' | 'lime' | 'sunset' | 'dreamy' | 'neon' | 'flamingo' | 'aurora' | 'ocean' | 'silver' | 'gold' | 'tropical' | 'peach';
 
 export interface ColorPalette {
   primary: string;
@@ -129,5 +129,12 @@ export const APP_THEMES: Record<AppTheme, ColorPalette> = {
     tertiary: '#F64F8B',
     gradient: ['#4158D0', '#C850C0', '#F64F8B'] as const,
     icon: `${BASE}/tropical.png`,
+  },
+  peach: {
+    primary: '#F06292',
+    secondary: '#FF8A65',
+    tertiary: '#FFBB6C',
+    gradient: ['#FFBB6C', '#FF8A65', '#F06292'] as const,
+    icon: `${BASE}/peach.png`,
   },
 };

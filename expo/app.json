@@ -82,7 +82,8 @@
           "ocean":     { "image": "./assets/images/ocean.png",     "prerendered": true },
           "silver":    { "image": "./assets/images/silver.png",    "prerendered": true },
           "gold":      { "image": "./assets/images/gold.png",      "prerendered": true },
-          "tropical":  { "image": "./assets/images/tropical.png",  "prerendered": true }
+          "tropical":  { "image": "./assets/images/tropical.png",  "prerendered": true },
+          "peach":     { "image": "./assets/images/peach.png",     "prerendered": true }
         }
       ]
     ],

@@ -23,6 +23,7 @@ export const ICON_OPTIONS = [
   { key: 'silver',    label: 'Silver' },
   { key: 'gold',      label: 'Gold' },
   { key: 'tropical',  label: 'Tropical' },
+  { key: 'peach',     label: 'Peach' },
 ] as const;
 
 export type AppIconKey = typeof ICON_OPTIONS[number]['key'];
@@ -45,6 +46,7 @@ export const ICON_PREVIEWS: Record<AppIconKey, ReturnType<typeof require>> = {
   silver:    require('@/assets/images/silver.png'),
   gold:      require('@/assets/images/gold.png'),
   tropical:  require('@/assets/images/tropical.png'),
+  peach:     require('@/assets/images/peach.png'),
 };
 
 export async function getSavedIcon(): Promise<AppIconKey> {
