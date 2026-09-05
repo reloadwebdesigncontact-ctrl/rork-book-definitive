@@ -21,7 +21,7 @@ import * as Haptics from "expo-haptics";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { logger } from "@/utils/logger";
-import { FicheAssistant, ASSISTANT_COMMANDS, type AssistantCommand, type HighlightRule } from "@/components/FicheAssistant";
+import { FicheAssistant, type AssistantCommand, type HighlightRule } from "@/components/FicheAssistant";
 
 export default function FicheScreen() {
   const router = useRouter();

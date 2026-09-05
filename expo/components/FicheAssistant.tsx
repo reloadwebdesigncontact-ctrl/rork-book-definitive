@@ -181,7 +181,8 @@ export function FicheAssistant({ onCommandSelect, activeCommandId }: FicheAssist
         if (Math.abs(gs.dx) > 5 || Math.abs(gs.dy) > 5) {
           isDragging.current = true;
         }
-        Animated.event([null, { dx: pan.x, dy: pan.y }], { useNativeDriver: false })(_, gs);
+        pan.x.setValue((pan.x as any)._offset + gs.dx);
+        pan.y.setValue((pan.y as any)._offset + gs.dy);
       },
       onPanResponderRelease: (_, gs) => {
         pan.flattenOffset();
