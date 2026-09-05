@@ -1,0 +1,434 @@
+import React, { useRef, useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  Modal,
+  ScrollView,
+  Animated,
+  PanResponder,
+  Dimensions,
+} from 'react-native';
+import { X, Sparkles, Check } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import * as Haptics from 'expo-haptics';
+import { useTheme } from '@/contexts/ThemeContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const BTN_SIZE = 52;
+
+export type HighlightRule = {
+  id: string;
+  pattern: RegExp;
+  color: string;
+  bgColor: string;
+  label: string;
+};
+
+export type AssistantCommand = {
+  id: string;
+  label: string;
+  description: string;
+  emoji: string;
+  rules: HighlightRule[];
+};
+
+export const ASSISTANT_COMMANDS: AssistantCommand[] = [
+  {
+    id: 'dates',
+    label: 'Surligner les dates',
+    description: 'Toutes les années, siècles et dates',
+    emoji: '📅',
+    rules: [
+      {
+        id: 'dates',
+        pattern: /\b(\d{4}|\d{1,2}(er|ème|e)?\s+siècle|XIXe?|XVIIIe?|XXe?|au\s+\d{4}|\d{4}s?)\b/gi,
+        color: '#FFFFFF',
+        bgColor: '#E53935',
+        label: 'Date',
+      },
+    ],
+  },
+  {
+    id: 'lieux',
+    label: 'Surligner les lieux',
+    description: 'Villes, pays, régions mentionnés',
+    emoji: '📍',
+    rules: [
+      {
+        id: 'lieux',
+        pattern: /\b(Paris|France|Londres|Rome|Europe|Angleterre|Russie|Allemagne|Italie|Espagne|Amérique|New York|Tokyo|Japon|Chine|Afrique|Orient|Occident|province|ville|village|pays|région|château|manoir|forêt|mer|océan|fleuve|rivière|montagne)\b/gi,
+        color: '#FFFFFF',
+        bgColor: '#E91E8C',
+        label: 'Lieu',
+      },
+    ],
+  },
+  {
+    id: 'personnages',
+    label: 'Surligner les personnages',
+    description: 'Noms propres de personnes',
+    emoji: '👤',
+    rules: [
+      {
+        id: 'personnages',
+        pattern: /\b([A-ZÀÂÉÈÊËÎÏÔÙÛÜÇ][a-zàâéèêëîïôùûüç]+(?:\s+[A-ZÀÂÉÈÊËÎÏÔÙÛÜÇ][a-zàâéèêëîïôùûüç]+)*)\b/g,
+        color: '#FFFFFF',
+        bgColor: '#1565C0',
+        label: 'Personnage',
+      },
+    ],
+  },
+  {
+    id: 'themes',
+    label: 'Surligner les thèmes',
+    description: 'Mots-clés thématiques importants',
+    emoji: '💡',
+    rules: [
+      {
+        id: 'themes',
+        pattern: /\b(amour|mort|liberté|justice|pouvoir|trahison|honneur|destin|société|guerre|paix|vérité|mensonge|identité|solitude|espoir|désespoir|rédemption|vengeance|sacrifice|famille|religion|foi|nature|art|beauté|temps|mémoire)\b/gi,
+        color: '#FFFFFF',
+        bgColor: '#6A1B9A',
+        label: 'Thème',
+      },
+    ],
+  },
+  {
+    id: 'dates_lieux',
+    label: 'Dates + Lieux',
+    description: 'Combiner les deux surlignages',
+    emoji: '🗺️',
+    rules: [
+      {
+        id: 'dates',
+        pattern: /\b(\d{4}|\d{1,2}(er|ème|e)?\s+siècle|XIXe?|XVIIIe?|XXe?|\d{4}s?)\b/gi,
+        color: '#FFFFFF',
+        bgColor: '#E53935',
+        label: 'Date',
+      },
+      {
+        id: 'lieux',
+        pattern: /\b(Paris|France|Londres|Rome|Europe|Angleterre|Russie|Allemagne|Italie|Espagne|Amérique|New York|Tokyo|Japon|Chine|Afrique|Orient|Occident|province|ville|village|pays|région|château|manoir|forêt|mer|océan|fleuve|rivière|montagne)\b/gi,
+        color: '#FFFFFF',
+        bgColor: '#E91E8C',
+        label: 'Lieu',
+      },
+    ],
+  },
+  {
+    id: 'reset',
+    label: 'Réinitialiser',
+    description: 'Retirer tous les surlignages',
+    emoji: '🔄',
+    rules: [],
+  },
+];
+
+interface FicheAssistantProps {
+  onCommandSelect: (command: AssistantCommand) => void;
+  activeCommandId: string | null;
+}
+
+export function FicheAssistant({ onCommandSelect, activeCommandId }: FicheAssistantProps) {
+  const { isDarkMode, colors } = useTheme();
+  const { language } = useLanguage();
+  const [visible, setVisible] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  // Position flottante
+  const pan = useRef(new Animated.ValueXY({ x: SCREEN_WIDTH - BTN_SIZE - 20, y: SCREEN_HEIGHT * 0.55 })).current;
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (_, gs) => Math.abs(gs.dx) > 3 || Math.abs(gs.dy) > 3,
+      onPanResponderGrant: () => {
+        pan.setOffset({ x: (pan.x as any)._value, y: (pan.y as any)._value });
+        pan.setValue({ x: 0, y: 0 });
+      },
+      onPanResponderMove: Animated.event([null, { dx: pan.x, dy: pan.y }], { useNativeDriver: false }),
+      onPanResponderRelease: (_, gs) => {
+        pan.flattenOffset();
+        // Snap aux bords
+        const currentX = (pan.x as any)._value;
+        const currentY = (pan.y as any)._value;
+        const snapX = currentX < SCREEN_WIDTH / 2 ? 16 : SCREEN_WIDTH - BTN_SIZE - 16;
+        const snapY = Math.max(80, Math.min(currentY, SCREEN_HEIGHT - BTN_SIZE - 80));
+        Animated.spring(pan, { toValue: { x: snapX, y: snapY }, useNativeDriver: false, friction: 7 }).start();
+      },
+    })
+  ).current;
+
+  const handlePress = () => {
+    // Si le pan n'a pas bougé, ouvrir le modal
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setModalOpen(true);
+  };
+
+  if (!visible) return null;
+
+  return (
+    <>
+      {/* Bouton flottant */}
+      <Animated.View
+        style={[styles.floatingBtn, { transform: pan.getTranslateTransform() }]}
+        {...panResponder.panHandlers}
+      >
+        {/* Bouton × pour cacher */}
+        <Pressable
+          style={styles.closeBtn}
+          onPress={() => {
+            void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            setVisible(false);
+          }}
+        >
+          <X size={10} color="#FFF" strokeWidth={3} />
+        </Pressable>
+
+        {/* Icône principale */}
+        <Pressable onPress={handlePress} style={styles.mainBtn}>
+          <LinearGradient
+            colors={colors.gradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.mainBtnGradient}
+          >
+            <Sparkles size={22} color="#FFF" strokeWidth={2} />
+            {activeCommandId && activeCommandId !== 'reset' && (
+              <View style={[styles.activeDot, { backgroundColor: '#4CAF50' }]} />
+            )}
+          </LinearGradient>
+        </Pressable>
+      </Animated.View>
+
+      {/* Modal des commandes */}
+      <Modal
+        visible={modalOpen}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setModalOpen(false)}
+      >
+        <Pressable style={styles.modalOverlay} onPress={() => setModalOpen(false)}>
+          <Pressable style={[styles.modalSheet, isDarkMode && styles.modalSheetDark]} onPress={() => {}}>
+            {/* Handle */}
+            <View style={styles.handle} />
+
+            {/* Titre */}
+            <View style={styles.modalHeader}>
+              <View style={[styles.modalIconWrap, { backgroundColor: `${colors.primary}20` }]}>
+                <Sparkles size={20} color={colors.primary} strokeWidth={2} />
+              </View>
+              <View>
+                <Text style={[styles.modalTitle, isDarkMode && styles.modalTitleDark]}>
+                  Assistant de lecture
+                </Text>
+                <Text style={[styles.modalSubtitle, isDarkMode && styles.modalSubtitleDark]}>
+                  Choisis ce que tu veux mettre en évidence
+                </Text>
+              </View>
+            </View>
+
+            {/* Commandes */}
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.commandList}>
+              {ASSISTANT_COMMANDS.map((cmd) => {
+                const isActive = activeCommandId === cmd.id;
+                return (
+                  <Pressable
+                    key={cmd.id}
+                    onPress={() => {
+                      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      onCommandSelect(cmd);
+                      setModalOpen(false);
+                    }}
+                    style={({ pressed }) => [
+                      styles.commandCard,
+                      isDarkMode && styles.commandCardDark,
+                      isActive && { borderColor: colors.primary, borderWidth: 2 },
+                      pressed && { opacity: 0.8, transform: [{ scale: 0.97 }] },
+                    ]}
+                  >
+                    <Text style={styles.commandEmoji}>{cmd.emoji}</Text>
+                    <View style={styles.commandText}>
+                      <Text style={[styles.commandLabel, isDarkMode && styles.commandLabelDark]}>
+                        {cmd.label}
+                      </Text>
+                      <Text style={[styles.commandDesc, isDarkMode && styles.commandDescDark]}>
+                        {cmd.description}
+                      </Text>
+                    </View>
+                    {isActive && (
+                      <View style={[styles.activeCheck, { backgroundColor: colors.primary }]}>
+                        <Check size={12} color="#FFF" strokeWidth={3} />
+                      </View>
+                    )}
+                    {/* Prévisualisation couleur pour les commandes de surlignage */}
+                    {cmd.rules.length > 0 && (
+                      <View style={styles.colorDots}>
+                        {cmd.rules.map((r) => (
+                          <View key={r.id} style={[styles.colorDot, { backgroundColor: r.bgColor }]} />
+                        ))}
+                      </View>
+                    )}
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+          </Pressable>
+        </Pressable>
+      </Modal>
+    </>
+  );
+}
+
+const styles = StyleSheet.create({
+  floatingBtn: {
+    position: 'absolute',
+    zIndex: 999,
+    width: BTN_SIZE,
+    alignItems: 'center',
+  },
+  closeBtn: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 4,
+    alignSelf: 'flex-end',
+  },
+  mainBtn: {
+    width: BTN_SIZE,
+    height: BTN_SIZE,
+    borderRadius: BTN_SIZE / 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 10,
+  },
+  mainBtnGradient: {
+    width: '100%',
+    height: '100%',
+    borderRadius: BTN_SIZE / 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  activeDot: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    borderWidth: 2,
+    borderColor: '#FFF',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'flex-end',
+  },
+  modalSheet: {
+    backgroundColor: '#FAFAFA',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingBottom: 32,
+    maxHeight: SCREEN_HEIGHT * 0.75,
+  },
+  modalSheetDark: {
+    backgroundColor: '#1A1A1A',
+  },
+  handle: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: 'rgba(0,0,0,0.15)',
+    alignSelf: 'center',
+    marginTop: 12,
+    marginBottom: 4,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+  },
+  modalIconWrap: {
+    width: 42,
+    height: 42,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 17,
+    fontWeight: '700' as const,
+    color: '#1A1A1A',
+  },
+  modalTitleDark: { color: '#FFF' },
+  modalSubtitle: {
+    fontSize: 13,
+    color: '#8D6E63',
+    marginTop: 1,
+  },
+  modalSubtitleDark: { color: '#999' },
+  commandList: {
+    paddingHorizontal: 16,
+    gap: 10,
+    paddingBottom: 16,
+  },
+  commandCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    backgroundColor: 'rgba(0,0,0,0.03)',
+    borderRadius: 16,
+    padding: 14,
+    borderWidth: 1.5,
+    borderColor: 'transparent',
+  },
+  commandCardDark: {
+    backgroundColor: 'rgba(255,255,255,0.06)',
+  },
+  commandEmoji: {
+    fontSize: 24,
+    width: 36,
+    textAlign: 'center',
+  },
+  commandText: {
+    flex: 1,
+    gap: 2,
+  },
+  commandLabel: {
+    fontSize: 15,
+    fontWeight: '600' as const,
+    color: '#1A1A1A',
+  },
+  commandLabelDark: { color: '#FFF' },
+  commandDesc: {
+    fontSize: 12,
+    color: '#8D6E63',
+  },
+  commandDescDark: { color: '#999' },
+  activeCheck: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  colorDots: {
+    flexDirection: 'row',
+    gap: 4,
+  },
+  colorDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+  },
+});

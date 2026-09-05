@@ -21,6 +21,7 @@ import * as Haptics from "expo-haptics";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { logger } from "@/utils/logger";
+import { FicheAssistant, ASSISTANT_COMMANDS, type AssistantCommand, type HighlightRule } from "@/components/FicheAssistant";
 
 export default function FicheScreen() {
   const router = useRouter();
@@ -28,6 +29,8 @@ export default function FicheScreen() {
   const { t } = useLanguage();
   const { content, title } = useLocalSearchParams<{ content: string; title: string }>();
   const [isSharing, setIsSharing] = useState(false);
+  const [activeCommandId, setActiveCommandId] = useState<string | null>(null);
+  const [activeRules, setActiveRules] = useState<HighlightRule[]>([]);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(30)).current;
   const shareButtonScale = useRef(new Animated.Value(1)).current;
@@ -57,6 +60,11 @@ export default function FicheScreen() {
       }),
     ]).start();
   }, [fadeAnim, slideAnim, contentScale]);
+
+  const handleAssistantCommand = (command: AssistantCommand) => {
+    setActiveCommandId(command.id);
+    setActiveRules(command.rules);
+  };
 
   const shareText = async () => {
     if (isSharing) return;
@@ -111,32 +119,77 @@ export default function FicheScreen() {
       const isListItem = line.trim().startsWith('-') || line.trim().startsWith('•');
       const isSubTitle = line.trim().startsWith('###') || line.trim().startsWith('##');
 
-      // Construire les parties inline (texte normal + mots surlignés)
+      // Construire les parties inline (texte normal + mots surlignés + règles assistant)
       const buildParts = (rawLine: string): React.ReactElement[] => {
         const parts: React.ReactElement[] = [];
-        let lastIndex = 0;
-        const boldPattern = /\*\*([^*]+)\*\*/g;
-        let match;
 
-        while ((match = boldPattern.exec(rawLine)) !== null) {
-          if (match.index > lastIndex) {
+        // Combiner les patterns : gras (**texte**) + règles actives de l'assistant
+        type Segment = { start: number; end: number; text: string; type: 'bold' | 'rule'; ruleId?: string; color?: string; bgColor?: string };
+        const segments: Segment[] = [];
+
+        // Trouver tous les **gras**
+        const boldPattern = /\*\*([^*]+)\*\*/g;
+        let m;
+        while ((m = boldPattern.exec(rawLine)) !== null) {
+          segments.push({ start: m.index, end: m.index + m[0].length, text: m[1], type: 'bold' });
+        }
+
+        // Trouver tous les matches des règles actives
+        activeRules.forEach((rule) => {
+          const pat = new RegExp(rule.pattern.source, rule.pattern.flags);
+          let rm;
+          while ((rm = pat.exec(rawLine)) !== null) {
+            // Ne pas écraser un match gras
+            const overlap = segments.some(s => rm!.index < s.end && rm!.index + rm![0].length > s.start);
+            if (!overlap) {
+              segments.push({ start: rm.index, end: rm.index + rm[0].length, text: rm[0], type: 'rule', ruleId: rule.id, color: rule.color, bgColor: rule.bgColor });
+            }
+          }
+        });
+
+        // Trier par position
+        segments.sort((a, b) => a.start - b.start);
+
+        let lastIndex = 0;
+        segments.forEach((seg, i) => {
+          if (seg.start > lastIndex) {
             parts.push(
-              <Text key={`text-${key++}`} style={[styles.normalText, isDarkMode && styles.normalTextDark]}>
-                {rawLine.substring(lastIndex, match.index)}
+              <Text key={`txt-${key++}`} style={[styles.normalText, isDarkMode && styles.normalTextDark]}>
+                {rawLine.substring(lastIndex, seg.start)}
               </Text>
             );
           }
-          parts.push(
-            <Text key={`bold-${key++}`} style={[dynamicStyles.boldText, isDarkMode && dynamicStyles.boldTextDark]}>
-              {match[1]}
-            </Text>
-          );
-          lastIndex = match.index + match[0].length;
-        }
+          if (seg.type === 'bold') {
+            parts.push(
+              <Text key={`bold-${key++}`} style={[dynamicStyles.boldText, isDarkMode && dynamicStyles.boldTextDark]}>
+                {seg.text}
+              </Text>
+            );
+          } else {
+            parts.push(
+              <Text
+                key={`rule-${key++}`}
+                style={{
+                  color: seg.color,
+                  backgroundColor: seg.bgColor,
+                  fontWeight: '700' as const,
+                  fontSize: 15,
+                  borderRadius: 4,
+                  overflow: 'hidden' as const,
+                  paddingHorizontal: 4,
+                  paddingVertical: 1,
+                }}
+              >
+                {seg.text}
+              </Text>
+            );
+          }
+          lastIndex = seg.end;
+        });
 
         if (lastIndex < rawLine.length) {
           parts.push(
-            <Text key={`text-${key++}`} style={[styles.normalText, isDarkMode && styles.normalTextDark]}>
+            <Text key={`txt-${key++}`} style={[styles.normalText, isDarkMode && styles.normalTextDark]}>
               {rawLine.substring(lastIndex)}
             </Text>
           );
@@ -333,6 +386,12 @@ export default function FicheScreen() {
           </ScrollView>
         </Animated.View>
       </SafeAreaView>
+
+      {/* Assistant flottant */}
+      <FicheAssistant
+        onCommandSelect={handleAssistantCommand}
+        activeCommandId={activeCommandId}
+      />
     </View>
   );
 }
