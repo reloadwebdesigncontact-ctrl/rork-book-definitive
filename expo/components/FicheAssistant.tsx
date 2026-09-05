@@ -11,7 +11,7 @@ import {
   Dimensions,
   Image,
 } from 'react-native';
-import { X, Check } from 'lucide-react-native';
+import { Check } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -166,18 +166,32 @@ export function FicheAssistant({ onCommandSelect, activeCommandId }: FicheAssist
   // Position flottante
   const pan = useRef(new Animated.ValueXY({ x: SCREEN_WIDTH - BTN_SIZE - 20, y: SCREEN_HEIGHT * 0.55 })).current;
 
+  const isDragging = useRef(false);
+
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: (_, gs) => Math.abs(gs.dx) > 3 || Math.abs(gs.dy) > 3,
+      onMoveShouldSetPanResponder: (_, gs) => Math.abs(gs.dx) > 5 || Math.abs(gs.dy) > 5,
       onPanResponderGrant: () => {
+        isDragging.current = false;
         pan.setOffset({ x: (pan.x as any)._value, y: (pan.y as any)._value });
         pan.setValue({ x: 0, y: 0 });
       },
-      onPanResponderMove: Animated.event([null, { dx: pan.x, dy: pan.y }], { useNativeDriver: false }),
+      onPanResponderMove: (_, gs) => {
+        if (Math.abs(gs.dx) > 5 || Math.abs(gs.dy) > 5) {
+          isDragging.current = true;
+        }
+        Animated.event([null, { dx: pan.x, dy: pan.y }], { useNativeDriver: false })(_, gs);
+      },
       onPanResponderRelease: (_, gs) => {
         pan.flattenOffset();
-        // Snap aux bords
+        if (!isDragging.current) {
+          // Tap simple → ouvrir le modal
+          void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+          setModalOpen(true);
+          return;
+        }
+        // Snap aux bords après drag
         const currentX = (pan.x as any)._value;
         const currentY = (pan.y as any)._value;
         const snapX = currentX < SCREEN_WIDTH / 2 ? 16 : SCREEN_WIDTH - BTN_SIZE - 16;
@@ -186,12 +200,6 @@ export function FicheAssistant({ onCommandSelect, activeCommandId }: FicheAssist
       },
     })
   ).current;
-
-  const handlePress = () => {
-    // Si le pan n'a pas bougé, ouvrir le modal
-    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setModalOpen(true);
-  };
 
   if (!visible) return null;
 
@@ -202,28 +210,27 @@ export function FicheAssistant({ onCommandSelect, activeCommandId }: FicheAssist
         style={[styles.floatingBtn, { transform: pan.getTranslateTransform() }]}
         {...panResponder.panHandlers}
       >
-        {/* Bouton × pour cacher */}
+        {/* Image de l'ours (contient la croix dessinée en haut à droite) */}
+        <Image
+          source={bearImage}
+          style={styles.bearImage}
+          resizeMode="contain"
+        />
+
+        {/* Zone de tap invisible sur la croix en haut à droite de l'image */}
         <Pressable
-          style={styles.closeBtn}
+          style={styles.crossHitArea}
           onPress={() => {
             void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             setVisible(false);
           }}
-        >
-          <X size={10} color="#FFF" strokeWidth={3} />
-        </Pressable>
+        />
 
-        {/* Icône principale — ours */}
-        <Pressable onPress={handlePress} style={styles.mainBtn}>
-          <Image
-            source={bearImage}
-            style={styles.bearImage}
-            resizeMode="contain"
-          />
-          {activeCommandId && activeCommandId !== 'reset' && (
-            <View style={[styles.activeDot, { backgroundColor: '#4CAF50' }]} />
-          )}
-        </Pressable>
+        {/* Point vert si un surlignage est actif */}
+        {activeCommandId && activeCommandId !== 'reset' && (
+          <View style={[styles.activeDot, { backgroundColor: '#4CAF50' }]} />
+        )}
+      </Animated.View>
       </Animated.View>
 
       {/* Modal des commandes */}
@@ -310,44 +317,24 @@ const styles = StyleSheet.create({
     position: 'absolute',
     zIndex: 999,
     width: BTN_SIZE,
-    alignItems: 'center',
-  },
-  closeBtn: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    backgroundColor: 'rgba(0,0,0,0.55)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 4,
-    alignSelf: 'flex-end',
-  },
-  mainBtn: {
-    width: BTN_SIZE,
     height: BTN_SIZE,
-    borderRadius: BTN_SIZE / 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 10,
-    backgroundColor: 'transparent',
   },
   bearImage: {
     width: BTN_SIZE,
     height: BTN_SIZE,
   },
-  mainBtnGradient: {
-    width: '100%',
-    height: '100%',
-    borderRadius: BTN_SIZE / 2,
-    justifyContent: 'center',
-    alignItems: 'center',
+  // Zone de tap invisible sur la croix dessinée en haut à droite du PNG
+  crossHitArea: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    width: BTN_SIZE * 0.35,
+    height: BTN_SIZE * 0.35,
   },
   activeDot: {
     position: 'absolute',
-    top: 6,
-    right: 6,
+    bottom: 4,
+    right: 4,
     width: 10,
     height: 10,
     borderRadius: 5,
