@@ -24,7 +24,7 @@
     "android": {
       "icon": "./assets/images/icon.png",
       "package": "app.coverscan",
-      "versionCode": 80,
+      "versionCode": 81,
       "allowBackup": false,
       "blockedPermissions": [],
       "permissions": [

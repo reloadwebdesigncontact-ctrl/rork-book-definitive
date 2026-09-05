@@ -181,8 +181,7 @@ export function FicheAssistant({ onCommandSelect, activeCommandId }: FicheAssist
         if (Math.abs(gs.dx) > 5 || Math.abs(gs.dy) > 5) {
           isDragging.current = true;
         }
-        pan.x.setValue((pan.x as any)._offset + gs.dx);
-        pan.y.setValue((pan.y as any)._offset + gs.dy);
+        pan.setValue({ x: gs.dx, y: gs.dy });
       },
       onPanResponderRelease: (_, gs) => {
         pan.flattenOffset();
@@ -193,10 +192,9 @@ export function FicheAssistant({ onCommandSelect, activeCommandId }: FicheAssist
           return;
         }
         // Snap aux bords après drag
-        const currentX = (pan.x as any)._value;
-        const currentY = (pan.y as any)._value;
-        const snapX = currentX < SCREEN_WIDTH / 2 ? 16 : SCREEN_WIDTH - BTN_SIZE - 16;
-        const snapY = Math.max(80, Math.min(currentY, SCREEN_HEIGHT - BTN_SIZE - 80));
+        pan.flattenOffset();
+        const snapX = gs.moveX < SCREEN_WIDTH / 2 ? 16 : SCREEN_WIDTH - BTN_SIZE - 16;
+        const snapY = Math.max(80, Math.min(gs.moveY - BTN_SIZE / 2, SCREEN_HEIGHT - BTN_SIZE - 80));
         Animated.spring(pan, { toValue: { x: snapX, y: snapY }, useNativeDriver: false, friction: 7 }).start();
       },
     })
