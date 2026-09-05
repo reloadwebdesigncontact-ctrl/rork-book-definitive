@@ -9,15 +9,37 @@ import {
   Animated,
   PanResponder,
   Dimensions,
+  Image,
 } from 'react-native';
-import { X, Sparkles, Check } from 'lucide-react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { X, Check } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-const BTN_SIZE = 52;
+const BTN_SIZE = 72;
+
+// Map des ours par thème
+const BEAR_IMAGES: Record<string, ReturnType<typeof require>> = {
+  orange:    require('@/assets/images/assistant-bear/assistant-bear-orange.png'),
+  red:       require('@/assets/images/assistant-bear/assistant-bear-red.png'),
+  purple:    require('@/assets/images/assistant-bear/assistant-bear-purple.png'),
+  turquoise: require('@/assets/images/assistant-bear/assistant-bear-turquoise.png'),
+  pink:      require('@/assets/images/assistant-bear/assistant-bear-pink.png'),
+  yellow:    require('@/assets/images/assistant-bear/assistant-bear-yellow.png'),
+  coral:     require('@/assets/images/assistant-bear/assistant-bear-coral.png'),
+  lime:      require('@/assets/images/assistant-bear/assistant-bear-lime.png'),
+  sunset:    require('@/assets/images/assistant-bear/assistant-bear-sunset.png'),
+  dreamy:    require('@/assets/images/assistant-bear/assistant-bear-dreamy.png'),
+  neon:      require('@/assets/images/assistant-bear/assistant-bear-neon.png'),
+  flamingo:  require('@/assets/images/assistant-bear/assistant-bear-flamingo.png'),
+  aurora:    require('@/assets/images/assistant-bear/assistant-bear-aurora.png'),
+  ocean:     require('@/assets/images/assistant-bear/assistant-bear-ocean.png'),
+  silver:    require('@/assets/images/assistant-bear/assistant-bear-silver.png'),
+  gold:      require('@/assets/images/assistant-bear/assistant-bear-gold.png'),
+  tropical:  require('@/assets/images/assistant-bear/assistant-bear-tropical.png'),
+  peach:     require('@/assets/images/assistant-bear/assistant-bear-peach.png'),
+};
 
 export type HighlightRule = {
   id: string;
@@ -133,10 +155,13 @@ interface FicheAssistantProps {
 }
 
 export function FicheAssistant({ onCommandSelect, activeCommandId }: FicheAssistantProps) {
-  const { isDarkMode, colors } = useTheme();
+  const { isDarkMode, colors, appTheme } = useTheme();
   const { language } = useLanguage();
   const [visible, setVisible] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
+
+  // Image de l'ours selon le thème actif
+  const bearImage = BEAR_IMAGES[appTheme] ?? BEAR_IMAGES['orange'];
 
   // Position flottante
   const pan = useRef(new Animated.ValueXY({ x: SCREEN_WIDTH - BTN_SIZE - 20, y: SCREEN_HEIGHT * 0.55 })).current;
@@ -188,19 +213,16 @@ export function FicheAssistant({ onCommandSelect, activeCommandId }: FicheAssist
           <X size={10} color="#FFF" strokeWidth={3} />
         </Pressable>
 
-        {/* Icône principale */}
+        {/* Icône principale — ours */}
         <Pressable onPress={handlePress} style={styles.mainBtn}>
-          <LinearGradient
-            colors={colors.gradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.mainBtnGradient}
-          >
-            <Sparkles size={22} color="#FFF" strokeWidth={2} />
-            {activeCommandId && activeCommandId !== 'reset' && (
-              <View style={[styles.activeDot, { backgroundColor: '#4CAF50' }]} />
-            )}
-          </LinearGradient>
+          <Image
+            source={bearImage}
+            style={styles.bearImage}
+            resizeMode="contain"
+          />
+          {activeCommandId && activeCommandId !== 'reset' && (
+            <View style={[styles.activeDot, { backgroundColor: '#4CAF50' }]} />
+          )}
         </Pressable>
       </Animated.View>
 
@@ -306,9 +328,14 @@ const styles = StyleSheet.create({
     borderRadius: BTN_SIZE / 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.25,
     shadowRadius: 8,
     elevation: 10,
+    backgroundColor: 'transparent',
+  },
+  bearImage: {
+    width: BTN_SIZE,
+    height: BTN_SIZE,
   },
   mainBtnGradient: {
     width: '100%',
