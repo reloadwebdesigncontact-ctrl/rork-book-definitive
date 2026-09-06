@@ -9,3 +9,9 @@ web-build
 dist
 .expo
 rork-book-definitive-main
+export-test
+__tests__
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
