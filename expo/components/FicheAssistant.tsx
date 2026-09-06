@@ -19,9 +19,11 @@ import { useLanguage } from '@/contexts/LanguageContext';
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const BTN_SIZE = 72;
 
-// Map des ours par thème
-const BEAR_IMAGES: Record<string, ReturnType<typeof require>> = {
-  orange:    require('@/assets/images/assistant-bear/assistant-bear-orange.png'),
+// Fallback unique — orange toujours disponible
+const BEAR_ORANGE = require('@/assets/images/assistant-bear/assistant-bear-orange.png');
+
+const BEAR_IMAGES: Record<string, number> = {
+  orange:    BEAR_ORANGE,
   red:       require('@/assets/images/assistant-bear/assistant-bear-red.png'),
   purple:    require('@/assets/images/assistant-bear/assistant-bear-purple.png'),
   turquoise: require('@/assets/images/assistant-bear/assistant-bear-turquoise.png'),
@@ -161,7 +163,7 @@ export function FicheAssistant({ onCommandSelect, activeCommandId }: FicheAssist
   const [modalOpen, setModalOpen] = useState(false);
 
   // Image de l'ours selon le thème actif
-  const bearImage = BEAR_IMAGES[appTheme] ?? BEAR_IMAGES['orange'];
+  const bearImage = BEAR_IMAGES[appTheme] ?? BEAR_ORANGE;
 
   // Position flottante
   const pan = useRef(new Animated.ValueXY({ x: SCREEN_WIDTH - BTN_SIZE - 20, y: SCREEN_HEIGHT * 0.55 })).current;
