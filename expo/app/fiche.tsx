@@ -387,11 +387,11 @@ export default function FicheScreen() {
         </Animated.View>
       </SafeAreaView>
 
-      {/* Assistant flottant */}
-      <FicheAssistant
+      {/* Assistant flottant — temporairement désactivé pour diagnostic */}
+      {false && <FicheAssistant
         onCommandSelect={handleAssistantCommand}
         activeCommandId={activeCommandId}
-      />
+      />}
     </View>
   );
 }
