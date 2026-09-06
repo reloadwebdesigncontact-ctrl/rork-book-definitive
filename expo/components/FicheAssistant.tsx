@@ -230,7 +230,6 @@ export function FicheAssistant({ onCommandSelect, activeCommandId }: FicheAssist
           <View style={[styles.activeDot, { backgroundColor: '#4CAF50' }]} />
         )}
       </Animated.View>
-      </Animated.View>
 
       {/* Modal des commandes */}
       <Modal
