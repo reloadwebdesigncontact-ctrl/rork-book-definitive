@@ -15,33 +15,10 @@ import { Check } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { getBearForTheme } from '@/utils/bearImages';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const BTN_SIZE = 72;
-
-// Fallback unique — orange toujours disponible
-const BEAR_ORANGE = require('@/assets/images/assistant-bear/assistant-bear-orange.png');
-
-const BEAR_IMAGES: Record<string, number> = {
-  orange:    BEAR_ORANGE,
-  red:       require('@/assets/images/assistant-bear/assistant-bear-red.png'),
-  purple:    require('@/assets/images/assistant-bear/assistant-bear-purple.png'),
-  turquoise: require('@/assets/images/assistant-bear/assistant-bear-turquoise.png'),
-  pink:      require('@/assets/images/assistant-bear/assistant-bear-pink.png'),
-  yellow:    require('@/assets/images/assistant-bear/assistant-bear-yellow.png'),
-  coral:     require('@/assets/images/assistant-bear/assistant-bear-coral.png'),
-  lime:      require('@/assets/images/assistant-bear/assistant-bear-lime.png'),
-  sunset:    require('@/assets/images/assistant-bear/assistant-bear-sunset.png'),
-  dreamy:    require('@/assets/images/assistant-bear/assistant-bear-dreamy.png'),
-  neon:      require('@/assets/images/assistant-bear/assistant-bear-neon.png'),
-  flamingo:  require('@/assets/images/assistant-bear/assistant-bear-flamingo.png'),
-  aurora:    require('@/assets/images/assistant-bear/assistant-bear-aurora.png'),
-  ocean:     require('@/assets/images/assistant-bear/assistant-bear-ocean.png'),
-  silver:    require('@/assets/images/assistant-bear/assistant-bear-silver.png'),
-  gold:      require('@/assets/images/assistant-bear/assistant-bear-gold.png'),
-  tropical:  require('@/assets/images/assistant-bear/assistant-bear-tropical.png'),
-  peach:     require('@/assets/images/assistant-bear/assistant-bear-peach.png'),
-};
 
 export type HighlightRule = {
   id: string;
@@ -163,7 +140,7 @@ export function FicheAssistant({ onCommandSelect, activeCommandId }: FicheAssist
   const [modalOpen, setModalOpen] = useState(false);
 
   // Image de l'ours selon le thème actif
-  const bearImage = BEAR_IMAGES[appTheme] ?? BEAR_ORANGE;
+  const bearImage = getBearForTheme(appTheme);
 
   // Position flottante
   const pan = useRef(new Animated.ValueXY({ x: SCREEN_WIDTH - BTN_SIZE - 20, y: SCREEN_HEIGHT * 0.55 })).current;
