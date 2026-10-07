@@ -11,7 +11,7 @@ import {
   Image,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { X, Crown, Check, Sparkles, BookOpen, FileText, Volume2, Smartphone, Infinity as InfinityIcon } from 'lucide-react-native';
+import { X, Crown, Check, Sparkles, BookOpen, FileText, Volume2, Smartphone, Layers, Infinity as InfinityIcon } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -131,13 +131,13 @@ export function Paywall({ visible, onClose, onSuccess }: PaywallProps) {
     { icon: BookOpen,    text: 'Résumés chapitre par chapitre', desc: 'Analyse approfondie' },
     { icon: FileText,    text: 'Fiches de lecture complètes',   desc: 'Format académique' },
     { icon: Volume2,     text: 'Lecture audio illimitée',       desc: 'Écoute partout' },
-    { icon: Sparkles,    text: 'Flash cards interactives',      desc: 'Teste tes connaissances' },
+    { icon: Layers,    text: 'Flash cards interactives',      desc: 'Teste tes connaissances' },
     { icon: Smartphone,  text: "Icône de l'app personnalisée",  desc: '17 icônes au choix' },
   ] : [
     { icon: BookOpen,    text: 'Chapter-by-chapter summaries', desc: 'In-depth analysis' },
     { icon: FileText,    text: 'Complete reading sheets',      desc: 'Academic format' },
     { icon: Volume2,     text: 'Unlimited audio reading',      desc: 'Listen anywhere' },
-    { icon: Sparkles,    text: 'Interactive flash cards',      desc: 'Test your knowledge' },
+    { icon: Layers,    text: 'Interactive flash cards',      desc: 'Test your knowledge' },
     { icon: Smartphone,  text: 'Custom app icon',              desc: '17 icons to choose from' },
   ];
 

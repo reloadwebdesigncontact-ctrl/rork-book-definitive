@@ -2,7 +2,7 @@ import { Image } from "expo-image";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ArrowLeft, BookOpen, FileText, Loader2, User, Sparkles, Volume2, Maximize2 } from "lucide-react-native";
+import { ArrowLeft, BookOpen, FileText, Loader2, User, Sparkles, Volume2, Maximize2, Layers } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import {
   Animated,
@@ -1218,7 +1218,7 @@ return (
                       >
                         {/* Icône en haut */}
                         <View style={styles.squareActionIconWrap}>
-                          <Sparkles size={22} color="#FFF" />
+                          <Layers size={22} color="#FFF" />
                         </View>
                         {/* Titre */}
                         <Text style={styles.squareActionTitle}>{t.summary.flashcards}</Text>

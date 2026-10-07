@@ -10,7 +10,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import { ArrowLeft, FileText, Volume2, Sparkles, ChevronRight, Lock } from 'lucide-react-native';
+import { ArrowLeft, FileText, Volume2, Layers, ChevronRight, Lock } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -74,7 +74,7 @@ export default function PremiumFeaturesScreen() {
     },
     {
       key: 'flashcards',
-      icon: Sparkles,
+      icon: Layers,
       title: language === 'fr' ? 'Flash cards' : 'Flash Cards',
       desc: language === 'fr' ? 'Mémorise les points clés du livre' : 'Memorize the key points of the book',
       anim: card3Anim,
