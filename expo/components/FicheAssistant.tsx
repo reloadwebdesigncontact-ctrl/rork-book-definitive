@@ -9,16 +9,15 @@ import {
   Animated,
   PanResponder,
   Dimensions,
-  Image,
 } from 'react-native';
-import { Check } from 'lucide-react-native';
+import { Check, Wand2 } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { getBearForTheme } from '@/utils/bearImages';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-const BTN_SIZE = 72;
+const BTN_SIZE = 56;
 
 export type HighlightRule = {
   id: string;
@@ -45,7 +44,7 @@ export const ASSISTANT_COMMANDS: AssistantCommand[] = [
     rules: [
       {
         id: 'dates',
-        pattern: /\b(\d{4}|\d{1,2}(er|ème|e)?\s+siècle|XIXe?|XVIIIe?|XXe?|au\s+\d{4}|\d{4}s?)\b/gi,
+        pattern: /\b(\d{4}|\d{1,2}(er|ème|e)?\s+siècle|XIXe?|XVIIIe?|XXe?|\d{4}s?)\b/gi,
         color: '#FFFFFF',
         bgColor: '#E53935',
         label: 'Date',
@@ -134,18 +133,16 @@ interface FicheAssistantProps {
 }
 
 export function FicheAssistant({ onCommandSelect, activeCommandId }: FicheAssistantProps) {
-  const { isDarkMode, colors, appTheme } = useTheme();
+  const { isDarkMode, colors } = useTheme();
   const { language } = useLanguage();
   const [visible, setVisible] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
 
-  // Image de l'ours selon le thème actif
-  const bearImage = getBearForTheme(appTheme);
-
-  // Position flottante
-  const pan = useRef(new Animated.ValueXY({ x: SCREEN_WIDTH - BTN_SIZE - 20, y: SCREEN_HEIGHT * 0.55 })).current;
-
   const isDragging = useRef(false);
+  const posX = useRef(SCREEN_WIDTH - BTN_SIZE - 20);
+  const posY = useRef(SCREEN_HEIGHT * 0.55);
+  const animX = useRef(new Animated.Value(posX.current)).current;
+  const animY = useRef(new Animated.Value(posY.current)).current;
 
   const panResponder = useRef(
     PanResponder.create({
@@ -153,28 +150,28 @@ export function FicheAssistant({ onCommandSelect, activeCommandId }: FicheAssist
       onMoveShouldSetPanResponder: (_, gs) => Math.abs(gs.dx) > 5 || Math.abs(gs.dy) > 5,
       onPanResponderGrant: () => {
         isDragging.current = false;
-        pan.setOffset({ x: (pan.x as any)._value, y: (pan.y as any)._value });
-        pan.setValue({ x: 0, y: 0 });
       },
       onPanResponderMove: (_, gs) => {
         if (Math.abs(gs.dx) > 5 || Math.abs(gs.dy) > 5) {
           isDragging.current = true;
         }
-        pan.setValue({ x: gs.dx, y: gs.dy });
+        animX.setValue(posX.current + gs.dx);
+        animY.setValue(posY.current + gs.dy);
       },
       onPanResponderRelease: (_, gs) => {
-        pan.flattenOffset();
         if (!isDragging.current) {
-          // Tap simple → ouvrir le modal
           void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
           setModalOpen(true);
           return;
         }
-        // Snap aux bords après drag
-        pan.flattenOffset();
-        const snapX = gs.moveX < SCREEN_WIDTH / 2 ? 16 : SCREEN_WIDTH - BTN_SIZE - 16;
-        const snapY = Math.max(80, Math.min(gs.moveY - BTN_SIZE / 2, SCREEN_HEIGHT - BTN_SIZE - 80));
-        Animated.spring(pan, { toValue: { x: snapX, y: snapY }, useNativeDriver: false, friction: 7 }).start();
+        const newX = posX.current + gs.dx;
+        const newY = posY.current + gs.dy;
+        const snapX = newX < SCREEN_WIDTH / 2 ? 16 : SCREEN_WIDTH - BTN_SIZE - 16;
+        const snapY = Math.max(80, Math.min(newY, SCREEN_HEIGHT - BTN_SIZE - 80));
+        posX.current = snapX;
+        posY.current = snapY;
+        Animated.spring(animX, { toValue: snapX, useNativeDriver: false, friction: 7 }).start();
+        Animated.spring(animY, { toValue: snapY, useNativeDriver: false, friction: 7 }).start();
       },
     })
   ).current;
@@ -183,62 +180,60 @@ export function FicheAssistant({ onCommandSelect, activeCommandId }: FicheAssist
 
   return (
     <>
-      {/* Bouton flottant */}
       <Animated.View
-        style={[styles.floatingBtn, { transform: pan.getTranslateTransform() }]}
+        style={[styles.floatingBtn, { left: animX, top: animY }]}
         {...panResponder.panHandlers}
       >
-        {/* Image de l'ours (contient la croix dessinée en haut à droite) */}
-        <Image
-          source={bearImage}
-          style={styles.bearImage}
-          resizeMode="contain"
-        />
-
-        {/* Zone de tap invisible sur la croix en haut à droite de l'image */}
+        {/* Bouton fermer */}
         <Pressable
-          style={styles.crossHitArea}
+          style={styles.closeBtn}
           onPress={() => {
             void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             setVisible(false);
           }}
-        />
+        >
+          <Text style={styles.closeBtnText}>✕</Text>
+        </Pressable>
 
-        {/* Point vert si un surlignage est actif */}
-        {activeCommandId && activeCommandId !== 'reset' && (
-          <View style={[styles.activeDot, { backgroundColor: '#4CAF50' }]} />
-        )}
+        {/* Bouton principal */}
+        <LinearGradient
+          colors={colors.gradient}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.mainBtn}
+        >
+          <Wand2 size={24} color="#FFF" strokeWidth={2} />
+          {activeCommandId && activeCommandId !== 'reset' && (
+            <View style={styles.activeDot} />
+          )}
+        </LinearGradient>
       </Animated.View>
 
-      {/* Modal des commandes */}
       <Modal
         visible={modalOpen}
         transparent
         animationType="slide"
         onRequestClose={() => setModalOpen(false)}
       >
-        <Pressable style={styles.modalOverlay} onPress={() => setModalOpen(false)}>
-          <Pressable style={[styles.modalSheet, isDarkMode && styles.modalSheetDark]} onPress={() => {}}>
-            {/* Handle */}
+        <Pressable style={styles.overlay} onPress={() => setModalOpen(false)}>
+          <Pressable style={[styles.sheet, isDarkMode && styles.sheetDark]} onPress={() => {}}>
             <View style={styles.handle} />
 
-            {/* Titre */}
-            <View style={styles.modalHeader}>
-              <View style={[styles.modalIconWrap, { backgroundColor: `${colors.primary}20` }]}>
-                <Sparkles size={20} color={colors.primary} strokeWidth={2} />
+            <View style={styles.sheetHeader}>
+              <View style={[styles.sheetIconWrap, { backgroundColor: `${colors.primary}20` }]}>
+                <Wand2 size={20} color={colors.primary} strokeWidth={2} />
               </View>
               <View>
-                <Text style={[styles.modalTitle, isDarkMode && styles.modalTitleDark]}>
+                <Text style={[styles.sheetTitle, isDarkMode && styles.sheetTitleDark]}>
                   Assistant de lecture
                 </Text>
-                <Text style={[styles.modalSubtitle, isDarkMode && styles.modalSubtitleDark]}>
+                <Text style={[styles.sheetSubtitle, isDarkMode && styles.sheetSubtitleDark]}>
                   Choisis ce que tu veux mettre en évidence
                 </Text>
               </View>
             </View>
 
-            {/* Commandes */}
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.commandList}>
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.list}>
               {ASSISTANT_COMMANDS.map((cmd) => {
                 const isActive = activeCommandId === cmd.id;
                 return (
@@ -250,31 +245,26 @@ export function FicheAssistant({ onCommandSelect, activeCommandId }: FicheAssist
                       setModalOpen(false);
                     }}
                     style={({ pressed }) => [
-                      styles.commandCard,
-                      isDarkMode && styles.commandCardDark,
+                      styles.cmdCard,
+                      isDarkMode && styles.cmdCardDark,
                       isActive && { borderColor: colors.primary, borderWidth: 2 },
-                      pressed && { opacity: 0.8, transform: [{ scale: 0.97 }] },
+                      pressed && { opacity: 0.8 },
                     ]}
                   >
-                    <Text style={styles.commandEmoji}>{cmd.emoji}</Text>
-                    <View style={styles.commandText}>
-                      <Text style={[styles.commandLabel, isDarkMode && styles.commandLabelDark]}>
-                        {cmd.label}
-                      </Text>
-                      <Text style={[styles.commandDesc, isDarkMode && styles.commandDescDark]}>
-                        {cmd.description}
-                      </Text>
+                    <Text style={styles.cmdEmoji}>{cmd.emoji}</Text>
+                    <View style={styles.cmdText}>
+                      <Text style={[styles.cmdLabel, isDarkMode && styles.cmdLabelDark]}>{cmd.label}</Text>
+                      <Text style={[styles.cmdDesc, isDarkMode && styles.cmdDescDark]}>{cmd.description}</Text>
                     </View>
                     {isActive && (
                       <View style={[styles.activeCheck, { backgroundColor: colors.primary }]}>
                         <Check size={12} color="#FFF" strokeWidth={3} />
                       </View>
                     )}
-                    {/* Prévisualisation couleur pour les commandes de surlignage */}
                     {cmd.rules.length > 0 && (
-                      <View style={styles.colorDots}>
+                      <View style={styles.dots}>
                         {cmd.rules.map((r) => (
-                          <View key={r.id} style={[styles.colorDot, { backgroundColor: r.bgColor }]} />
+                          <View key={r.id} style={[styles.dot, { backgroundColor: r.bgColor }]} />
                         ))}
                       </View>
                     )}
@@ -293,46 +283,59 @@ const styles = StyleSheet.create({
   floatingBtn: {
     position: 'absolute',
     zIndex: 999,
+    alignItems: 'center',
+  },
+  closeBtn: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 4,
+    alignSelf: 'flex-end',
+  },
+  closeBtnText: {
+    color: '#FFF',
+    fontSize: 9,
+    fontWeight: '700' as const,
+  },
+  mainBtn: {
     width: BTN_SIZE,
     height: BTN_SIZE,
-  },
-  bearImage: {
-    width: BTN_SIZE,
-    height: BTN_SIZE,
-  },
-  // Zone de tap invisible sur la croix dessinée en haut à droite du PNG
-  crossHitArea: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    width: BTN_SIZE * 0.35,
-    height: BTN_SIZE * 0.35,
+    borderRadius: BTN_SIZE / 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 8,
   },
   activeDot: {
     position: 'absolute',
-    bottom: 4,
-    right: 4,
+    top: 8,
+    right: 8,
     width: 10,
     height: 10,
     borderRadius: 5,
+    backgroundColor: '#4CAF50',
     borderWidth: 2,
     borderColor: '#FFF',
   },
-  modalOverlay: {
+  overlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.4)',
     justifyContent: 'flex-end',
   },
-  modalSheet: {
+  sheet: {
     backgroundColor: '#FAFAFA',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingBottom: 32,
     maxHeight: SCREEN_HEIGHT * 0.75,
   },
-  modalSheetDark: {
-    backgroundColor: '#1A1A1A',
-  },
+  sheetDark: { backgroundColor: '#1A1A1A' },
   handle: {
     width: 36,
     height: 4,
@@ -342,38 +345,38 @@ const styles = StyleSheet.create({
     marginTop: 12,
     marginBottom: 4,
   },
-  modalHeader: {
+  sheetHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
     paddingHorizontal: 20,
     paddingVertical: 16,
   },
-  modalIconWrap: {
+  sheetIconWrap: {
     width: 42,
     height: 42,
     borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  modalTitle: {
+  sheetTitle: {
     fontSize: 17,
     fontWeight: '700' as const,
     color: '#1A1A1A',
   },
-  modalTitleDark: { color: '#FFF' },
-  modalSubtitle: {
+  sheetTitleDark: { color: '#FFF' },
+  sheetSubtitle: {
     fontSize: 13,
     color: '#8D6E63',
     marginTop: 1,
   },
-  modalSubtitleDark: { color: '#999' },
-  commandList: {
+  sheetSubtitleDark: { color: '#999' },
+  list: {
     paddingHorizontal: 16,
     gap: 10,
     paddingBottom: 16,
   },
-  commandCard: {
+  cmdCard: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 14,
@@ -383,29 +386,13 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: 'transparent',
   },
-  commandCardDark: {
-    backgroundColor: 'rgba(255,255,255,0.06)',
-  },
-  commandEmoji: {
-    fontSize: 24,
-    width: 36,
-    textAlign: 'center',
-  },
-  commandText: {
-    flex: 1,
-    gap: 2,
-  },
-  commandLabel: {
-    fontSize: 15,
-    fontWeight: '600' as const,
-    color: '#1A1A1A',
-  },
-  commandLabelDark: { color: '#FFF' },
-  commandDesc: {
-    fontSize: 12,
-    color: '#8D6E63',
-  },
-  commandDescDark: { color: '#999' },
+  cmdCardDark: { backgroundColor: 'rgba(255,255,255,0.06)' },
+  cmdEmoji: { fontSize: 24, width: 36, textAlign: 'center' },
+  cmdText: { flex: 1, gap: 2 },
+  cmdLabel: { fontSize: 15, fontWeight: '600' as const, color: '#1A1A1A' },
+  cmdLabelDark: { color: '#FFF' },
+  cmdDesc: { fontSize: 12, color: '#8D6E63' },
+  cmdDescDark: { color: '#999' },
   activeCheck: {
     width: 22,
     height: 22,
@@ -413,13 +400,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  colorDots: {
-    flexDirection: 'row',
-    gap: 4,
-  },
-  colorDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-  },
+  dots: { flexDirection: 'row', gap: 4 },
+  dot: { width: 12, height: 12, borderRadius: 6 },
 });
