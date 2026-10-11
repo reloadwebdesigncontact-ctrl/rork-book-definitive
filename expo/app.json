@@ -10,7 +10,7 @@
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "cover",
-      "backgroundColor": "#FFF5F0"
+      "backgroundColor": "#FFFFFF"
     },
     "ios": {
       "supportsTablet": false,
@@ -24,7 +24,7 @@
     "android": {
       "icon": "./assets/images/icon.png",
       "package": "app.coverscan",
-      "versionCode": 88,
+      "versionCode": 89,
       "allowBackup": false,
       "blockedPermissions": [],
       "permissions": [
