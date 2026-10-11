@@ -201,7 +201,7 @@ export function FicheAssistant({ onCommandSelect, activeCommandId, bearImage }: 
         {bearImage ? (
           <Image
             source={bearImage}
-            style={styles.mainBtn}
+            style={styles.bearImage}
             resizeMode="contain"
           />
         ) : (
@@ -295,6 +295,7 @@ const styles = StyleSheet.create({
     zIndex: 999,
     alignItems: 'center',
   },
+  },
   closeBtn: {
     width: 18,
     height: 18,
@@ -321,6 +322,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 8,
     elevation: 8,
+  },
+  bearImage: {
+    width: BTN_SIZE + 20,
+    height: BTN_SIZE + 20,
   },
   activeDot: {
     position: 'absolute',
