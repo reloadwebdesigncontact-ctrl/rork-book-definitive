@@ -295,7 +295,6 @@ const styles = StyleSheet.create({
     zIndex: 999,
     alignItems: 'center',
   },
-  },
   closeBtn: {
     width: 18,
     height: 18,
@@ -376,7 +375,7 @@ const styles = StyleSheet.create({
   },
   sheetTitle: {
     fontSize: 17,
-    fontWeight: '700' as const,
+    fontWeight: '700',
     color: '#1A1A1A',
   },
   sheetTitleDark: { color: '#FFF' },
@@ -404,7 +403,7 @@ const styles = StyleSheet.create({
   cmdCardDark: { backgroundColor: 'rgba(255,255,255,0.06)' },
   cmdEmoji: { fontSize: 24, width: 36, textAlign: 'center' },
   cmdText: { flex: 1, gap: 2 },
-  cmdLabel: { fontSize: 15, fontWeight: '600' as const, color: '#1A1A1A' },
+  cmdLabel: { fontSize: 15, fontWeight: '600', color: '#1A1A1A' },
   cmdLabelDark: { color: '#FFF' },
   cmdDesc: { fontSize: 12, color: '#8D6E63' },
   cmdDescDark: { color: '#999' },
