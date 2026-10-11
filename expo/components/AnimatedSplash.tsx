@@ -36,8 +36,8 @@ export function AnimatedSplash({ onFinish }: AnimatedSplashProps) {
 
   const scanTranslate = scanLine.interpolate({ inputRange: [0, 1], outputRange: [-40, 40] });
   const bgColors = isDarkMode
-    ? ['#0D0D0D', '#1A1A2E'] as [string, string]
-    : ['#FFF8F0', '#F5EBE0'] as [string, string];
+    ? ["#0D0D0D", "#1A1A2E"] as [string, string]
+    : ["#FFF8F0", "#F5EBE0"] as [string, string];
 
   return (
     <Animated.View style={[styles.container, { opacity: screenOpacity }]}>
@@ -58,13 +58,8 @@ export function AnimatedSplash({ onFinish }: AnimatedSplashProps) {
       </Animated.View>
 
       <Animated.View style={{ opacity: textOpacity, transform: [{ translateY: textSlide }], alignItems: 'center', gap: 6 }}>
-        <Text style={[styles.appName, { color: isDarkMode ? '#FFF' : '#3E2723' }]}>
-          <Text style={{ color: isDarkMode ? '#CCC' : '#3E2723' }}>summ</Text>
-          <Text style={{ color: colors.primary }}>shine</Text>
-        </Text>
-        <Text style={[styles.tagline, { color: isDarkMode ? '#888' : '#8D6E63' }]}>
-          Lis plus, retiens mieux
-        </Text>
+        <Text style={[styles.appName, { color: isDarkMode ? '#FFF' : '#3E2723' }]}>Summshine</Text>
+        <Text style={[styles.tagline, { color: colors.primary }]}>Scannez. Lisez. Apprenez.</Text>
       </Animated.View>
     </Animated.View>
   );
@@ -75,8 +70,8 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 32,
-    zIndex: 9999,
+    gap: 28,
+    zIndex: 999,
   },
   logoWrap: {
     alignItems: 'center',
@@ -90,32 +85,33 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     overflow: 'hidden',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.4,
     shadowRadius: 16,
     elevation: 12,
+  },
+  logoGlow: {
+    position: 'absolute',
+    width: 100,
+    height: 100,
+    borderRadius: 28,
+    opacity: 0.15,
+    transform: [{ scale: 1.5 }],
   },
   scanLine: {
     position: 'absolute',
     left: 0,
     right: 0,
     height: 2,
-    backgroundColor: 'rgba(255,255,255,0.6)',
-  },
-  logoGlow: {
-    position: 'absolute',
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    opacity: 0.15,
-    transform: [{ scale: 1.8 }],
+    backgroundColor: 'rgba(255,255,255,0.8)',
   },
   appName: {
-    fontSize: 36,
-    fontWeight: '800' as const,
+    fontSize: 32,
+    fontWeight: '800',
     letterSpacing: -0.5,
   },
   tagline: {
-    fontSize: 15,
-    fontWeight: '400' as const,
+    fontSize: 14,
+    fontWeight: '500',
+    letterSpacing: 0.3,
   },
 });
