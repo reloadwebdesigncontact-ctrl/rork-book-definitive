@@ -25,10 +25,33 @@ import { FicheAssistant, type AssistantCommand, type HighlightRule } from "@/com
 
 export default function FicheScreen() {
   const router = useRouter();
-  const { isDarkMode, colors } = useTheme();
+  const { isDarkMode, colors, appTheme } = useTheme();
   const { t } = useLanguage();
   const { content, title } = useLocalSearchParams<{ content: string; title: string }>();
   const [isSharing, setIsSharing] = useState(false);
+
+  // Chargement de l'image de l'ours selon le thème — fait ici dans le composant React
+  const getBearImage = () => {
+    if (appTheme === 'red')       return require('@/assets/images/assistant-bear/assistant-bear-red.png');
+    if (appTheme === 'purple')    return require('@/assets/images/assistant-bear/assistant-bear-purple.png');
+    if (appTheme === 'turquoise') return require('@/assets/images/assistant-bear/assistant-bear-turquoise.png');
+    if (appTheme === 'pink')      return require('@/assets/images/assistant-bear/assistant-bear-pink.png');
+    if (appTheme === 'yellow')    return require('@/assets/images/assistant-bear/assistant-bear-yellow.png');
+    if (appTheme === 'coral')     return require('@/assets/images/assistant-bear/assistant-bear-coral.png');
+    if (appTheme === 'lime')      return require('@/assets/images/assistant-bear/assistant-bear-lime.png');
+    if (appTheme === 'sunset')    return require('@/assets/images/assistant-bear/assistant-bear-sunset.png');
+    if (appTheme === 'dreamy')    return require('@/assets/images/assistant-bear/assistant-bear-dreamy.png');
+    if (appTheme === 'neon')      return require('@/assets/images/assistant-bear/assistant-bear-neon.png');
+    if (appTheme === 'flamingo')  return require('@/assets/images/assistant-bear/assistant-bear-flamingo.png');
+    if (appTheme === 'aurora')    return require('@/assets/images/assistant-bear/assistant-bear-aurora.png');
+    if (appTheme === 'ocean')     return require('@/assets/images/assistant-bear/assistant-bear-ocean.png');
+    if (appTheme === 'silver')    return require('@/assets/images/assistant-bear/assistant-bear-silver.png');
+    if (appTheme === 'gold')      return require('@/assets/images/assistant-bear/assistant-bear-gold.png');
+    if (appTheme === 'tropical')  return require('@/assets/images/assistant-bear/assistant-bear-tropical.png');
+    if (appTheme === 'peach')     return require('@/assets/images/assistant-bear/assistant-bear-peach.png');
+    return require('@/assets/images/assistant-bear/assistant-bear-orange.png');
+  };
+  const bearImage = getBearImage();
   const [activeCommandId, setActiveCommandId] = useState<string | null>(null);
   const [activeRules, setActiveRules] = useState<HighlightRule[]>([]);
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -391,6 +414,7 @@ export default function FicheScreen() {
       <FicheAssistant
         onCommandSelect={handleAssistantCommand}
         activeCommandId={activeCommandId}
+        bearImage={bearImage}
       />
     </View>
   );

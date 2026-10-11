@@ -9,6 +9,7 @@ import {
   Animated,
   PanResponder,
   Dimensions,
+  Image,
 } from 'react-native';
 import { Check, Wand2 } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -130,9 +131,10 @@ export const ASSISTANT_COMMANDS: AssistantCommand[] = [
 interface FicheAssistantProps {
   onCommandSelect: (command: AssistantCommand) => void;
   activeCommandId: string | null;
+  bearImage?: number | null;
 }
 
-export function FicheAssistant({ onCommandSelect, activeCommandId }: FicheAssistantProps) {
+export function FicheAssistant({ onCommandSelect, activeCommandId, bearImage }: FicheAssistantProps) {
   const { isDarkMode, colors } = useTheme();
   const { language } = useLanguage();
   const [visible, setVisible] = useState(true);
@@ -195,18 +197,26 @@ export function FicheAssistant({ onCommandSelect, activeCommandId }: FicheAssist
           <Text style={styles.closeBtnText}>✕</Text>
         </Pressable>
 
-        {/* Bouton principal */}
-        <LinearGradient
-          colors={colors.gradient}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.mainBtn}
-        >
-          <Wand2 size={24} color="#FFF" strokeWidth={2} />
-          {activeCommandId && activeCommandId !== 'reset' && (
-            <View style={styles.activeDot} />
-          )}
-        </LinearGradient>
+        {/* Bouton principal — ours ou baguette magique */}
+        {bearImage ? (
+          <Image
+            source={bearImage}
+            style={styles.mainBtn}
+            resizeMode="contain"
+          />
+        ) : (
+          <LinearGradient
+            colors={colors.gradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.mainBtn}
+          >
+            <Wand2 size={24} color="#FFF" strokeWidth={2} />
+          </LinearGradient>
+        )}
+        {activeCommandId && activeCommandId !== 'reset' && (
+          <View style={styles.activeDot} />
+        )}
       </Animated.View>
 
       <Modal
