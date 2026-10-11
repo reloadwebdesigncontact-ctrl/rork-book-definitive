@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
   closeBtnText: {
     color: '#FFF',
     fontSize: 9,
-    fontWeight: '700' as const,
+    fontWeight: '700',
   },
   mainBtn: {
     width: BTN_SIZE,
