@@ -186,34 +186,34 @@ export function FicheAssistant({ onCommandSelect, activeCommandId, bearImage }: 
         style={[styles.floatingBtn, { left: animX, top: animY }]}
         {...panResponder.panHandlers}
       >
-        {/* Bouton fermer */}
-        <Pressable
-          style={styles.closeBtn}
-          onPress={() => {
-            void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            setVisible(false);
-          }}
-        >
-          <Text style={styles.closeBtnText}>✕</Text>
-        </Pressable>
-
         {/* Bouton principal — ours ou baguette magique */}
-        {bearImage ? (
-          <Image
-            source={bearImage}
-            style={styles.bearImage}
-            resizeMode="contain"
+        <View style={styles.bearWrap}>
+          {bearImage ? (
+            <Image
+              source={bearImage}
+              style={styles.bearImage}
+              resizeMode="contain"
+            />
+          ) : (
+            <LinearGradient
+              colors={colors.gradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.mainBtn}
+            >
+              <Wand2 size={24} color="#FFF" strokeWidth={2} />
+            </LinearGradient>
+          )}
+
+          {/* Croix superposée sur le coin haut-droit de l'image */}
+          <Pressable
+            style={styles.closeBtn}
+            onPress={() => {
+              void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              setVisible(false);
+            }}
           />
-        ) : (
-          <LinearGradient
-            colors={colors.gradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.mainBtn}
-          >
-            <Wand2 size={24} color="#FFF" strokeWidth={2} />
-          </LinearGradient>
-        )}
+        </View>
         {activeCommandId && activeCommandId !== 'reset' && (
           <View style={styles.activeDot} />
         )}
@@ -295,15 +295,18 @@ const styles = StyleSheet.create({
     zIndex: 999,
     alignItems: 'center',
   },
+  bearWrap: {
+    position: 'relative',
+    width: BTN_SIZE + 20,
+    height: BTN_SIZE + 20,
+  },
   closeBtn: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 4,
-    alignSelf: 'flex-end',
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    width: (BTN_SIZE + 20) * 0.32,
+    height: (BTN_SIZE + 20) * 0.32,
+    zIndex: 10,
   },
   closeBtnText: {
     color: '#FFF',
