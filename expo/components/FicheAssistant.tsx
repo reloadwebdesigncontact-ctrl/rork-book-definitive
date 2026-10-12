@@ -246,10 +246,10 @@ export function FicheAssistant({ onCommandSelect, activeCommandId, bearImage }: 
               </View>
               <View>
                 <Text style={[styles.sheetTitle, isDarkMode && styles.sheetTitleDark]}>
-                  Assistant de lecture
+                  Teddy AI
                 </Text>
                 <Text style={[styles.sheetSubtitle, isDarkMode && styles.sheetSubtitleDark]}>
-                  Choisis ce que tu veux mettre en évidence
+                  Assistant de lecture
                 </Text>
               </View>
             </View>
