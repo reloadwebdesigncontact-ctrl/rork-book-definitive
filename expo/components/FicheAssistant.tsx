@@ -238,21 +238,29 @@ export function FicheAssistant({ onCommandSelect, activeCommandId, bearImage }: 
       >
         <Pressable style={styles.overlay} onPress={() => setModalOpen(false)}>
           <Pressable style={[styles.sheet, isDarkMode && styles.sheetDark]} onPress={() => {}}>
-            <View style={styles.handle} />
 
-            <View style={styles.sheetHeader}>
-              <View style={[styles.sheetIconWrap, { backgroundColor: `${colors.primary}20` }]}>
-                <Wand2 size={20} color={colors.primary} strokeWidth={2} />
+            {/* Header avec dégradé */}
+            <LinearGradient
+              colors={colors.gradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.sheetHeaderGradient}
+            >
+              <View style={styles.sheetHeaderRow}>
+                {bearImage && (
+                  <Image source={bearImage} style={styles.sheetBearImage} resizeMode="contain" />
+                )}
+                <View style={styles.sheetHeaderTexts}>
+                  <Text style={styles.sheetTitleWhite}>Teddy AI</Text>
+                  <Text style={styles.sheetSubtitleWhite}>Assistant de lecture</Text>
+                </View>
               </View>
-              <View>
-                <Text style={[styles.sheetTitle, isDarkMode && styles.sheetTitleDark]}>
-                  Teddy AI
-                </Text>
-                <Text style={[styles.sheetSubtitle, isDarkMode && styles.sheetSubtitleDark]}>
-                  Assistant de lecture
-                </Text>
-              </View>
-            </View>
+              <Text style={styles.sheetDesc}>
+                Choisis ce que tu veux mettre en évidence dans ta fiche
+              </Text>
+              {/* Handle blanc */}
+              <View style={styles.handle} />
+            </LinearGradient>
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.list}>
               {ASSISTANT_COMMANDS.map((cmd) => {
@@ -268,27 +276,38 @@ export function FicheAssistant({ onCommandSelect, activeCommandId, bearImage }: 
                     style={({ pressed }) => [
                       styles.cmdCard,
                       isDarkMode && styles.cmdCardDark,
-                      isActive && { borderColor: colors.primary, borderWidth: 2 },
-                      pressed && { opacity: 0.8 },
+                      isActive && { borderColor: colors.primary, borderWidth: 2, backgroundColor: `${colors.primary}12` },
+                      pressed && { opacity: 0.8, transform: [{ scale: 0.97 }] },
                     ]}
                   >
-                    <Text style={styles.cmdEmoji}>{cmd.emoji}</Text>
+                    {/* Emoji dans cercle coloré */}
+                    <View style={[styles.cmdEmojiWrap, { backgroundColor: `${colors.primary}18` }]}>
+                      <Text style={styles.cmdEmoji}>{cmd.emoji}</Text>
+                    </View>
                     <View style={styles.cmdText}>
-                      <Text style={[styles.cmdLabel, isDarkMode && styles.cmdLabelDark]}>{cmd.label}</Text>
+                      <Text style={[styles.cmdLabel, isDarkMode && styles.cmdLabelDark, isActive && { color: colors.primary }]}>
+                        {cmd.label}
+                      </Text>
                       <Text style={[styles.cmdDesc, isDarkMode && styles.cmdDescDark]}>{cmd.description}</Text>
                     </View>
-                    {isActive && (
-                      <View style={[styles.activeCheck, { backgroundColor: colors.primary }]}>
-                        <Check size={12} color="#FFF" strokeWidth={3} />
-                      </View>
-                    )}
-                    {cmd.rules.length > 0 && (
-                      <View style={styles.dots}>
-                        {cmd.rules.map((r) => (
-                          <View key={r.id} style={[styles.dot, { backgroundColor: r.bgColor }]} />
-                        ))}
-                      </View>
-                    )}
+                    <View style={styles.cmdRight}>
+                      {cmd.rules.length > 0 && (
+                        <View style={styles.dots}>
+                          {cmd.rules.map((r) => (
+                            <View key={r.id} style={[styles.dot, { backgroundColor: r.bgColor }]} />
+                          ))}
+                        </View>
+                      )}
+                      {isActive ? (
+                        <View style={[styles.activeCheck, { backgroundColor: colors.primary }]}>
+                          <Check size={12} color="#FFF" strokeWidth={3} />
+                        </View>
+                      ) : (
+                        <View style={[styles.arrowCircle, isDarkMode && styles.arrowCircleDark]}>
+                          <Text style={[styles.arrowText, { color: isDarkMode ? '#888' : '#CCC' }]}>›</Text>
+                        </View>
+                      )}
+                    </View>
                   </Pressable>
                 );
               })}
@@ -353,25 +372,64 @@ const styles = StyleSheet.create({
   },
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    backgroundColor: 'rgba(0,0,0,0.45)',
     justifyContent: 'flex-end',
   },
   sheet: {
     backgroundColor: '#FAFAFA',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
     paddingBottom: 32,
-    maxHeight: SCREEN_HEIGHT * 0.75,
+    maxHeight: SCREEN_HEIGHT * 0.82,
+    overflow: 'hidden',
   },
-  sheetDark: { backgroundColor: '#1A1A1A' },
+  sheetDark: { backgroundColor: '#161616' },
   handle: {
-    width: 36,
+    width: 40,
     height: 4,
     borderRadius: 2,
-    backgroundColor: 'rgba(0,0,0,0.15)',
+    backgroundColor: 'rgba(255,255,255,0.4)',
     alignSelf: 'center',
-    marginTop: 12,
-    marginBottom: 4,
+    marginTop: 10,
+    marginBottom: 8,
+  },
+  sheetHeaderGradient: {
+    paddingTop: 8,
+    paddingBottom: 20,
+    paddingHorizontal: 20,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+  },
+  sheetHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 8,
+  },
+  sheetBearImage: {
+    width: 60,
+    height: 60,
+  },
+  sheetHeaderTexts: {
+    flex: 1,
+    gap: 2,
+  },
+  sheetTitleWhite: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#FFF',
+    letterSpacing: -0.3,
+  },
+  sheetSubtitleWhite: {
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.75)',
+    fontWeight: '500',
+  },
+  sheetDesc: {
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.65)',
+    lineHeight: 18,
+    marginTop: 2,
   },
   sheetHeader: {
     flexDirection: 'row',
@@ -401,26 +459,65 @@ const styles = StyleSheet.create({
   sheetSubtitleDark: { color: '#999' },
   list: {
     paddingHorizontal: 16,
+    paddingTop: 16,
     gap: 10,
-    paddingBottom: 16,
+    paddingBottom: 20,
   },
   cmdCard: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 14,
-    backgroundColor: 'rgba(0,0,0,0.03)',
-    borderRadius: 16,
+    backgroundColor: '#FFF',
+    borderRadius: 18,
     padding: 14,
     borderWidth: 1.5,
-    borderColor: 'transparent',
+    borderColor: 'rgba(0,0,0,0.06)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 2,
   },
-  cmdCardDark: { backgroundColor: 'rgba(255,255,255,0.06)' },
-  cmdEmoji: { fontSize: 24, width: 36, textAlign: 'center' },
-  cmdText: { flex: 1, gap: 2 },
-  cmdLabel: { fontSize: 15, fontWeight: '600', color: '#1A1A1A' },
+  cmdCardDark: {
+    backgroundColor: 'rgba(255,255,255,0.07)',
+    borderColor: 'rgba(255,255,255,0.08)',
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  cmdEmojiWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cmdEmoji: { fontSize: 22 },
+  cmdText: { flex: 1, gap: 3 },
+  cmdLabel: { fontSize: 15, fontWeight: '700', color: '#1A1A1A' },
   cmdLabelDark: { color: '#FFF' },
-  cmdDesc: { fontSize: 12, color: '#8D6E63' },
+  cmdDesc: { fontSize: 12, color: '#8D6E63', lineHeight: 16 },
   cmdDescDark: { color: '#999' },
+  cmdRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  arrowCircle: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: 'rgba(0,0,0,0.05)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  arrowCircleDark: {
+    backgroundColor: 'rgba(255,255,255,0.08)',
+  },
+  arrowText: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginTop: -2,
+  },
   activeCheck: {
     width: 22,
     height: 22,
