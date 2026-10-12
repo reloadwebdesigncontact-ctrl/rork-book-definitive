@@ -780,14 +780,16 @@ return (
           <View style={{ width: 40 }} />
         </View>
 
-        {isAnalyzing ? (
+        {isAnalyzing || (feature === 'fiche' && !isError) ? (
           <View style={styles.loadingContainer}>
             <BookLoader />
             <Text style={[styles.loadingText, isDarkMode && styles.loadingTextDark]}>
               {t.summary.generating}
             </Text>
             <Text style={[styles.loadingSubtext, isDarkMode && styles.loadingSubtextDark]}>
-              {language === 'fr' ? 'Identification du livre et génération du résumé' : 'Book identification and summary generation'}
+              {feature === 'fiche'
+                ? (language === 'fr' ? 'Génération de la fiche de lecture...' : 'Generating reading sheet...')
+                : (language === 'fr' ? 'Identification du livre et génération du résumé' : 'Book identification and summary generation')}
             </Text>
           </View>
         ) : isError ? (
