@@ -146,6 +146,17 @@ export function FicheAssistant({ onCommandSelect, activeCommandId, bearImage }: 
   const animX = useRef(new Animated.Value(posX.current)).current;
   const animY = useRef(new Animated.Value(posY.current)).current;
 
+  // Animation de lévitation
+  const floatAnim = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(floatAnim, { toValue: -8, duration: 1200, useNativeDriver: true }),
+        Animated.timing(floatAnim, { toValue: 0, duration: 1200, useNativeDriver: true }),
+      ])
+    ).start();
+  }, [floatAnim]);
+
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
@@ -187,7 +198,7 @@ export function FicheAssistant({ onCommandSelect, activeCommandId, bearImage }: 
         {...panResponder.panHandlers}
       >
         {/* Bouton principal — ours ou baguette magique */}
-        <View style={styles.bearWrap}>
+        <Animated.View style={[styles.bearWrap, { transform: [{ translateY: floatAnim }] }]}>
           {bearImage ? (
             <Image
               source={bearImage}
@@ -213,7 +224,7 @@ export function FicheAssistant({ onCommandSelect, activeCommandId, bearImage }: 
               setVisible(false);
             }}
           />
-        </View>
+        </Animated.View>
         {activeCommandId && activeCommandId !== 'reset' && (
           <View style={styles.activeDot} />
         )}
