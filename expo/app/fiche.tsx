@@ -195,12 +195,12 @@ export default function FicheScreen() {
                 style={{
                   color: seg.color,
                   backgroundColor: seg.bgColor,
-                  fontWeight: '700' as const,
+                  fontWeight: '600',
                   fontSize: 15,
-                  borderRadius: 4,
-                  overflow: 'hidden' as const,
-                  paddingHorizontal: 4,
-                  paddingVertical: 1,
+                  borderRadius: 6,
+                  overflow: 'hidden',
+                  paddingHorizontal: 6,
+                  paddingVertical: 2,
                 }}
               >
                 {seg.text}
