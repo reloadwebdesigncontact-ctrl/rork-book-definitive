@@ -780,7 +780,7 @@ return (
           <View style={{ width: 40 }} />
         </View>
 
-        {isAnalyzing || (feature === 'fiche' && !isError) ? (
+        {isAnalyzing || (feature === 'fiche' && isGeneratingFiche) ? (
           <View style={styles.loadingContainer}>
             <BookLoader />
             <Text style={[styles.loadingText, isDarkMode && styles.loadingTextDark]}>
