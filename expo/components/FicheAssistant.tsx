@@ -131,7 +131,7 @@ export const ASSISTANT_COMMANDS: AssistantCommand[] = [
 interface FicheAssistantProps {
   onCommandSelect: (command: AssistantCommand) => void;
   activeCommandId: string | null;
-  bearImage?: number | null;
+  bearImage?: number | { uri: string } | null;
 }
 
 export function FicheAssistant({ onCommandSelect, activeCommandId, bearImage }: FicheAssistantProps) {
