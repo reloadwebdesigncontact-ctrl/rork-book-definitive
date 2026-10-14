@@ -420,12 +420,13 @@ export default function SettingsScreen() {
                 <Crown size={18} color={colors.primary} strokeWidth={2.5} />
               </Pressable>
             ) : (
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.iconGrid}
-              >
-                {ICON_OPTIONS.map((option) => (
+              <View style={styles.iconScrollWrap}>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.iconGrid}
+                >
+                  {ICON_OPTIONS.map((option) => (
                   <Pressable
                     key={option.key}
                     onPress={async () => {
@@ -457,7 +458,24 @@ export default function SettingsScreen() {
                     )}
                   </Pressable>
                 ))}
-              </ScrollView>
+                </ScrollView>
+                {/* Fondu gauche */}
+                <LinearGradient
+                  colors={isDarkMode ? ['rgba(255,255,255,0.07)', 'transparent'] : ['#FFF', 'transparent']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={styles.iconFadeLeft}
+                  pointerEvents="none"
+                />
+                {/* Fondu droit */}
+                <LinearGradient
+                  colors={isDarkMode ? ['transparent', 'rgba(255,255,255,0.07)'] : ['transparent', '#FFF']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={styles.iconFadeRight}
+                  pointerEvents="none"
+                />
+              </View>
             )}
           </Animated.View>
 
@@ -1238,6 +1256,25 @@ const styles = StyleSheet.create({
     gap: 12,
     paddingVertical: 8,
     paddingHorizontal: 4,
+  },
+  iconScrollWrap: {
+    position: 'relative',
+  },
+  iconFadeLeft: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    width: 24,
+    zIndex: 1,
+  },
+  iconFadeRight: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    right: 0,
+    width: 24,
+    zIndex: 1,
   },
   iconOption: {
     width: 70,
