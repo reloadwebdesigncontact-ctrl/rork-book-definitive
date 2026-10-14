@@ -410,12 +410,12 @@ export default function FicheScreen() {
         </Animated.View>
       </SafeAreaView>
 
-      {/* Assistant flottant */}
-      <FicheAssistant
+      {/* Assistant Teddy AI — temporairement désactivé */}
+      {false && <FicheAssistant
         onCommandSelect={handleAssistantCommand}
         activeCommandId={activeCommandId}
         bearImage={bearImage}
-      />
+      />}
     </View>
   );
 }
