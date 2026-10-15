@@ -9,6 +9,7 @@ import {
   Animated,
   PanResponder,
   Dimensions,
+  Image,
 } from 'react-native';
 import { Check, Wand2, X } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -16,7 +17,8 @@ import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/contexts/ThemeContext';
 
 const { width: W, height: H } = Dimensions.get('window');
-const BTN = 56;
+const BTN = 72;
+const BEAR_BASE = 'https://raw.githubusercontent.com/reloadwebdesigncontact-ctrl/rork-book-definitive/master/expo/assets/images/assistant-bear';
 
 export type HighlightRule = {
   id: string;
@@ -64,7 +66,7 @@ export const ASSISTANT_COMMANDS: AssistantCommand[] = [
     emoji: '👤',
     rules: [{
       id: 'personnages',
-      pattern: /\b([A-ZÀÂÉÈÊËÎÏÔÙÛÜÇ][a-zàâéèêëîïôùûüç]+(?:\s+[A-ZÀÂÉÈÊËÎÏÔÙÛÜÇ][a-zàâéèêëîïôùûüç]+)*)\b/g,
+      pattern: /\b(?!(?:Le|La|Les|Un|Une|Des|Du|De|En|Au|Aux|Et|Ou|Car|Mais|Il|Elle|Ils|Elles|Ce|Cet|Cette|Ces|Mon|Ma|Mes|Son|Sa|Ses|Leur|Leurs|Tout|Tous|Toute|Toutes|Plus|Très|Bien|Mal|Non|Oui|Par|Sur|Sous|Dans|Avec|Sans|Vers|Pour|Que|Qui|Quoi|Dont|Où|Si|Alors|Ainsi|Après|Avant|Comme|Même|Puis|Donc|Or|Ni)\b)([A-ZÀÂÉÈÊËÎÏÔÙÛÜÇ][a-zàâéèêëîïôùûüç]{2,}(?:\s+[A-ZÀÂÉÈÊËÎÏÔÙÛÜÇ][a-zàâéèêëîïôùûüç]{2,})?)\b/g,
       color: '#1A5276', bgColor: '#D6EAF8', label: 'Personnage',
     }],
   },
@@ -105,9 +107,10 @@ interface FicheAssistantProps {
 }
 
 export function FicheAssistant({ onCommandSelect, activeCommandId }: FicheAssistantProps) {
-  const { isDarkMode, colors } = useTheme();
+  const { isDarkMode, colors, appTheme } = useTheme();
   const [visible, setVisible] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
+  const bearUri = `${BEAR_BASE}/assistant-bear-${appTheme}.png`;
 
   const isDragging = useRef(false);
   const posX = useRef(W - BTN - 20);
@@ -159,10 +162,12 @@ export function FicheAssistant({ onCommandSelect, activeCommandId }: FicheAssist
         {...panResponder.panHandlers}
       >
         <Animated.View style={{ transform: [{ translateY: floatAnim }] }}>
-          <LinearGradient colors={colors.gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.fabBtn}>
-            <Wand2 size={24} color="#FFF" strokeWidth={2} />
-            {activeCommandId && activeCommandId !== 'reset' && <View style={styles.dot} />}
-          </LinearGradient>
+          <Image
+            source={{ uri: bearUri }}
+            style={styles.fabBtn}
+            resizeMode="contain"
+          />
+          {activeCommandId && activeCommandId !== 'reset' && <View style={styles.dot} />}
           <Pressable style={styles.closeBtn} onPress={() => { void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setVisible(false); }}>
             <X size={9} color="#FFF" strokeWidth={3} />
           </Pressable>
@@ -234,6 +239,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center', alignItems: 'center',
     shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25, shadowRadius: 8, elevation: 8,
+    overflow: 'hidden',
   },
   closeBtn: {
     position: 'absolute', top: -6, right: -6,

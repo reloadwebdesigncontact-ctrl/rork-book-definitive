@@ -178,10 +178,12 @@ export default function FicheScreen() {
                   backgroundColor: seg.bgColor,
                   fontWeight: '600',
                   fontSize: 15,
-                  borderRadius: 6,
+                  borderRadius: 10,
                   overflow: 'hidden',
-                  paddingHorizontal: 6,
-                  paddingVertical: 2,
+                  paddingHorizontal: 7,
+                  paddingVertical: 3,
+                  borderWidth: 1,
+                  borderColor: `${seg.color}40`,
                 }}
               >
                 {seg.text}
