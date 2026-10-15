@@ -580,10 +580,11 @@ export default function FlashcardsScreen() {
                   const showResult = selectedFlashcardAnswer != null;
                   const letter = optionLetters[index];
 
-                  let optionBg = isDarkMode ? "rgba(255,255,255,0.07)" : "#FFF";
-                  let letterBg = isDarkMode ? "rgba(255,255,255,0.1)" : `${colors.primary}18`;
+                  let optionBg = isDarkMode ? "rgba(255,255,255,0.06)" : "#FFF";
+                  let letterBg = isDarkMode ? "rgba(255,255,255,0.12)" : `${colors.primary}18`;
                   let letterColor = colors.primary;
-                  let borderColor = isDarkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.06)";
+                  let borderColor = isDarkMode ? "transparent" : "rgba(0,0,0,0.06)";
+                  const borderWidth = isDarkMode ? 0 : 1.5;
 
                   if (showResult && isCorrect) {
                     optionBg = "#22C55E";
@@ -611,7 +612,7 @@ export default function FlashcardsScreen() {
                       <Pressable
                         onPress={() => handleSelectFlashcardAnswer(option, index)}
                         disabled={showResult}
-                        style={[styles.optionRow, { backgroundColor: optionBg, borderColor }]}
+                        style={[styles.optionRow, { backgroundColor: optionBg, borderColor, borderWidth }]}
                         testID={`flashcard-option-${index}`}
                       >
                         <View style={[styles.optionLetter, { backgroundColor: letterBg }]}>
@@ -908,6 +909,7 @@ const styles = StyleSheet.create({
   optionsContainer: {
     gap: 10,
   },
+  optionRow: {
   optionRow: {
     flexDirection: "row",
     alignItems: "center",
