@@ -9,16 +9,14 @@ import {
   Animated,
   PanResponder,
   Dimensions,
-  Image,
 } from 'react-native';
-import { Check, Wand2 } from 'lucide-react-native';
+import { Check, Wand2, X } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/contexts/ThemeContext';
-import { useLanguage } from '@/contexts/LanguageContext';
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-const BTN_SIZE = 56;
+const { width: W, height: H } = Dimensions.get('window');
+const BTN = 56;
 
 export type HighlightRule = {
   id: string;
@@ -42,60 +40,44 @@ export const ASSISTANT_COMMANDS: AssistantCommand[] = [
     label: 'Surligner les dates',
     description: 'Toutes les années, siècles et dates',
     emoji: '📅',
-    rules: [
-      {
-        id: 'dates',
-        pattern: /\b(\d{4}|\d{1,2}(er|ème|e)?\s+siècle|XIXe?|XVIIIe?|XXe?|\d{4}s?)\b/gi,
-        color: '#C0392B',
-        bgColor: '#FADBD8',
-        label: 'Date',
-      },
-    ],
+    rules: [{
+      id: 'dates',
+      pattern: /\b(\d{4}|\d{1,2}(er|ème|e)?\s+siècle|XIXe?|XVIIIe?|XXe?|\d{4}s?)\b/gi,
+      color: '#C0392B', bgColor: '#FADBD8', label: 'Date',
+    }],
   },
   {
     id: 'lieux',
     label: 'Surligner les lieux',
     description: 'Villes, pays, régions mentionnés',
     emoji: '📍',
-    rules: [
-      {
-        id: 'lieux',
-        pattern: /\b(Paris|France|Londres|Rome|Europe|Angleterre|Russie|Allemagne|Italie|Espagne|Amérique|New York|Tokyo|Japon|Chine|Afrique|Orient|Occident|province|ville|village|pays|région|château|manoir|forêt|mer|océan|fleuve|rivière|montagne)\b/gi,
-        color: '#7D3C98',
-        bgColor: '#F0E6F6',
-        label: 'Lieu',
-      },
-    ],
+    rules: [{
+      id: 'lieux',
+      pattern: /\b(Paris|France|Londres|Rome|Europe|Angleterre|Russie|Allemagne|Italie|Espagne|Amérique|New York|Tokyo|Japon|Chine|Afrique|Orient|Occident|province|ville|village|pays|région|château|manoir|forêt|mer|océan|fleuve|rivière|montagne)\b/gi,
+      color: '#7D3C98', bgColor: '#F0E6F6', label: 'Lieu',
+    }],
   },
   {
     id: 'personnages',
     label: 'Surligner les personnages',
     description: 'Noms propres de personnes',
     emoji: '👤',
-    rules: [
-      {
-        id: 'personnages',
-        pattern: /\b([A-ZÀÂÉÈÊËÎÏÔÙÛÜÇ][a-zàâéèêëîïôùûüç]+(?:\s+[A-ZÀÂÉÈÊËÎÏÔÙÛÜÇ][a-zàâéèêëîïôùûüç]+)*)\b/g,
-        color: '#1A5276',
-        bgColor: '#D6EAF8',
-        label: 'Personnage',
-      },
-    ],
+    rules: [{
+      id: 'personnages',
+      pattern: /\b([A-ZÀÂÉÈÊËÎÏÔÙÛÜÇ][a-zàâéèêëîïôùûüç]+(?:\s+[A-ZÀÂÉÈÊËÎÏÔÙÛÜÇ][a-zàâéèêëîïôùûüç]+)*)\b/g,
+      color: '#1A5276', bgColor: '#D6EAF8', label: 'Personnage',
+    }],
   },
   {
     id: 'themes',
     label: 'Surligner les thèmes',
     description: 'Mots-clés thématiques importants',
     emoji: '💡',
-    rules: [
-      {
-        id: 'themes',
-        pattern: /\b(amour|mort|liberté|justice|pouvoir|trahison|honneur|destin|société|guerre|paix|vérité|mensonge|identité|solitude|espoir|désespoir|rédemption|vengeance|sacrifice|famille|religion|foi|nature|art|beauté|temps|mémoire)\b/gi,
-        color: '#1E8449',
-        bgColor: '#D5F5E3',
-        label: 'Thème',
-      },
-    ],
+    rules: [{
+      id: 'themes',
+      pattern: /\b(amour|mort|liberté|justice|pouvoir|trahison|honneur|destin|société|guerre|paix|vérité|mensonge|identité|solitude|espoir|désespoir|rédemption|vengeance|sacrifice|famille|religion|foi|nature|art|beauté|temps|mémoire)\b/gi,
+      color: '#1E8449', bgColor: '#D5F5E3', label: 'Thème',
+    }],
   },
   {
     id: 'dates_lieux',
@@ -103,20 +85,8 @@ export const ASSISTANT_COMMANDS: AssistantCommand[] = [
     description: 'Combiner les deux surlignages',
     emoji: '🗺️',
     rules: [
-      {
-        id: 'dates',
-        pattern: /\b(\d{4}|\d{1,2}(er|ème|e)?\s+siècle|XIXe?|XVIIIe?|XXe?|\d{4}s?)\b/gi,
-        color: '#C0392B',
-        bgColor: '#FADBD8',
-        label: 'Date',
-      },
-      {
-        id: 'lieux',
-        pattern: /\b(Paris|France|Londres|Rome|Europe|Angleterre|Russie|Allemagne|Italie|Espagne|Amérique|New York|Tokyo|Japon|Chine|Afrique|Orient|Occident|province|ville|village|pays|région|château|manoir|forêt|mer|océan|fleuve|rivière|montagne)\b/gi,
-        color: '#7D3C98',
-        bgColor: '#F0E6F6',
-        label: 'Lieu',
-      },
+      { id: 'dates', pattern: /\b(\d{4}|\d{1,2}(er|ème|e)?\s+siècle|XIXe?|XVIIIe?|XXe?|\d{4}s?)\b/gi, color: '#C0392B', bgColor: '#FADBD8', label: 'Date' },
+      { id: 'lieux', pattern: /\b(Paris|France|Londres|Rome|Europe|Angleterre|Russie|Allemagne|Italie|Espagne|Amérique|New York|Tokyo|Japon|Chine|Afrique|Orient|Occident|province|ville|village|pays|région|château|manoir|forêt|mer|océan|fleuve|rivière|montagne)\b/gi, color: '#7D3C98', bgColor: '#F0E6F6', label: 'Lieu' },
     ],
   },
   {
@@ -134,21 +104,19 @@ interface FicheAssistantProps {
   bearImage?: number | { uri: string } | null;
 }
 
-export function FicheAssistant({ onCommandSelect, activeCommandId, bearImage }: FicheAssistantProps) {
+export function FicheAssistant({ onCommandSelect, activeCommandId }: FicheAssistantProps) {
   const { isDarkMode, colors } = useTheme();
-  const { language } = useLanguage();
   const [visible, setVisible] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
 
   const isDragging = useRef(false);
-  const posX = useRef(SCREEN_WIDTH - BTN_SIZE - 20);
-  const posY = useRef(SCREEN_HEIGHT * 0.55);
+  const posX = useRef(W - BTN - 20);
+  const posY = useRef(H * 0.55);
   const animX = useRef(new Animated.Value(posX.current)).current;
   const animY = useRef(new Animated.Value(posY.current)).current;
-
-  // Animation de lévitation
   const floatAnim = useRef(new Animated.Value(0)).current;
-  useEffect(() => {
+
+  React.useEffect(() => {
     Animated.loop(
       Animated.sequence([
         Animated.timing(floatAnim, { toValue: -8, duration: 1200, useNativeDriver: true }),
@@ -157,109 +125,64 @@ export function FicheAssistant({ onCommandSelect, activeCommandId, bearImage }: 
     ).start();
   }, [floatAnim]);
 
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: (_, gs) => Math.abs(gs.dx) > 5 || Math.abs(gs.dy) > 5,
-      onPanResponderGrant: () => {
-        isDragging.current = false;
-      },
-      onPanResponderMove: (_, gs) => {
-        if (Math.abs(gs.dx) > 5 || Math.abs(gs.dy) > 5) {
-          isDragging.current = true;
-        }
-        animX.setValue(posX.current + gs.dx);
-        animY.setValue(posY.current + gs.dy);
-      },
-      onPanResponderRelease: (_, gs) => {
-        if (!isDragging.current) {
-          void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-          setModalOpen(true);
-          return;
-        }
-        const newX = posX.current + gs.dx;
-        const newY = posY.current + gs.dy;
-        const snapX = newX < SCREEN_WIDTH / 2 ? 16 : SCREEN_WIDTH - BTN_SIZE - 16;
-        const snapY = Math.max(80, Math.min(newY, SCREEN_HEIGHT - BTN_SIZE - 80));
-        posX.current = snapX;
-        posY.current = snapY;
-        Animated.spring(animX, { toValue: snapX, useNativeDriver: false, friction: 7 }).start();
-        Animated.spring(animY, { toValue: snapY, useNativeDriver: false, friction: 7 }).start();
-      },
-    })
-  ).current;
+  const panResponder = useRef(PanResponder.create({
+    onStartShouldSetPanResponder: () => true,
+    onMoveShouldSetPanResponder: (_, gs) => Math.abs(gs.dx) > 5 || Math.abs(gs.dy) > 5,
+    onPanResponderGrant: () => { isDragging.current = false; },
+    onPanResponderMove: (_, gs) => {
+      if (Math.abs(gs.dx) > 5 || Math.abs(gs.dy) > 5) isDragging.current = true;
+      animX.setValue(posX.current + gs.dx);
+      animY.setValue(posY.current + gs.dy);
+    },
+    onPanResponderRelease: (_, gs) => {
+      if (!isDragging.current) {
+        void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        setModalOpen(true);
+        return;
+      }
+      const nx = posX.current + gs.dx;
+      const ny = posY.current + gs.dy;
+      const sx = nx < W / 2 ? 16 : W - BTN - 16;
+      const sy = Math.max(80, Math.min(ny, H - BTN - 80));
+      posX.current = sx; posY.current = sy;
+      Animated.spring(animX, { toValue: sx, useNativeDriver: false, friction: 7 }).start();
+      Animated.spring(animY, { toValue: sy, useNativeDriver: false, friction: 7 }).start();
+    },
+  })).current;
 
   if (!visible) return null;
 
   return (
     <>
       <Animated.View
-        style={[styles.floatingBtn, { left: animX, top: animY }]}
+        style={[styles.fab, { left: animX, top: animY }]}
         {...panResponder.panHandlers}
       >
-        {/* Bouton principal — ours ou baguette magique */}
-        <Animated.View style={[styles.bearWrap, { transform: [{ translateY: floatAnim }] }]}>
-          {bearImage ? (
-            <Image
-              source={bearImage}
-              style={styles.bearImage}
-              resizeMode="contain"
-            />
-          ) : (
-            <LinearGradient
-              colors={colors.gradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.mainBtn}
-            >
-              <Wand2 size={24} color="#FFF" strokeWidth={2} />
-            </LinearGradient>
-          )}
-
-          {/* Croix superposée sur le coin haut-droit de l'image */}
-          <Pressable
-            style={styles.closeBtn}
-            onPress={() => {
-              void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              setVisible(false);
-            }}
-          />
+        <Animated.View style={{ transform: [{ translateY: floatAnim }] }}>
+          <LinearGradient colors={colors.gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.fabBtn}>
+            <Wand2 size={24} color="#FFF" strokeWidth={2} />
+            {activeCommandId && activeCommandId !== 'reset' && <View style={styles.dot} />}
+          </LinearGradient>
+          <Pressable style={styles.closeBtn} onPress={() => { void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setVisible(false); }}>
+            <X size={9} color="#FFF" strokeWidth={3} />
+          </Pressable>
         </Animated.View>
-        {activeCommandId && activeCommandId !== 'reset' && (
-          <View style={styles.activeDot} />
-        )}
       </Animated.View>
 
-      <Modal
-        visible={modalOpen}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setModalOpen(false)}
-      >
+      <Modal visible={modalOpen} transparent animationType="slide" onRequestClose={() => setModalOpen(false)}>
         <Pressable style={styles.overlay} onPress={() => setModalOpen(false)}>
           <Pressable style={[styles.sheet, isDarkMode && styles.sheetDark]} onPress={() => {}}>
-
-            {/* Header avec dégradé */}
-            <LinearGradient
-              colors={colors.gradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.sheetHeaderGradient}
-            >
-              <View style={styles.sheetHeaderRow}>
-                {bearImage && (
-                  <Image source={bearImage} style={styles.sheetBearImage} resizeMode="contain" />
-                )}
-                <View style={styles.sheetHeaderTexts}>
-                  <Text style={styles.sheetTitleWhite}>Teddy AI</Text>
-                  <Text style={styles.sheetSubtitleWhite}>Assistant de lecture</Text>
+            <LinearGradient colors={colors.gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.header}>
+              <View style={styles.handle} />
+              <View style={styles.headerRow}>
+                <View style={styles.headerIcon}>
+                  <Wand2 size={22} color="#FFF" strokeWidth={2} />
+                </View>
+                <View>
+                  <Text style={styles.headerTitle}>Teddy AI</Text>
+                  <Text style={styles.headerSub}>Assistant de lecture</Text>
                 </View>
               </View>
-              <Text style={styles.sheetDesc}>
-                Choisis ce que tu veux mettre en évidence dans ta fiche
-              </Text>
-              {/* Handle blanc */}
-              <View style={styles.handle} />
             </LinearGradient>
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.list}>
@@ -268,45 +191,30 @@ export function FicheAssistant({ onCommandSelect, activeCommandId, bearImage }: 
                 return (
                   <Pressable
                     key={cmd.id}
-                    onPress={() => {
-                      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                      onCommandSelect(cmd);
-                      setModalOpen(false);
-                    }}
+                    onPress={() => { void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); onCommandSelect(cmd); setModalOpen(false); }}
                     style={({ pressed }) => [
-                      styles.cmdCard,
-                      isDarkMode && styles.cmdCardDark,
+                      styles.card, isDarkMode && styles.cardDark,
                       isActive && { borderColor: colors.primary, borderWidth: 2, backgroundColor: `${colors.primary}12` },
-                      pressed && { opacity: 0.8, transform: [{ scale: 0.97 }] },
+                      pressed && { opacity: 0.8 },
                     ]}
                   >
-                    {/* Emoji dans cercle coloré */}
-                    <View style={[styles.cmdEmojiWrap, { backgroundColor: `${colors.primary}18` }]}>
-                      <Text style={styles.cmdEmoji}>{cmd.emoji}</Text>
+                    <View style={[styles.emojiWrap, { backgroundColor: `${colors.primary}18` }]}>
+                      <Text style={styles.emoji}>{cmd.emoji}</Text>
                     </View>
-                    <View style={styles.cmdText}>
-                      <Text style={[styles.cmdLabel, isDarkMode && styles.cmdLabelDark, isActive && { color: colors.primary }]}>
-                        {cmd.label}
-                      </Text>
-                      <Text style={[styles.cmdDesc, isDarkMode && styles.cmdDescDark]}>{cmd.description}</Text>
+                    <View style={styles.cardText}>
+                      <Text style={[styles.cardLabel, isDarkMode && styles.cardLabelDark, isActive && { color: colors.primary }]}>{cmd.label}</Text>
+                      <Text style={[styles.cardDesc, isDarkMode && styles.cardDescDark]}>{cmd.description}</Text>
                     </View>
-                    <View style={styles.cmdRight}>
+                    <View style={styles.cardRight}>
                       {cmd.rules.length > 0 && (
                         <View style={styles.dots}>
-                          {cmd.rules.map((r) => (
-                            <View key={r.id} style={[styles.dot, { backgroundColor: r.bgColor }]} />
-                          ))}
+                          {cmd.rules.map(r => <View key={r.id} style={[styles.colorDot, { backgroundColor: r.bgColor, borderColor: r.color, borderWidth: 1 }]} />)}
                         </View>
                       )}
-                      {isActive ? (
-                        <View style={[styles.activeCheck, { backgroundColor: colors.primary }]}>
-                          <Check size={12} color="#FFF" strokeWidth={3} />
-                        </View>
-                      ) : (
-                        <View style={[styles.arrowCircle, isDarkMode && styles.arrowCircleDark]}>
-                          <Text style={[styles.arrowText, { color: isDarkMode ? '#888' : '#CCC' }]}>›</Text>
-                        </View>
-                      )}
+                      {isActive
+                        ? <View style={[styles.check, { backgroundColor: colors.primary }]}><Check size={12} color="#FFF" strokeWidth={3} /></View>
+                        : <View style={[styles.arrow, isDarkMode && styles.arrowDark]}><Text style={[styles.arrowTxt, { color: isDarkMode ? '#666' : '#CCC' }]}>›</Text></View>
+                      }
                     </View>
                   </Pressable>
                 );
@@ -320,211 +228,66 @@ export function FicheAssistant({ onCommandSelect, activeCommandId, bearImage }: 
 }
 
 const styles = StyleSheet.create({
-  floatingBtn: {
-    position: 'absolute',
-    zIndex: 999,
-    alignItems: 'center',
-  },
-  bearWrap: {
-    position: 'relative',
-    width: BTN_SIZE + 20,
-    height: BTN_SIZE + 20,
+  fab: { position: 'absolute', zIndex: 999 },
+  fabBtn: {
+    width: BTN, height: BTN, borderRadius: BTN / 2,
+    justifyContent: 'center', alignItems: 'center',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25, shadowRadius: 8, elevation: 8,
   },
   closeBtn: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    width: (BTN_SIZE + 20) * 0.32,
-    height: (BTN_SIZE + 20) * 0.32,
+    position: 'absolute', top: -6, right: -6,
+    width: 18, height: 18, borderRadius: 9,
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    justifyContent: 'center', alignItems: 'center',
     zIndex: 10,
   },
-  closeBtnText: {
-    color: '#FFF',
-    fontSize: 9,
-    fontWeight: '700',
+  dot: {
+    position: 'absolute', top: 8, right: 8,
+    width: 10, height: 10, borderRadius: 5,
+    backgroundColor: '#4CAF50', borderWidth: 2, borderColor: '#FFF',
   },
-  mainBtn: {
-    width: BTN_SIZE,
-    height: BTN_SIZE,
-    borderRadius: BTN_SIZE / 2,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  bearImage: {
-    width: BTN_SIZE + 20,
-    height: BTN_SIZE + 20,
-  },
-  activeDot: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#4CAF50',
-    borderWidth: 2,
-    borderColor: '#FFF',
-  },
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.45)',
-    justifyContent: 'flex-end',
-  },
+  overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'flex-end' },
   sheet: {
-    backgroundColor: '#FAFAFA',
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    paddingBottom: 32,
-    maxHeight: SCREEN_HEIGHT * 0.82,
-    overflow: 'hidden',
+    backgroundColor: '#FAFAFA', borderTopLeftRadius: 28, borderTopRightRadius: 28,
+    paddingBottom: 32, maxHeight: H * 0.82, overflow: 'hidden',
   },
   sheetDark: { backgroundColor: '#161616' },
+  header: { paddingBottom: 20, paddingHorizontal: 20, borderTopLeftRadius: 28, borderTopRightRadius: 28 },
   handle: {
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: 'rgba(255,255,255,0.4)',
-    alignSelf: 'center',
-    marginTop: 10,
-    marginBottom: 8,
+    width: 40, height: 4, borderRadius: 2,
+    backgroundColor: 'rgba(255,255,255,0.4)', alignSelf: 'center',
+    marginTop: 10, marginBottom: 14,
   },
-  sheetHeaderGradient: {
-    paddingTop: 8,
-    paddingBottom: 20,
-    paddingHorizontal: 20,
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
+  headerRow: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  headerIcon: {
+    width: 46, height: 46, borderRadius: 15,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center', alignItems: 'center',
   },
-  sheetHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginBottom: 8,
+  headerTitle: { fontSize: 22, fontWeight: '800', color: '#FFF', letterSpacing: -0.3 },
+  headerSub: { fontSize: 13, color: 'rgba(255,255,255,0.75)', fontWeight: '500', marginTop: 1 },
+  list: { paddingHorizontal: 16, paddingTop: 16, gap: 10, paddingBottom: 20 },
+  card: {
+    flexDirection: 'row', alignItems: 'center', gap: 14,
+    backgroundColor: '#FFF', borderRadius: 18, padding: 14,
+    borderWidth: 1.5, borderColor: 'rgba(0,0,0,0.06)',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05, shadowRadius: 6, elevation: 2,
   },
-  sheetBearImage: {
-    width: 60,
-    height: 60,
-  },
-  sheetHeaderTexts: {
-    flex: 1,
-    gap: 2,
-  },
-  sheetTitleWhite: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#FFF',
-    letterSpacing: -0.3,
-  },
-  sheetSubtitleWhite: {
-    fontSize: 13,
-    color: 'rgba(255,255,255,0.75)',
-    fontWeight: '500',
-  },
-  sheetDesc: {
-    fontSize: 13,
-    color: 'rgba(255,255,255,0.65)',
-    lineHeight: 18,
-    marginTop: 2,
-  },
-  sheetHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-  },
-  sheetIconWrap: {
-    width: 42,
-    height: 42,
-    borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  sheetTitle: {
-    fontSize: 17,
-    fontWeight: '700',
-    color: '#1A1A1A',
-  },
-  sheetTitleDark: { color: '#FFF' },
-  sheetSubtitle: {
-    fontSize: 13,
-    color: '#8D6E63',
-    marginTop: 1,
-  },
-  sheetSubtitleDark: { color: '#999' },
-  list: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    gap: 10,
-    paddingBottom: 20,
-  },
-  cmdCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-    backgroundColor: '#FFF',
-    borderRadius: 18,
-    padding: 14,
-    borderWidth: 1.5,
-    borderColor: 'rgba(0,0,0,0.06)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 2,
-  },
-  cmdCardDark: {
-    backgroundColor: 'rgba(255,255,255,0.07)',
-    borderColor: 'rgba(255,255,255,0.08)',
-    shadowOpacity: 0,
-    elevation: 0,
-  },
-  cmdEmojiWrap: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  cmdEmoji: { fontSize: 22 },
-  cmdText: { flex: 1, gap: 3 },
-  cmdLabel: { fontSize: 15, fontWeight: '700', color: '#1A1A1A' },
-  cmdLabelDark: { color: '#FFF' },
-  cmdDesc: { fontSize: 12, color: '#8D6E63', lineHeight: 16 },
-  cmdDescDark: { color: '#999' },
-  cmdRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  arrowCircle: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    backgroundColor: 'rgba(0,0,0,0.05)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  arrowCircleDark: {
-    backgroundColor: 'rgba(255,255,255,0.08)',
-  },
-  arrowText: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginTop: -2,
-  },
-  activeCheck: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+  cardDark: { backgroundColor: 'rgba(255,255,255,0.07)', borderColor: 'rgba(255,255,255,0.08)', shadowOpacity: 0, elevation: 0 },
+  emojiWrap: { width: 44, height: 44, borderRadius: 14, justifyContent: 'center', alignItems: 'center' },
+  emoji: { fontSize: 22 },
+  cardText: { flex: 1, gap: 3 },
+  cardLabel: { fontSize: 15, fontWeight: '700', color: '#1A1A1A' },
+  cardLabelDark: { color: '#FFF' },
+  cardDesc: { fontSize: 12, color: '#8D6E63', lineHeight: 16 },
+  cardDescDark: { color: '#999' },
+  cardRight: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   dots: { flexDirection: 'row', gap: 4 },
-  dot: { width: 12, height: 12, borderRadius: 6 },
+  colorDot: { width: 12, height: 12, borderRadius: 6 },
+  check: { width: 22, height: 22, borderRadius: 11, justifyContent: 'center', alignItems: 'center' },
+  arrow: { width: 26, height: 26, borderRadius: 13, backgroundColor: 'rgba(0,0,0,0.05)', justifyContent: 'center', alignItems: 'center' },
+  arrowDark: { backgroundColor: 'rgba(255,255,255,0.08)' },
+  arrowTxt: { fontSize: 18, fontWeight: '600', marginTop: -2 },
 });
