@@ -910,7 +910,6 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   optionRow: {
-  optionRow: {
     flexDirection: "row",
     alignItems: "center",
     borderRadius: 16,
