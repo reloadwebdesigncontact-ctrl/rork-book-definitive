@@ -461,7 +461,9 @@ export default function SettingsScreen() {
                 </ScrollView>
                 {/* Fondu gauche */}
                 <LinearGradient
-                  colors={isDarkMode ? ['rgba(255,255,255,0.07)', 'transparent'] : ['#FFF', 'transparent']}
+                  colors={isDarkMode
+                    ? ['rgba(13,13,13,1)', 'rgba(13,13,13,0)']
+                    : ['rgba(255,255,255,1)', 'rgba(255,255,255,0)']}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                   style={styles.iconFadeLeft}
@@ -469,7 +471,9 @@ export default function SettingsScreen() {
                 />
                 {/* Fondu droit */}
                 <LinearGradient
-                  colors={isDarkMode ? ['transparent', 'rgba(255,255,255,0.07)'] : ['transparent', '#FFF']}
+                  colors={isDarkMode
+                    ? ['rgba(13,13,13,0)', 'rgba(13,13,13,1)']
+                    : ['rgba(255,255,255,0)', 'rgba(255,255,255,1)']}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                   style={styles.iconFadeRight}
