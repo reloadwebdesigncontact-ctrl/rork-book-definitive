@@ -15,3 +15,5 @@ __tests__
 *.test.tsx
 *.spec.ts
 *.spec.tsx
+# Images ours chargées via URL GitHub — pas besoin dans le build
+assets/images/assistant-bear
