@@ -164,7 +164,7 @@ export function FicheAssistant({ onCommandSelect, activeCommandId }: FicheAssist
         <Animated.View style={{ transform: [{ translateY: floatAnim }] }}>
           <Image
             source={{ uri: bearUri }}
-            style={styles.fabBtn}
+            style={{ width: BTN + 16, height: BTN + 16 }}
             resizeMode="contain"
           />
           {activeCommandId && activeCommandId !== 'reset' && <View style={styles.dot} />}
@@ -235,11 +235,10 @@ export function FicheAssistant({ onCommandSelect, activeCommandId }: FicheAssist
 const styles = StyleSheet.create({
   fab: { position: 'absolute', zIndex: 999 },
   fabBtn: {
-    width: BTN, height: BTN, borderRadius: BTN / 2,
-    justifyContent: 'center', alignItems: 'center',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25, shadowRadius: 8, elevation: 8,
-    overflow: 'hidden',
+    width: BTN,
+    height: BTN,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   closeBtn: {
     position: 'absolute', top: -6, right: -6,
