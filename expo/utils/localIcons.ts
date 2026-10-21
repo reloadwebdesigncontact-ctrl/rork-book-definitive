@@ -10,4 +10,11 @@ export const LOCAL_ICONS: Record<string, ReturnType<typeof require>> = {
   aurora: require('@/assets/images/aurora.png'),
   ocean: require('@/assets/images/ocean.png'),
   peach: require('@/assets/images/peach.png'),
+  velvet: require('@/assets/images/velvet.png'),
+  glacier: require('@/assets/images/glacier.png'),
+  galaxy: require('@/assets/images/galaxy.png'),
+  tartan: require('@/assets/images/tartan.png'),
+  holo: require('@/assets/images/holo.png'),
+  arctic: require('@/assets/images/arctic.png'),
+  lagoon: require('@/assets/images/lagoon.png'),
 };

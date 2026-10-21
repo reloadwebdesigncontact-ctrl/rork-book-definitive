@@ -83,7 +83,14 @@
           "silver":    { "image": "./assets/images/silver.png",    "prerendered": true },
           "gold":      { "image": "./assets/images/gold.png",      "prerendered": true },
           "tropical":  { "image": "./assets/images/tropical.png",  "prerendered": true },
-          "peach":     { "image": "./assets/images/peach.png",     "prerendered": true }
+          "peach":     { "image": "./assets/images/peach.png",     "prerendered": true },
+          "velvet":    { "image": "./assets/images/velvet.png",    "prerendered": true },
+          "glacier":   { "image": "./assets/images/glacier.png",   "prerendered": true },
+          "galaxy":    { "image": "./assets/images/galaxy.png",    "prerendered": true },
+          "tartan":    { "image": "./assets/images/tartan.png",    "prerendered": true },
+          "holo":      { "image": "./assets/images/holo.png",      "prerendered": true },
+          "arctic":    { "image": "./assets/images/arctic.png",    "prerendered": true },
+          "lagoon":    { "image": "./assets/images/lagoon.png",    "prerendered": true }
         }
       ]
     ],

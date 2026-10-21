@@ -40,6 +40,13 @@ const THEME_LABELS: Record<AppTheme, { fr: string; en: string }> = {
   gold:      { fr: 'Or',        en: 'Gold' },
   tropical:  { fr: 'Tropical',  en: 'Tropical' },
   peach:     { fr: 'Pêche',     en: 'Peach' },
+  velvet:    { fr: 'Velours',   en: 'Velvet' },
+  glacier:   { fr: 'Glacier',   en: 'Glacier' },
+  galaxy:    { fr: 'Galaxie',   en: 'Galaxy' },
+  tartan:    { fr: 'Tartan',    en: 'Tartan' },
+  holo:      { fr: 'Holo',      en: 'Holo' },
+  arctic:    { fr: 'Arctique',  en: 'Arctic' },
+  lagoon:    { fr: 'Lagon',     en: 'Lagoon' },
 };
 
 // Thèmes réservés aux utilisateurs Premium

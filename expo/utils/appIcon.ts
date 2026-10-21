@@ -24,6 +24,13 @@ export const ICON_OPTIONS = [
   { key: 'gold',      label: 'Gold' },
   { key: 'tropical',  label: 'Tropical' },
   { key: 'peach',     label: 'Peach' },
+  { key: 'velvet',    label: 'Velvet' },
+  { key: 'glacier',   label: 'Glacier' },
+  { key: 'galaxy',    label: 'Galaxy' },
+  { key: 'tartan',    label: 'Tartan' },
+  { key: 'holo',      label: 'Holo' },
+  { key: 'arctic',    label: 'Arctic' },
+  { key: 'lagoon',    label: 'Lagoon' },
 ] as const;
 
 export type AppIconKey = typeof ICON_OPTIONS[number]['key'];
@@ -47,6 +54,13 @@ export const ICON_PREVIEWS: Record<AppIconKey, ReturnType<typeof require>> = {
   gold:      require('@/assets/images/gold.png'),
   tropical:  require('@/assets/images/tropical.png'),
   peach:     require('@/assets/images/peach.png'),
+  velvet:    require('@/assets/images/velvet.png'),
+  glacier:   require('@/assets/images/glacier.png'),
+  galaxy:    require('@/assets/images/galaxy.png'),
+  tartan:    require('@/assets/images/tartan.png'),
+  holo:      require('@/assets/images/holo.png'),
+  arctic:    require('@/assets/images/arctic.png'),
+  lagoon:    require('@/assets/images/lagoon.png'),
 };
 
 export async function getSavedIcon(): Promise<AppIconKey> {

@@ -1,4 +1,4 @@
-export type AppTheme = 'orange' | 'red' | 'purple' | 'turquoise' | 'pink' | 'yellow' | 'coral' | 'lime' | 'sunset' | 'dreamy' | 'neon' | 'flamingo' | 'aurora' | 'ocean' | 'silver' | 'gold' | 'tropical' | 'peach';
+export type AppTheme = 'orange' | 'red' | 'purple' | 'turquoise' | 'pink' | 'yellow' | 'coral' | 'lime' | 'sunset' | 'dreamy' | 'neon' | 'flamingo' | 'aurora' | 'ocean' | 'silver' | 'gold' | 'tropical' | 'peach' | 'velvet' | 'glacier' | 'galaxy' | 'tartan' | 'holo' | 'arctic' | 'lagoon';
 
 export interface ColorPalette {
   primary: string;
@@ -136,5 +136,54 @@ export const APP_THEMES: Record<AppTheme, ColorPalette> = {
     tertiary: '#FFBB6C',
     gradient: ['#FFBB6C', '#FF8A65', '#F06292'] as const,
     icon: `${BASE}/peach.png`,
+  },
+  velvet: {
+    primary: '#B5294E',
+    secondary: '#D44B70',
+    tertiary: '#E87090',
+    gradient: ['#B5294E', '#D44B70', '#E87090'] as const,
+    icon: `${BASE}/velvet.png`,
+  },
+  glacier: {
+    primary: '#00B4D8',
+    secondary: '#00D4FF',
+    tertiary: '#90E8FF',
+    gradient: ['#00B4D8', '#00D4FF', '#90E8FF'] as const,
+    icon: `${BASE}/glacier.png`,
+  },
+  galaxy: {
+    primary: '#6B35E8',
+    secondary: '#9B5FFF',
+    tertiary: '#C89FFF',
+    gradient: ['#6B35E8', '#9B5FFF', '#C89FFF'] as const,
+    icon: `${BASE}/galaxy.png`,
+  },
+  tartan: {
+    primary: '#CC1A1A',
+    secondary: '#E03030',
+    tertiary: '#F05050',
+    gradient: ['#CC1A1A', '#E03030', '#F05050'] as const,
+    icon: `${BASE}/tartan.png`,
+  },
+  holo: {
+    primary: '#9B7FE8',
+    secondary: '#B8A9E8',
+    tertiary: '#D4CCF5',
+    gradient: ['#9B7FE8', '#B8A9E8', '#D4CCF5'] as const,
+    icon: `${BASE}/holo.png`,
+  },
+  arctic: {
+    primary: '#7B35E8',
+    secondary: '#5B5FFF',
+    tertiary: '#00D4FF',
+    gradient: ['#7B35E8', '#5B5FFF', '#00D4FF'] as const,
+    icon: `${BASE}/arctic.png`,
+  },
+  lagoon: {
+    primary: '#0097B2',
+    secondary: '#00B4D8',
+    tertiary: '#48CAE4',
+    gradient: ['#0097B2', '#00B4D8', '#48CAE4'] as const,
+    icon: `${BASE}/lagoon.png`,
   },
 };
