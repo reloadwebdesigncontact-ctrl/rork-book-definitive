@@ -11,7 +11,7 @@ import {
   Dimensions,
   Image,
 } from 'react-native';
-import { Check, Wand2, X } from 'lucide-react-native';
+import { Check, Wand2 } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -161,16 +161,18 @@ export function FicheAssistant({ onCommandSelect, activeCommandId }: FicheAssist
         style={[styles.fab, { left: animX, top: animY }]}
         {...panResponder.panHandlers}
       >
-        <Animated.View style={{ transform: [{ translateY: floatAnim }] }}>
+        <Animated.View style={[styles.bearWrap, { transform: [{ translateY: floatAnim }] }]}>
           <Image
             source={{ uri: bearUri }}
             style={{ width: BTN + 16, height: BTN + 16 }}
             resizeMode="contain"
           />
+          {/* Zone de tap invisible superposée sur la croix de l'image (coin haut-droit) */}
+          <Pressable
+            style={styles.closeBtn}
+            onPress={() => { void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setVisible(false); }}
+          />
           {activeCommandId && activeCommandId !== 'reset' && <View style={styles.dot} />}
-          <Pressable style={styles.closeBtn} onPress={() => { void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setVisible(false); }}>
-            <X size={9} color="#FFF" strokeWidth={3} />
-          </Pressable>
         </Animated.View>
       </Animated.View>
 
@@ -234,6 +236,9 @@ export function FicheAssistant({ onCommandSelect, activeCommandId }: FicheAssist
 
 const styles = StyleSheet.create({
   fab: { position: 'absolute', zIndex: 999 },
+  bearWrap: {
+    position: 'relative',
+  },
   fabBtn: {
     width: BTN,
     height: BTN,
@@ -241,11 +246,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   closeBtn: {
-    position: 'absolute', top: -6, right: -6,
-    width: 18, height: 18, borderRadius: 9,
-    backgroundColor: 'rgba(0,0,0,0.55)',
-    justifyContent: 'center', alignItems: 'center',
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    width: (BTN + 16) * 0.3,
+    height: (BTN + 16) * 0.3,
     zIndex: 10,
+    // Invisible — zone de tap sur la croix dessinée dans le PNG
   },
   dot: {
     position: 'absolute', top: 8, right: 8,
