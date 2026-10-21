@@ -50,7 +50,7 @@ const THEME_LABELS: Record<AppTheme, { fr: string; en: string }> = {
 };
 
 // Thèmes réservés aux utilisateurs Premium
-const PREMIUM_THEMES = new Set<AppTheme>(['tropical', 'peach']);
+const PREMIUM_THEMES = new Set<AppTheme>(['tropical', 'peach', 'velvet', 'glacier', 'galaxy', 'tartan', 'holo', 'arctic', 'lagoon']);
 
 const THEMES = Object.keys(APP_THEMES) as AppTheme[];
 
