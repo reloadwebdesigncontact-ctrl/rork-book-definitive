@@ -462,7 +462,7 @@ export default function SettingsScreen() {
                 {/* Fondu gauche */}
                 <LinearGradient
                   colors={isDarkMode
-                    ? ['rgba(13,13,13,1)', 'rgba(13,13,13,0)']
+                    ? ['rgba(30,30,30,1)', 'rgba(30,30,30,0)']
                     : ['rgba(255,255,255,1)', 'rgba(255,255,255,0)']}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
@@ -472,7 +472,7 @@ export default function SettingsScreen() {
                 {/* Fondu droit */}
                 <LinearGradient
                   colors={isDarkMode
-                    ? ['rgba(13,13,13,0)', 'rgba(13,13,13,1)']
+                    ? ['rgba(30,30,30,0)', 'rgba(30,30,30,1)']
                     : ['rgba(255,255,255,0)', 'rgba(255,255,255,1)']}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
@@ -1269,7 +1269,7 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     left: 0,
-    width: 24,
+    width: 40,
     zIndex: 1,
   },
   iconFadeRight: {
@@ -1277,7 +1277,7 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     right: 0,
-    width: 24,
+    width: 40,
     zIndex: 1,
   },
   iconOption: {
