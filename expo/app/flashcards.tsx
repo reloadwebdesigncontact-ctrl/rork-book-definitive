@@ -1,7 +1,7 @@
 ﻿import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ArrowLeft, CheckCircle2, Crown, Loader2, Sparkles, XCircle } from "lucide-react-native";
+import { ArrowLeft, CheckCircle2, Crown, HelpCircle, Loader2, Sparkles, XCircle } from "lucide-react-native";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Animated, Easing, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -567,6 +567,12 @@ export default function FlashcardsScreen() {
 
               {/* Question card */}
               <View style={[styles.questionCard, isDarkMode && styles.questionCardDark]}>
+                <View style={[styles.questionLabel, { backgroundColor: `${colors.primary}15` }]}>
+                  <HelpCircle size={13} color={colors.primary} strokeWidth={2.5} />
+                  <Text style={[styles.questionLabelText, { color: colors.primary }]}>
+                    {language === "fr" ? "QUESTION" : "QUESTION"}
+                  </Text>
+                </View>
                 <Animated.Text style={[styles.questionText, isDarkMode && styles.questionTextDark, { opacity: questionFade }]}>
                   {currentFlashcard.question}
                 </Animated.Text>
@@ -638,16 +644,16 @@ export default function FlashcardsScreen() {
 
               {/* Feedback */}
               {selectedFlashcardAnswer && (
-                <View style={[styles.feedbackCard, isFlashcardAnswerCorrect ? styles.feedbackCorrect : styles.feedbackWrong]}>
+                <View style={[styles.feedbackCard, isFlashcardAnswerCorrect ? styles.feedbackCorrect : styles.feedbackWrong, isDarkMode && styles.feedbackCardDark]}>
                   <Text style={styles.feedbackEmoji}>{isFlashcardAnswerCorrect ? "🎉" : "💡"}</Text>
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.feedbackLabel}>
+                    <Text style={[styles.feedbackLabel, isDarkMode && styles.feedbackLabelDark]}>
                       {isFlashcardAnswerCorrect
                         ? (language === "fr" ? "Bonne réponse !" : "Correct!")
                         : (language === "fr" ? "Bonne réponse :" : "Correct answer:")}
                     </Text>
                     {!isFlashcardAnswerCorrect && (
-                      <Text style={styles.feedbackAnswer}>{currentFlashcard.correctAnswer}</Text>
+                      <Text style={[styles.feedbackAnswer, isDarkMode && styles.feedbackAnswerDark]}>{currentFlashcard.correctAnswer}</Text>
                     )}
                   </View>
                 </View>
@@ -881,20 +887,36 @@ const styles = StyleSheet.create({
   },
   questionCard: {
     borderRadius: 24,
-    padding: 24,
+    padding: 26,
+    paddingTop: 22,
     backgroundColor: "#FFF",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
     shadowRadius: 16,
     elevation: 6,
-    minHeight: 140,
+    minHeight: 160,
     justifyContent: "center",
   },
   questionCardDark: {
     backgroundColor: "rgba(255,255,255,0.08)",
     elevation: 0,
     shadowOpacity: 0,
+  },
+  questionLabel: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    alignSelf: "center",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  questionLabelText: {
+    fontSize: 10,
+    fontWeight: "800" as const,
+    letterSpacing: 1.2,
   },
   questionText: {
     fontSize: 20,
@@ -907,15 +929,16 @@ const styles = StyleSheet.create({
     color: "#FFF",
   },
   optionsContainer: {
-    gap: 10,
+    gap: 12,
+    marginTop: 24,
   },
   optionRow: {
     flexDirection: "row",
     alignItems: "center",
-    borderRadius: 16,
-    padding: 14,
+    borderRadius: 18,
+    padding: 16,
     borderWidth: 1.5,
-    gap: 12,
+    gap: 14,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
@@ -923,9 +946,9 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   optionLetter: {
-    width: 36,
-    height: 36,
-    borderRadius: 12,
+    width: 38,
+    height: 38,
+    borderRadius: 13,
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,
@@ -950,15 +973,19 @@ const styles = StyleSheet.create({
   feedbackCard: {
     flexDirection: "row",
     alignItems: "center",
-    borderRadius: 16,
-    padding: 16,
-    gap: 12,
+    borderRadius: 18,
+    padding: 18,
+    gap: 14,
+    marginTop: 20,
   },
   feedbackCorrect: {
     backgroundColor: "rgba(34,197,94,0.12)",
   },
   feedbackWrong: {
     backgroundColor: "rgba(239,68,68,0.12)",
+  },
+  feedbackCardDark: {
+    backgroundColor: "rgba(255,255,255,0.06)",
   },
   feedbackEmoji: {
     fontSize: 28,
@@ -969,14 +996,21 @@ const styles = StyleSheet.create({
     color: "#3E2723",
     marginBottom: 2,
   },
+  feedbackLabelDark: {
+    color: "#FFF",
+  },
   feedbackAnswer: {
     fontSize: 14,
     color: "#5D4037",
     lineHeight: 20,
   },
+  feedbackAnswerDark: {
+    color: "#CCC",
+  },
   nextButton: {
-    borderRadius: 16,
+    borderRadius: 18,
     overflow: "hidden",
+    marginTop: 22,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
