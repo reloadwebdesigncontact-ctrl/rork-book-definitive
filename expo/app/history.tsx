@@ -25,12 +25,40 @@ import {
   removeFromHistory,
 } from "@/utils/history";
 
+// Miniature de couverture pour la liste — simple Image avec fallback icône
+function HistoryCover({ uri, size, colors }: { uri: string; size: number; colors: { primary: string } }) {
+  const [error, setError] = useState(false);
+  const w = size;
+  const h = Math.round(size * 1.4);
+
+  if (error || !uri) {
+    return (
+      <View style={[styles.historyCoverPlaceholder, { width: w, height: h, backgroundColor: colors.primary + '22' }]}>
+        <BookOpen size={size * 0.4} color={colors.primary} />
+      </View>
+    );
+  }
+
+  return (
+    <View style={[styles.historyCoverWrap, { width: w, height: h }]}>
+      <Image
+        source={{ uri }}
+        style={{ width: w, height: h, borderRadius: 10 }}
+        contentFit="cover"
+        cachePolicy="memory-disk"
+        onError={() => setError(true)}
+      />
+    </View>
+  );
+}
+
 export default function HistoryScreen() {
   const router = useRouter();
   const { isDarkMode, colors } = useTheme();
   const { language } = useLanguage();
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [selectedEntry, setSelectedEntry] = useState<HistoryEntry | null>(null);
+  const [detailCoverError, setDetailCoverError] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -116,12 +144,13 @@ export default function HistoryScreen() {
           >
             {/* Cover + info */}
             <View style={[styles.detailCard, isDarkMode && styles.detailCardDark]}>
-              {selectedEntry.coverUrl ? (
+              {selectedEntry.coverUrl && !detailCoverError ? (
                 <BookCoverGlow
                   uri={selectedEntry.coverUrl}
                   width={130}
                   height={180}
                   borderRadius={10}
+                  onError={() => setDetailCoverError(true)}
                 />
               ) : (
                 <View style={[styles.detailCoverPlaceholder, { backgroundColor: colors.primary + '22' }]}>
@@ -219,17 +248,11 @@ export default function HistoryScreen() {
             showsVerticalScrollIndicator={false}
             renderItem={({ item }) => (
               <Pressable
-                onPress={() => setSelectedEntry(item)}
+                onPress={() => { setDetailCoverError(false); setSelectedEntry(item); }}
                 style={[styles.historyItem, isDarkMode && styles.historyItemDark]}
               >
                 {item.coverUrl ? (
-                  <BookCoverGlow
-                    uri={item.coverUrl}
-                    width={64}
-                    height={88}
-                    borderRadius={8}
-                    noMargin
-                  />
+                  <HistoryCover key={item.id} uri={item.coverUrl} size={64} colors={colors} />
                 ) : (
                   <View style={[styles.historyCoverPlaceholder, { backgroundColor: colors.primary + '22' }]}>
                     <BookOpen size={24} color={colors.primary} />
@@ -293,9 +316,17 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.06, shadowRadius: 8, elevation: 3,
   },
   historyItemDark: { backgroundColor: 'rgba(255,255,255,0.08)', elevation: 0, shadowOpacity: 0 },
-  historyCover: { width: 56, height: 76, borderRadius: 8 },
+  historyCoverWrap: {
+    borderRadius: 10,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 2,
+  },
   historyCoverPlaceholder: {
-    width: 56, height: 76, borderRadius: 8,
+    width: 64, height: 90, borderRadius: 10,
     alignItems: 'center', justifyContent: 'center',
   },
   historyInfo: { flex: 1, gap: 4 },
