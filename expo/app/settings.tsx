@@ -462,7 +462,7 @@ export default function SettingsScreen() {
                 {/* Fondu gauche */}
                 <LinearGradient
                   colors={isDarkMode
-                    ? ['rgba(30,30,30,1)', 'rgba(30,30,30,0)']
+                    ? ['rgba(255,255,255,0.07)', 'rgba(255,255,255,0)']
                     : ['rgba(255,255,255,1)', 'rgba(255,255,255,0)']}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
@@ -472,7 +472,7 @@ export default function SettingsScreen() {
                 {/* Fondu droit */}
                 <LinearGradient
                   colors={isDarkMode
-                    ? ['rgba(30,30,30,0)', 'rgba(30,30,30,1)']
+                    ? ['rgba(255,255,255,0)', 'rgba(255,255,255,0.07)']
                     : ['rgba(255,255,255,0)', 'rgba(255,255,255,1)']}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
