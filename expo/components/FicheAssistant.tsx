@@ -118,6 +118,7 @@ export function FicheAssistant({ onCommandSelect, activeCommandId }: FicheAssist
   const animX = useRef(new Animated.Value(posX.current)).current;
   const animY = useRef(new Animated.Value(posY.current)).current;
   const floatAnim = useRef(new Animated.Value(0)).current;
+  const glowLogoAnim = useRef(new Animated.Value(0.5)).current;
 
   React.useEffect(() => {
     Animated.loop(
@@ -126,7 +127,13 @@ export function FicheAssistant({ onCommandSelect, activeCommandId }: FicheAssist
         Animated.timing(floatAnim, { toValue: 0, duration: 1200, useNativeDriver: true }),
       ])
     ).start();
-  }, [floatAnim]);
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(glowLogoAnim, { toValue: 1, duration: 1800, useNativeDriver: true }),
+        Animated.timing(glowLogoAnim, { toValue: 0.35, duration: 1800, useNativeDriver: true }),
+      ])
+    ).start();
+  }, [floatAnim, glowLogoAnim]);
 
   const panResponder = useRef(PanResponder.create({
     onStartShouldSetPanResponder: () => true,
@@ -186,6 +193,7 @@ export function FicheAssistant({ onCommandSelect, activeCommandId }: FicheAssist
                   <Wand2 size={22} color="#FFF" strokeWidth={2} />
                 </View>
                 <View>
+                  <Animated.View style={[styles.logoGlow, { opacity: glowLogoAnim }]} />
                   <Image
                     source={require('@/assets/images/teddy-ai-logo.png')}
                     style={styles.headerLogo}
@@ -282,7 +290,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center', alignItems: 'center',
   },
   headerTitle: { fontSize: 22, fontWeight: '800', color: '#FFF', letterSpacing: -0.3 },
-  headerLogo: { width: 140, height: 32, },
+  headerLogo: { width: 140, height: 32 },
+  logoGlow: {
+    position: 'absolute',
+    top: -10,
+    left: -16,
+    width: 172,
+    height: 52,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    shadowColor: '#FFF',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 1,
+    shadowRadius: 18,
+    elevation: 0,
+  },
   headerSub: { fontSize: 13, color: 'rgba(255,255,255,0.75)', fontWeight: '500', marginTop: 1 },
   list: { paddingHorizontal: 16, paddingTop: 16, gap: 10, paddingBottom: 20 },
   card: {
