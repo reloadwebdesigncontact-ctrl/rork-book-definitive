@@ -5,6 +5,7 @@ import { ArrowLeft, Share2 } from "lucide-react-native";
 import React, { useState, useRef, useEffect } from "react";
 import {
   Animated,
+  Easing,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -22,6 +23,57 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { logger } from "@/utils/logger";
 import { FicheAssistant, type AssistantCommand, type HighlightRule } from "@/components/FicheAssistant";
+
+// Composant surlignage animé : View arrondie avec fade-in + pulse subtil
+function AnimatedHighlight({ text, color, bgColor }: { text: string; color: string; bgColor: string }) {
+  const fadeIn = useRef(new Animated.Value(0)).current;
+  const scale = useRef(new Animated.Value(0.85)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeIn, {
+        toValue: 1,
+        duration: 350,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.spring(scale, {
+        toValue: 1,
+        friction: 5,
+        tension: 80,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [fadeIn, scale]);
+
+  return (
+    <Animated.View
+      style={{
+        opacity: fadeIn,
+        transform: [{ scale }],
+        backgroundColor: bgColor,
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: `${color}40`,
+        paddingHorizontal: 6,
+        paddingVertical: 2,
+        marginHorizontal: 1,
+        alignSelf: 'center',
+      }}
+    >
+      <Text
+        style={{
+          color,
+          fontWeight: '600',
+          fontSize: 15,
+          lineHeight: 20,
+        }}
+      >
+        {text}
+      </Text>
+    </Animated.View>
+  );
+}
 
 export default function FicheScreen() {
   const router = useRouter();
@@ -171,23 +223,12 @@ export default function FicheScreen() {
             );
           } else {
             parts.push(
-              <Text
+              <AnimatedHighlight
                 key={`rule-${key++}`}
-                style={{
-                  color: seg.color,
-                  backgroundColor: seg.bgColor,
-                  fontWeight: '600',
-                  fontSize: 15,
-                  borderRadius: 10,
-                  overflow: 'hidden',
-                  paddingHorizontal: 7,
-                  paddingVertical: 3,
-                  borderWidth: 1,
-                  borderColor: `${seg.color}40`,
-                }}
-              >
-                {seg.text}
-              </Text>
+                text={seg.text}
+                color={seg.color!}
+                bgColor={seg.bgColor!}
+              />
             );
           }
           lastIndex = seg.end;
@@ -234,21 +275,21 @@ export default function FicheScreen() {
             ]}
           >
             <View style={[styles.listBullet, { backgroundColor: colors.primary }]} />
-            <Text style={[styles.listItemText, isDarkMode && styles.listItemTextDark]}>
+            <View style={styles.listItemInner}>
               {parts}
-            </Text>
+            </View>
           </View>
         );
       } else {
         // Texte normal avec mots importants surlignés
         const parts = buildParts(line);
         elements.push(
-          <Text
+          <View
             key={`line-${lineIndex}`}
-            style={[styles.textLine, isDarkMode && styles.textLineDark]}
+            style={[styles.textLineWrap, isDarkMode && styles.textLineWrapDark]}
           >
             {parts}
-          </Text>
+          </View>
         );
       }
     });
@@ -490,6 +531,7 @@ const styles = StyleSheet.create({
   },
   normalText: {
     fontSize: 16,
+    lineHeight: 26,
     color: "#4E342E",
   },
   normalTextDark: {
@@ -550,5 +592,22 @@ const styles = StyleSheet.create({
   },
   lineSpace: {
     height: 12,
+  },
+  // Ligne normale avec highlights — View flexWrap pour accueillir des View enfants
+  textLineWrap: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    marginBottom: 4,
+    rowGap: 4,
+  },
+  textLineWrapDark: {},
+  // Inner de list item avec highlights
+  listItemInner: {
+    flex: 1,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    rowGap: 4,
   },
 });
