@@ -186,7 +186,11 @@ export function FicheAssistant({ onCommandSelect, activeCommandId }: FicheAssist
                   <Wand2 size={22} color="#FFF" strokeWidth={2} />
                 </View>
                 <View>
-                  <Text style={styles.headerTitle}>Teddy AI</Text>
+                  <Image
+                    source={require('@/assets/images/teddy-ai-logo.png')}
+                    style={styles.headerLogo}
+                    resizeMode="contain"
+                  />
                   <Text style={styles.headerSub}>Assistant de lecture</Text>
                 </View>
               </View>
@@ -278,6 +282,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center', alignItems: 'center',
   },
   headerTitle: { fontSize: 22, fontWeight: '800', color: '#FFF', letterSpacing: -0.3 },
+  headerLogo: { width: 140, height: 32, },
   headerSub: { fontSize: 13, color: 'rgba(255,255,255,0.75)', fontWeight: '500', marginTop: 1 },
   list: { paddingHorizontal: 16, paddingTop: 16, gap: 10, paddingBottom: 20 },
   card: {
