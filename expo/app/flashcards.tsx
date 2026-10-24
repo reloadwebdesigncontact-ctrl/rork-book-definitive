@@ -633,6 +633,11 @@ export default function FlashcardsScreen() {
                           translateX: wrongShake.interpolate({ inputRange: [-1, 0, 1], outputRange: [-6, 0, 6] }),
                         }] : []),
                       ],
+                      backgroundColor: optionBg,
+                      borderRadius: 18,
+                      borderWidth,
+                      borderColor,
+                      overflow: 'hidden',
                     }}>
                       <Pressable
                         onPress={() => handleSelectFlashcardAnswer(option, index)}
@@ -640,10 +645,10 @@ export default function FlashcardsScreen() {
                         android_ripple={null}
                         style={({ pressed }) => [
                           styles.optionRow,
-                          { backgroundColor: optionBg, borderColor, borderWidth },
+                          { backgroundColor: 'transparent', borderWidth: 0 },
                           pressed && !showResult && {
                             backgroundColor: isDarkMode
-                              ? 'rgba(255,255,255,0.12)'
+                              ? 'rgba(255,255,255,0.08)'
                               : 'rgba(0,0,0,0.04)',
                           },
                         ]}
@@ -983,15 +988,8 @@ const styles = StyleSheet.create({
   optionRow: {
     flexDirection: "row",
     alignItems: "center",
-    borderRadius: 18,
     padding: 16,
-    borderWidth: 1.5,
     gap: 14,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
   },
   optionLetter: {
     width: 38,
