@@ -637,7 +637,16 @@ export default function FlashcardsScreen() {
                       <Pressable
                         onPress={() => handleSelectFlashcardAnswer(option, index)}
                         disabled={showResult}
-                        style={[styles.optionRow, { backgroundColor: optionBg, borderColor, borderWidth }]}
+                        android_ripple={null}
+                        style={({ pressed }) => [
+                          styles.optionRow,
+                          { backgroundColor: optionBg, borderColor, borderWidth },
+                          pressed && !showResult && {
+                            backgroundColor: isDarkMode
+                              ? 'rgba(255,255,255,0.12)'
+                              : 'rgba(0,0,0,0.04)',
+                          },
+                        ]}
                         testID={`flashcard-option-${index}`}
                       >
                         <View style={[styles.optionLetter, { backgroundColor: letterBg }]}>
