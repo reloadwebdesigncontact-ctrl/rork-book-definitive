@@ -238,37 +238,52 @@ export function FicheAssistant({ onCommandSelect, activeCommandId }: FicheAssist
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.list}>
               {ASSISTANT_COMMANDS.map((cmd) => {
                 const isActive = activeCommandId === cmd.id;
+                const cardBg = isActive
+                  ? `${colors.primary}12`
+                  : isDarkMode ? 'rgba(255,255,255,0.07)' : '#FFF';
+                const cardBorder = isActive ? colors.primary : isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
+                const cardBorderWidth = isActive ? 2 : 1.5;
+
                 return (
-                  <Pressable
+                  <View
                     key={cmd.id}
-                    onPress={() => { void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); onCommandSelect(cmd); setModalOpen(false); }}
-                    android_ripple={null}
-                    style={({ pressed }) => [
-                      styles.card, isDarkMode && styles.cardDark,
-                      isActive && { borderColor: colors.primary, borderWidth: 2, backgroundColor: `${colors.primary}12` },
-                      pressed && !isActive && { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.04)' },
-                      pressed && isActive && { backgroundColor: `${colors.primary}20` },
+                    style={[
+                      styles.card,
+                      {
+                        backgroundColor: cardBg,
+                        borderColor: cardBorder,
+                        borderWidth: cardBorderWidth,
+                      },
                     ]}
                   >
-                    <View style={[styles.emojiWrap, { backgroundColor: `${colors.primary}18` }]}>
-                      <Text style={styles.emoji}>{cmd.emoji}</Text>
-                    </View>
-                    <View style={styles.cardText}>
-                      <Text style={[styles.cardLabel, isDarkMode && styles.cardLabelDark, isActive && { color: colors.primary }]}>{i18n[cmd.label] ?? cmd.label}</Text>
-                      <Text style={[styles.cardDesc, isDarkMode && styles.cardDescDark]}>{i18n[cmd.description] ?? cmd.description}</Text>
-                    </View>
-                    <View style={styles.cardRight}>
-                      {cmd.rules.length > 0 && (
-                        <View style={styles.dots}>
-                          {cmd.rules.map(r => <View key={r.id} style={[styles.colorDot, { backgroundColor: r.bgColor, borderColor: r.color, borderWidth: 1 }]} />)}
-                        </View>
-                      )}
-                      {isActive
-                        ? <View style={[styles.check, { backgroundColor: colors.primary }]}><Check size={12} color="#FFF" strokeWidth={3} /></View>
-                        : <View style={[styles.arrow, isDarkMode && styles.arrowDark]}><Text style={[styles.arrowTxt, { color: isDarkMode ? '#666' : '#CCC' }]}>›</Text></View>
-                      }
-                    </View>
-                  </Pressable>
+                    <Pressable
+                      onPress={() => { void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); onCommandSelect(cmd); setModalOpen(false); }}
+                      android_ripple={null}
+                      style={({ pressed }) => [
+                        styles.cardInner,
+                        pressed && { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)' },
+                      ]}
+                    >
+                      <View style={[styles.emojiWrap, { backgroundColor: `${colors.primary}18` }]}>
+                        <Text style={styles.emoji}>{cmd.emoji}</Text>
+                      </View>
+                      <View style={styles.cardText}>
+                        <Text style={[styles.cardLabel, isDarkMode && styles.cardLabelDark, isActive && { color: colors.primary }]}>{i18n[cmd.label] ?? cmd.label}</Text>
+                        <Text style={[styles.cardDesc, isDarkMode && styles.cardDescDark]}>{i18n[cmd.description] ?? cmd.description}</Text>
+                      </View>
+                      <View style={styles.cardRight}>
+                        {cmd.rules.length > 0 && (
+                          <View style={styles.dots}>
+                            {cmd.rules.map(r => <View key={r.id} style={[styles.colorDot, { backgroundColor: r.bgColor, borderColor: r.color, borderWidth: 1 }]} />)}
+                          </View>
+                        )}
+                        {isActive
+                          ? <View style={[styles.check, { backgroundColor: colors.primary }]}><Check size={12} color="#FFF" strokeWidth={3} /></View>
+                          : <View style={[styles.arrow, isDarkMode && styles.arrowDark]}><Text style={[styles.arrowTxt, { color: isDarkMode ? '#666' : '#CCC' }]}>›</Text></View>
+                        }
+                      </View>
+                    </Pressable>
+                  </View>
                 );
               })}
             </ScrollView>
@@ -348,12 +363,21 @@ const styles = StyleSheet.create({
   list: { paddingHorizontal: 16, paddingTop: 16, gap: 10, paddingBottom: 20 },
   card: {
     flexDirection: 'row', alignItems: 'center', gap: 14,
-    backgroundColor: '#FFF', borderRadius: 18, padding: 14,
+    backgroundColor: '#FFF', borderRadius: 18, padding: 0,
     borderWidth: 1.5, borderColor: 'rgba(0,0,0,0.06)',
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05, shadowRadius: 6, elevation: 2,
+    overflow: 'hidden',
   },
   cardDark: { backgroundColor: 'rgba(255,255,255,0.07)', borderColor: 'rgba(255,255,255,0.08)', shadowOpacity: 0, elevation: 0 },
+  cardInner: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    padding: 14,
+    backgroundColor: 'transparent',
+  },
   emojiWrap: { width: 44, height: 44, borderRadius: 14, justifyContent: 'center', alignItems: 'center' },
   emoji: { fontSize: 22 },
   cardText: { flex: 1, gap: 3 },
