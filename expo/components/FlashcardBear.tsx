@@ -203,6 +203,7 @@ export function FlashcardBear({ difficulty, onDifficultyChange }: FlashcardBearP
                       onDifficultyChange(opt.id);
                       setModalOpen(false);
                     }}
+                    android_ripple={null}
                     style={({ pressed }) => [
                       styles.card,
                       isDarkMode && styles.cardDark,
@@ -211,7 +212,8 @@ export function FlashcardBear({ difficulty, onDifficultyChange }: FlashcardBearP
                         borderWidth: 2,
                         backgroundColor: `${colors.primary}12`,
                       },
-                      pressed && { opacity: 0.8 },
+                      pressed && !isActive && { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.04)' },
+                      pressed && isActive && { backgroundColor: `${colors.primary}20` },
                     ]}
                   >
                     <View style={[styles.emojiWrap, { backgroundColor: `${colors.primary}18` }]}>
