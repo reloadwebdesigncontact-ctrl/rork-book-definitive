@@ -366,6 +366,8 @@ export default function HomeScreen() {
                 text={t.home.feature1}
                 color={colors.primary}
                 isDark={isDarkMode}
+                highlighted
+                highlightDelay={600}
               />
             </Animated.View>
             <Animated.View style={{ opacity: feature2Opacity, transform: [{ translateX: feature2Slide }] }}>
@@ -374,6 +376,8 @@ export default function HomeScreen() {
                 text={t.home.feature2}
                 color={colors.primary}
                 isDark={isDarkMode}
+                highlighted
+                highlightDelay={850}
               />
             </Animated.View>
             <Animated.View style={{ opacity: feature3Opacity, transform: [{ translateX: feature3Slide }] }}>
@@ -382,6 +386,8 @@ export default function HomeScreen() {
                 text={t.home.feature3}
                 color={colors.primary}
                 isDark={isDarkMode}
+                highlighted
+                highlightDelay={1100}
               />
             </Animated.View>
           </View>
@@ -513,24 +519,44 @@ function FeatureItem({
   color,
   isDark,
   highlighted = false,
+  highlightDelay = 400,
 }: {
   icon: string;
   text: string;
   color: string;
   isDark?: boolean;
   highlighted?: boolean;
+  highlightDelay?: number;
 }) {
   const scaleAnim = React.useRef(new Animated.Value(1)).current;
   const underlineWidth = React.useRef(new Animated.Value(0)).current;
+  const underlineOpacity = React.useRef(new Animated.Value(0)).current;
+  const underlineSlide = React.useRef(new Animated.Value(-6)).current;
 
   React.useEffect(() => {
-    Animated.spring(underlineWidth, {
-      toValue: 1,
-      delay: 300,
-      friction: 8,
-      useNativeDriver: true,
-    }).start();
-  }, [underlineWidth]);
+    Animated.sequence([
+      Animated.delay(highlightDelay),
+      Animated.parallel([
+        Animated.spring(underlineWidth, {
+          toValue: 1,
+          friction: 7,
+          tension: 40,
+          useNativeDriver: true,
+        }),
+        Animated.timing(underlineOpacity, {
+          toValue: 0.45,
+          duration: 350,
+          useNativeDriver: true,
+        }),
+        Animated.spring(underlineSlide, {
+          toValue: 0,
+          friction: 6,
+          tension: 50,
+          useNativeDriver: true,
+        }),
+      ]),
+    ]).start();
+  }, [underlineWidth, underlineOpacity, underlineSlide, highlightDelay]);
 
   const handlePressIn = () => {
     Animated.spring(scaleAnim, {
@@ -565,7 +591,7 @@ function FeatureItem({
         </View>
         <View style={styles.featureTextContainer}>
           <Text style={[styles.featureText, highlighted && styles.featureTextHighlighted, isDark && styles.featureTextDark]}>{text}</Text>
-          <Animated.View style={[styles.highlightUnderline, { backgroundColor: color, transform: [{ scaleX: underlineWidth }] }]} />
+          <Animated.View style={[styles.highlightUnderline, { backgroundColor: color, transform: [{ scaleX: underlineWidth }, { translateY: underlineSlide }], opacity: underlineOpacity }]} />
         </View>
       </Pressable>
     </Animated.View>
@@ -700,7 +726,6 @@ const styles = StyleSheet.create({
     left: -2,
     right: -2,
     height: 14,
-    opacity: 0.4,
     borderRadius: 8,
     transformOrigin: "left",
   },
