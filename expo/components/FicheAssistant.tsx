@@ -15,6 +15,7 @@ import { Check, Wand2 } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const { width: W, height: H } = Dimensions.get('window');
 const BTN = 72;
@@ -39,8 +40,8 @@ export type AssistantCommand = {
 export const ASSISTANT_COMMANDS: AssistantCommand[] = [
   {
     id: 'dates',
-    label: 'Surligner les dates',
-    description: 'Toutes les années, siècles et dates',
+    label: 'dates',
+    description: 'dates_desc',
     emoji: '📅',
     rules: [{
       id: 'dates',
@@ -50,8 +51,8 @@ export const ASSISTANT_COMMANDS: AssistantCommand[] = [
   },
   {
     id: 'lieux',
-    label: 'Surligner les lieux',
-    description: 'Villes, pays, régions mentionnés',
+    label: 'lieux',
+    description: 'lieux_desc',
     emoji: '📍',
     rules: [{
       id: 'lieux',
@@ -61,8 +62,8 @@ export const ASSISTANT_COMMANDS: AssistantCommand[] = [
   },
   {
     id: 'personnages',
-    label: 'Surligner les personnages',
-    description: 'Noms propres de personnes',
+    label: 'personnages',
+    description: 'personnages_desc',
     emoji: '👤',
     rules: [{
       id: 'personnages',
@@ -72,8 +73,8 @@ export const ASSISTANT_COMMANDS: AssistantCommand[] = [
   },
   {
     id: 'themes',
-    label: 'Surligner les thèmes',
-    description: 'Mots-clés thématiques importants',
+    label: 'themes',
+    description: 'themes_desc',
     emoji: '💡',
     rules: [{
       id: 'themes',
@@ -83,8 +84,8 @@ export const ASSISTANT_COMMANDS: AssistantCommand[] = [
   },
   {
     id: 'dates_lieux',
-    label: 'Dates + Lieux',
-    description: 'Combiner les deux surlignages',
+    label: 'dates_lieux',
+    description: 'dates_lieux_desc',
     emoji: '🗺️',
     rules: [
       { id: 'dates', pattern: /\b(\d{4}|\d{1,2}(er|ème|e)?\s+siècle|XIXe?|XVIIIe?|XXe?|\d{4}s?)\b/gi, color: '#C0392B', bgColor: '#FADBD8', label: 'Date' },
@@ -93,12 +94,46 @@ export const ASSISTANT_COMMANDS: AssistantCommand[] = [
   },
   {
     id: 'reset',
-    label: 'Réinitialiser',
-    description: 'Retirer tous les surlignages',
+    label: 'reset',
+    description: 'reset_desc',
     emoji: '🔄',
     rules: [],
   },
 ];
+
+// Traductions des labels et descriptions selon la langue
+const CMD_I18N: Record<string, Record<string, string>> = {
+  fr: {
+    dates: 'Surligner les dates',
+    dates_desc: 'Toutes les années, siècles et dates',
+    lieux: 'Surligner les lieux',
+    lieux_desc: 'Villes, pays, régions mentionnés',
+    personnages: 'Surligner les personnages',
+    personnages_desc: 'Noms propres de personnes',
+    themes: 'Surligner les thèmes',
+    themes_desc: 'Mots-clés thématiques importants',
+    dates_lieux: 'Dates + Lieux',
+    dates_lieux_desc: 'Combiner les deux surlignages',
+    reset: 'Réinitialiser',
+    reset_desc: 'Retirer tous les surlignages',
+    headerSub: 'Assistant de lecture',
+  },
+  en: {
+    dates: 'Highlight dates',
+    dates_desc: 'All years, centuries and dates',
+    lieux: 'Highlight places',
+    lieux_desc: 'Cities, countries, regions mentioned',
+    personnages: 'Highlight characters',
+    personnages_desc: 'Proper names of people',
+    themes: 'Highlight themes',
+    themes_desc: 'Important thematic keywords',
+    dates_lieux: 'Dates + Places',
+    dates_lieux_desc: 'Combine both highlights',
+    reset: 'Reset',
+    reset_desc: 'Remove all highlights',
+    headerSub: 'Reading assistant',
+  },
+};
 
 interface FicheAssistantProps {
   onCommandSelect: (command: AssistantCommand) => void;
@@ -108,6 +143,8 @@ interface FicheAssistantProps {
 
 export function FicheAssistant({ onCommandSelect, activeCommandId }: FicheAssistantProps) {
   const { isDarkMode, colors, appTheme } = useTheme();
+  const { language } = useLanguage();
+  const i18n = CMD_I18N[language] ?? CMD_I18N['fr'];
   const [visible, setVisible] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const bearUri = `${BEAR_BASE}/assistant-bear-${appTheme}.png`;
@@ -199,7 +236,7 @@ export function FicheAssistant({ onCommandSelect, activeCommandId }: FicheAssist
                     style={styles.headerLogo}
                     resizeMode="contain"
                   />
-                  <Text style={styles.headerSub}>Assistant de lecture</Text>
+                  <Text style={styles.headerSub}>{i18n.headerSub}</Text>
                 </View>
               </View>
             </LinearGradient>
@@ -223,8 +260,8 @@ export function FicheAssistant({ onCommandSelect, activeCommandId }: FicheAssist
                       <Text style={styles.emoji}>{cmd.emoji}</Text>
                     </View>
                     <View style={styles.cardText}>
-                      <Text style={[styles.cardLabel, isDarkMode && styles.cardLabelDark, isActive && { color: colors.primary }]}>{cmd.label}</Text>
-                      <Text style={[styles.cardDesc, isDarkMode && styles.cardDescDark]}>{cmd.description}</Text>
+                      <Text style={[styles.cardLabel, isDarkMode && styles.cardLabelDark, isActive && { color: colors.primary }]}>{i18n[cmd.label] ?? cmd.label}</Text>
+                      <Text style={[styles.cardDesc, isDarkMode && styles.cardDescDark]}>{i18n[cmd.description] ?? cmd.description}</Text>
                     </View>
                     <View style={styles.cardRight}>
                       {cmd.rules.length > 0 && (
