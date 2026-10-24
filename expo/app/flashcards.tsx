@@ -10,6 +10,7 @@ import { useMutation } from "@tanstack/react-query";
 import { Paywall } from "@/components/Paywall";
 import { BookLoader } from "@/components/BookLoader";
 import { AnimatedBackground } from "@/components/AnimatedBackground";
+import { FlashcardBear } from "@/components/FlashcardBear";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -690,6 +691,9 @@ export default function FlashcardsScreen() {
         onClose={() => { setShowPaywall(false); if (!isPremium) router.back(); }}
         onSuccess={() => setShowPaywall(false)}
       />
+
+      {/* Teddy AI flottant — fonction à connecter plus tard */}
+      <FlashcardBear />
     </View>
   );
 }
