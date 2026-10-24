@@ -10,7 +10,7 @@ import { useMutation } from "@tanstack/react-query";
 import { Paywall } from "@/components/Paywall";
 import { BookLoader } from "@/components/BookLoader";
 import { AnimatedBackground } from "@/components/AnimatedBackground";
-import { FlashcardBear } from "@/components/FlashcardBear";
+import { FlashcardBear, type Difficulty } from "@/components/FlashcardBear";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -27,6 +27,7 @@ interface GenerateFlashcardsInput {
   mode: "initial" | "refresh";
   refreshToken: number;
   previousQuestions: string[];
+  difficulty: Difficulty;
 }
 
 export default function FlashcardsScreen() {
@@ -45,6 +46,7 @@ export default function FlashcardsScreen() {
   const [selectedFlashcardAnswer, setSelectedFlashcardAnswer] = useState<string | null>(null);
   const [showPaywall, setShowPaywall] = useState<boolean>(!isPremium);
   const [regenerateCount, setRegenerateCount] = useState<number>(0);
+  const [difficulty, setDifficulty] = useState<Difficulty>('medium');
   const MAX_REGENERATIONS = 3;
 
   const buttonScale = useRef(new Animated.Value(1)).current;
@@ -267,7 +269,7 @@ export default function FlashcardsScreen() {
   };
 
   const { mutate: generateFlashcards, isPending, isError, error, reset } = useMutation<FlashcardQuestion[], Error, GenerateFlashcardsInput>({
-    mutationFn: async ({ mode, refreshToken, previousQuestions }) => {
+    mutationFn: async ({ mode, refreshToken, previousQuestions, difficulty }) => {
       if (!cleanedSummary) {
         throw new Error(language === "fr" ? "Résumé introuvable." : "Summary not found.");
       }
@@ -278,9 +280,23 @@ export default function FlashcardsScreen() {
         ? previousQuestions.map((question, index) => `${index + 1}. ${question}`).join("\n")
         : "";
 
+      const difficultyInstructionFr =
+        difficulty === 'easy'
+          ? 'Les questions doivent être simples, portant sur les grandes idées et les éléments principaux du livre. Les mauvaises réponses doivent être clairement incorrectes.'
+          : difficulty === 'hard'
+          ? 'Les questions doivent être difficiles, portant sur des détails précis, des analyses approfondies ou des nuances subtiles. Les mauvaises réponses doivent être très proches de la bonne réponse.'
+          : 'Les questions doivent être de difficulté moyenne, testant la compréhension générale avec quelques nuances. Les mauvaises réponses doivent être plausibles.';
+
+      const difficultyInstructionEn =
+        difficulty === 'easy'
+          ? 'Questions should be simple, focusing on main ideas and key elements of the book. Wrong answers should be clearly incorrect.'
+          : difficulty === 'hard'
+          ? 'Questions should be challenging, focusing on specific details, deep analysis or subtle nuances. Wrong answers should be very close to the correct one.'
+          : 'Questions should be of medium difficulty, testing general comprehension with some nuance. Wrong answers should be plausible.';
+
       const flashcardPrompt = language === "fr"
-        ? `À partir de ce résumé du livre "${title || "Livre"}" de ${author || "Auteur inconnu"}, génère 5 questions de révision sous forme de QCM. Chaque question doit avoir exactement 3 réponses possibles et une seule bonne réponse. Les mauvaises réponses doivent être crédibles. Réponds UNIQUEMENT avec un JSON valide au format suivant: {"questions":[{"question":"...","options":["...","...","..."],"correctAnswer":"..."}]}. Assure-toi que correctAnswer correspond exactement à l'une des options.${mode === "refresh" ? ` Ceci est une régénération. Génère un NOUVEAU lot avec des formulations et angles différents. N'utilise pas ces anciennes questions :\n${previousQuestionsText}\nUtilise ce token unique pour forcer une nouvelle génération : ${refreshToken}.` : ` Utilise ce token unique : ${refreshToken}.`} Résumé: ${cleanedSummary}`
-        : `Based on this summary of the book "${title || "Book"}" by ${author || "Unknown author"}, generate 5 revision multiple-choice questions. Each question must have exactly 3 possible answers and only one correct answer. Wrong answers should still be plausible. Respond ONLY with valid JSON in this format: {"questions":[{"question":"...","options":["...","...","..."],"correctAnswer":"..."}]}. Make sure correctAnswer matches exactly one of the options.${mode === "refresh" ? ` This is a regeneration. Create a NEW batch with different wording and different focus. Do not reuse these previous questions:\n${previousQuestionsText}\nUse this unique token to force a fresh generation: ${refreshToken}.` : ` Use this unique token: ${refreshToken}.`} Summary: ${cleanedSummary}`;
+        ? `À partir de ce résumé du livre "${title || "Livre"}" de ${author || "Auteur inconnu"}, génère 5 questions de révision sous forme de QCM. ${difficultyInstructionFr} Chaque question doit avoir exactement 3 réponses possibles et une seule bonne réponse. Réponds UNIQUEMENT avec un JSON valide au format suivant: {"questions":[{"question":"...","options":["...","...","..."],"correctAnswer":"..."}]}. Assure-toi que correctAnswer correspond exactement à l'une des options.${mode === "refresh" ? ` Ceci est une régénération. Génère un NOUVEAU lot avec des formulations et angles différents. N'utilise pas ces anciennes questions :\n${previousQuestionsText}\nUtilise ce token unique pour forcer une nouvelle génération : ${refreshToken}.` : ` Utilise ce token unique : ${refreshToken}.`} Résumé: ${cleanedSummary}`
+        : `Based on this summary of the book "${title || "Book"}" by ${author || "Unknown author"}, generate 5 revision multiple-choice questions. ${difficultyInstructionEn} Each question must have exactly 3 possible answers and only one correct answer. Respond ONLY with valid JSON in this format: {"questions":[{"question":"...","options":["...","...","..."],"correctAnswer":"..."}]}. Make sure correctAnswer matches exactly one of the options.${mode === "refresh" ? ` This is a regeneration. Create a NEW batch with different wording and different focus. Do not reuse these previous questions:\n${previousQuestionsText}\nUse this unique token to force a fresh generation: ${refreshToken}.` : ` Use this unique token: ${refreshToken}.`} Summary: ${cleanedSummary}`;
 
       const response = await generateText(flashcardPrompt);
       logger.log("Flash cards response received, length:", response?.length);
@@ -346,9 +362,10 @@ export default function FlashcardsScreen() {
         mode: "initial",
         refreshToken: Date.now(),
         previousQuestions: [],
+        difficulty,
       });
     }
-  }, [cleanedSummary, flashcards.length, generateFlashcards, isPending, isPremium]);
+  }, [cleanedSummary, flashcards.length, generateFlashcards, isPending, isPremium, difficulty]);
 
   const handleRegenerate = () => {
     if (regenerateCount >= MAX_REGENERATIONS) {
@@ -372,6 +389,7 @@ export default function FlashcardsScreen() {
       mode: "refresh",
       refreshToken: Date.now(),
       previousQuestions: flashcards.map((item) => item.question),
+      difficulty,
     });
   };
 
@@ -693,7 +711,24 @@ export default function FlashcardsScreen() {
       />
 
       {/* Teddy AI flottant — fonction à connecter plus tard */}
-      <FlashcardBear />
+      <FlashcardBear
+        difficulty={difficulty}
+        onDifficultyChange={(newDifficulty) => {
+          setDifficulty(newDifficulty);
+          // Relancer la génération avec la nouvelle difficulté
+          reset();
+          setSelectedFlashcardAnswer(null);
+          setCurrentFlashcardIndex(0);
+          cardOpacity.setValue(0);
+          cardEntrance.setValue(24);
+          generateFlashcards({
+            mode: "refresh",
+            refreshToken: Date.now(),
+            previousQuestions: flashcards.map((item) => item.question),
+            difficulty: newDifficulty,
+          });
+        }}
+      />
     </View>
   );
 }
