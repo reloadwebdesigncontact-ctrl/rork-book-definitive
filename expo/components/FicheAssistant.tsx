@@ -225,19 +225,14 @@ export function FicheAssistant({ onCommandSelect, activeCommandId }: FicheAssist
           <Pressable style={[styles.sheet, isDarkMode && styles.sheetDark]} onPress={() => {}}>
             <LinearGradient colors={colors.gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.header}>
               <View style={styles.handle} />
-              <View style={styles.headerRow}>
-                <View style={styles.headerIcon}>
-                  <Wand2 size={22} color="#FFF" strokeWidth={2} />
-                </View>
-                <View>
-                  <Animated.View style={[styles.logoGlow, { opacity: glowLogoAnim }]} />
-                  <Image
-                    source={require('@/assets/images/teddy-ai-logo.png')}
-                    style={styles.headerLogo}
-                    resizeMode="contain"
-                  />
-                  <Text style={styles.headerSub}>{i18n.headerSub}</Text>
-                </View>
+              <View style={styles.headerCenter}>
+                <Animated.View style={[styles.logoGlow, { opacity: glowLogoAnim }]} />
+                <Image
+                  source={require('@/assets/images/teddy-ai-logo.png')}
+                  style={styles.headerLogo}
+                  resizeMode="contain"
+                />
+                <Text style={styles.headerSub}>{i18n.headerSub}</Text>
               </View>
             </LinearGradient>
 
@@ -323,28 +318,34 @@ const styles = StyleSheet.create({
     marginTop: 10, marginBottom: 14,
   },
   headerRow: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  headerCenter: {
+    alignItems: 'center',
+    paddingVertical: 4,
+    position: 'relative',
+  },
   headerIcon: {
     width: 46, height: 46, borderRadius: 15,
     backgroundColor: 'rgba(255,255,255,0.2)',
     justifyContent: 'center', alignItems: 'center',
   },
   headerTitle: { fontSize: 22, fontWeight: '800', color: '#FFF', letterSpacing: -0.3 },
-  headerLogo: { width: 140, height: 32 },
+  headerLogo: { width: 200, height: 48 },
   logoGlow: {
     position: 'absolute',
-    top: -10,
-    left: -16,
-    width: 172,
-    height: 52,
-    borderRadius: 20,
+    top: -12,
+    left: '50%',
+    marginLeft: -110,
+    width: 220,
+    height: 72,
+    borderRadius: 28,
     backgroundColor: 'rgba(255,255,255,0.18)',
     shadowColor: '#FFF',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 1,
-    shadowRadius: 18,
+    shadowRadius: 24,
     elevation: 0,
   },
-  headerSub: { fontSize: 13, color: 'rgba(255,255,255,0.75)', fontWeight: '500', marginTop: 1 },
+  headerSub: { fontSize: 13, color: 'rgba(255,255,255,0.75)', fontWeight: '500', marginTop: 4, textAlign: 'center' },
   list: { paddingHorizontal: 16, paddingTop: 16, gap: 10, paddingBottom: 20 },
   card: {
     flexDirection: 'row', alignItems: 'center', gap: 14,
