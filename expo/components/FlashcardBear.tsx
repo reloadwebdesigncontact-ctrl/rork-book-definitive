@@ -171,7 +171,6 @@ export function FlashcardBear({ difficulty, onDifficultyChange }: FlashcardBearP
             >
               <View style={styles.handle} />
               <View style={styles.headerCenter}>
-                <Animated.View style={[styles.logoGlow, { opacity: glowLogoAnim }]} />
                 <Image
                   source={require('@/assets/images/teddy-ai-logo.png')}
                   style={styles.headerLogo}
@@ -331,6 +330,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  headerLogo: { width: 240, height: 60 },
   logoGlow: {
     position: 'absolute',
     top: -12,
@@ -345,7 +345,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 1,
     shadowRadius: 24,
   },
-  headerLogo: { width: 200, height: 48 },
   headerSub: {
     fontSize: 13,
     color: 'rgba(255,255,255,0.75)',

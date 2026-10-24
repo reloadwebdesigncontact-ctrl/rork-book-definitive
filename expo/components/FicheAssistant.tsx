@@ -226,7 +226,6 @@ export function FicheAssistant({ onCommandSelect, activeCommandId }: FicheAssist
             <LinearGradient colors={colors.gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.header}>
               <View style={styles.handle} />
               <View style={styles.headerCenter}>
-                <Animated.View style={[styles.logoGlow, { opacity: glowLogoAnim }]} />
                 <Image
                   source={require('@/assets/images/teddy-ai-logo.png')}
                   style={styles.headerLogo}
@@ -329,7 +328,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center', alignItems: 'center',
   },
   headerTitle: { fontSize: 22, fontWeight: '800', color: '#FFF', letterSpacing: -0.3 },
-  headerLogo: { width: 200, height: 48 },
+  headerLogo: { width: 240, height: 60 },
   logoGlow: {
     position: 'absolute',
     top: -12,
