@@ -57,7 +57,7 @@ export function Paywall({ visible, onClose, onSuccess }: PaywallProps) {
     new Animated.Value(1),
   ]).current;
   const iconScales = React.useRef(
-    Array.from({ length: 17 }, () => new Animated.Value(1))
+    Array.from({ length: 25 }, () => new Animated.Value(1))
   ).current;
   const featureAnims = React.useRef(
     [0, 1, 2, 3, 4].map(() => new Animated.Value(0))
@@ -132,13 +132,13 @@ export function Paywall({ visible, onClose, onSuccess }: PaywallProps) {
     { icon: FileText,    text: 'Fiches de lecture complètes',   desc: 'Format académique' },
     { icon: Volume2,     text: 'Lecture audio illimitée',       desc: 'Écoute partout' },
     { icon: Layers,    text: 'Flash cards interactives',      desc: 'Teste tes connaissances' },
-    { icon: Smartphone,  text: "Icône de l'app personnalisée",  desc: '17 icônes au choix' },
+    { icon: Smartphone,  text: "Icône de l'app personnalisée",  desc: '25 icônes au choix' },
   ] : [
     { icon: BookOpen,    text: 'Chapter-by-chapter summaries', desc: 'In-depth analysis' },
     { icon: FileText,    text: 'Complete reading sheets',      desc: 'Academic format' },
     { icon: Volume2,     text: 'Unlimited audio reading',      desc: 'Listen anywhere' },
     { icon: Layers,    text: 'Interactive flash cards',      desc: 'Test your knowledge' },
-    { icon: Smartphone,  text: 'Custom app icon',              desc: '17 icons to choose from' },
+    { icon: Smartphone,  text: 'Custom app icon',              desc: '25 icons to choose from' },
   ];
 
   const plans = [
