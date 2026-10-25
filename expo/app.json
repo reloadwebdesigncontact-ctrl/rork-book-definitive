@@ -93,7 +93,9 @@
           "lagoon":    { "image": "./assets/images/lagoon.png",    "prerendered": true },
           "teddy-purple": { "image": "./assets/images/teddy-purple.png", "prerendered": true },
           "teddy-blue":   { "image": "./assets/images/teddy-blue.png",   "prerendered": true },
-          "teddy-peach":  { "image": "./assets/images/teddy-peach.png",  "prerendered": true }
+          "teddy-peach":  { "image": "./assets/images/teddy-peach.png",  "prerendered": true },
+          "dev-logo":     { "image": "./assets/images/dev-logo.png",     "prerendered": true },
+          "og-orange":    { "image": "./assets/images/og-orange.png",    "prerendered": true }
         }
       ]
     ],

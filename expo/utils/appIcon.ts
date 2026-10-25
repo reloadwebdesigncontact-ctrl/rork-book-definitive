@@ -34,6 +34,8 @@ export const ICON_OPTIONS = [
   { key: 'teddy-purple', label: 'Teddy Purple' },
   { key: 'teddy-blue',   label: 'Teddy Blue' },
   { key: 'teddy-peach',  label: 'Teddy Peach' },
+  { key: 'dev-logo',     label: 'Logo du développement' },
+  { key: 'og-orange',    label: 'OG Logo Orange' },
 ] as const;
 
 export type AppIconKey = typeof ICON_OPTIONS[number]['key'];
@@ -67,6 +69,8 @@ export const ICON_PREVIEWS: Record<AppIconKey, ReturnType<typeof require>> = {
   'teddy-purple': require('@/assets/images/teddy-purple.png'),
   'teddy-blue':   require('@/assets/images/teddy-blue.png'),
   'teddy-peach':  require('@/assets/images/teddy-peach.png'),
+  'dev-logo':     require('@/assets/images/dev-logo.png'),
+  'og-orange':    require('@/assets/images/og-orange.png'),
 };
 
 export async function getSavedIcon(): Promise<AppIconKey> {

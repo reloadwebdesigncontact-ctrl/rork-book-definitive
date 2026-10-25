@@ -47,10 +47,12 @@ const THEME_LABELS: Record<AppTheme, { fr: string; en: string }> = {
   holo:      { fr: 'Holo',      en: 'Holo' },
   arctic:    { fr: 'Arctique',  en: 'Arctic' },
   lagoon:    { fr: 'Lagon',     en: 'Lagoon' },
+  'dev-logo':  { fr: 'Logo du développement', en: 'Dev Logo' },
+  'og-orange': { fr: 'OG Logo Orange',        en: 'OG Logo Orange' },
 };
 
 // Thèmes réservés aux utilisateurs Premium
-const PREMIUM_THEMES = new Set<AppTheme>(['tropical', 'peach', 'velvet', 'glacier', 'galaxy', 'tartan', 'holo', 'arctic', 'lagoon']);
+const PREMIUM_THEMES = new Set<AppTheme>(['tropical', 'peach', 'velvet', 'glacier', 'galaxy', 'tartan', 'holo', 'arctic', 'lagoon', 'dev-logo', 'og-orange']);
 
 const THEMES = Object.keys(APP_THEMES) as AppTheme[];
 

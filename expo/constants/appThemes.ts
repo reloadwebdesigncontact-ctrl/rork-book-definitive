@@ -1,4 +1,4 @@
-export type AppTheme = 'orange' | 'red' | 'purple' | 'turquoise' | 'pink' | 'yellow' | 'coral' | 'lime' | 'sunset' | 'dreamy' | 'neon' | 'flamingo' | 'aurora' | 'ocean' | 'silver' | 'gold' | 'tropical' | 'peach' | 'velvet' | 'glacier' | 'galaxy' | 'tartan' | 'holo' | 'arctic' | 'lagoon';
+export type AppTheme = 'orange' | 'red' | 'purple' | 'turquoise' | 'pink' | 'yellow' | 'coral' | 'lime' | 'sunset' | 'dreamy' | 'neon' | 'flamingo' | 'aurora' | 'ocean' | 'silver' | 'gold' | 'tropical' | 'peach' | 'velvet' | 'glacier' | 'galaxy' | 'tartan' | 'holo' | 'arctic' | 'lagoon' | 'dev-logo' | 'og-orange';
 
 export interface ColorPalette {
   primary: string;
@@ -185,5 +185,19 @@ export const APP_THEMES: Record<AppTheme, ColorPalette> = {
     tertiary: '#48CAE4',
     gradient: ['#0097B2', '#00B4D8', '#48CAE4'] as const,
     icon: `${BASE}/lagoon.png`,
+  },
+  'dev-logo': {
+    primary: '#FF6B35',
+    secondary: '#FF8C00',
+    tertiary: '#FFA500',
+    gradient: ['#FF6B35', '#FF8C00', '#FFA500'] as const,
+    icon: `${BASE}/dev-logo.png`,
+  },
+  'og-orange': {
+    primary: '#FF6B35',
+    secondary: '#FF8C00',
+    tertiary: '#FFA500',
+    gradient: ['#FF6B35', '#FF8C00', '#FFA500'] as const,
+    icon: `${BASE}/og-orange.png`,
   },
 };
