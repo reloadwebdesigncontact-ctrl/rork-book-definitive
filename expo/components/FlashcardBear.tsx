@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
   },
   sheetDark: { backgroundColor: '#161616' },
   header: {
-    paddingBottom: 20,
+    paddingBottom: 10,
     paddingHorizontal: 20,
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
@@ -321,8 +321,8 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     backgroundColor: 'rgba(255,255,255,0.4)',
     alignSelf: 'center',
-    marginTop: 10,
-    marginBottom: 14,
+    marginTop: 8,
+    marginBottom: 8,
   },
   headerRow: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   headerCenter: {
@@ -338,7 +338,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  headerLogo: { width: 240, height: 60 },
+  headerLogo: { width: 280, height: 70 },
   logoGlow: {
     position: 'absolute',
     top: -12,
@@ -354,10 +354,10 @@ const styles = StyleSheet.create({
     shadowRadius: 24,
   },
   headerSub: {
-    fontSize: 13,
+    fontSize: 12,
     color: 'rgba(255,255,255,0.75)',
     fontWeight: '500',
-    marginTop: 4,
+    marginTop: 2,
     textAlign: 'center',
   },
   list: {

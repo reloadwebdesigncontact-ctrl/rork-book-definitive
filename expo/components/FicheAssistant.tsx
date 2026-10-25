@@ -323,11 +323,11 @@ const styles = StyleSheet.create({
     paddingBottom: 32, maxHeight: H * 0.82, overflow: 'hidden',
   },
   sheetDark: { backgroundColor: '#161616' },
-  header: { paddingBottom: 20, paddingHorizontal: 20, borderTopLeftRadius: 28, borderTopRightRadius: 28 },
+  header: { paddingBottom: 10, paddingHorizontal: 20, borderTopLeftRadius: 28, borderTopRightRadius: 28 },
   handle: {
     width: 40, height: 4, borderRadius: 2,
     backgroundColor: 'rgba(255,255,255,0.4)', alignSelf: 'center',
-    marginTop: 10, marginBottom: 14,
+    marginTop: 8, marginBottom: 8,
   },
   headerRow: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   headerCenter: {
@@ -341,7 +341,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center', alignItems: 'center',
   },
   headerTitle: { fontSize: 22, fontWeight: '800', color: '#FFF', letterSpacing: -0.3 },
-  headerLogo: { width: 240, height: 60 },
+  headerLogo: { width: 280, height: 70 },
   logoGlow: {
     position: 'absolute',
     top: -12,
@@ -357,7 +357,7 @@ const styles = StyleSheet.create({
     shadowRadius: 24,
     elevation: 0,
   },
-  headerSub: { fontSize: 13, color: 'rgba(255,255,255,0.75)', fontWeight: '500', marginTop: 4, textAlign: 'center' },
+  headerSub: { fontSize: 12, color: 'rgba(255,255,255,0.75)', fontWeight: '500', marginTop: 2, textAlign: 'center' },
   list: { paddingHorizontal: 16, paddingTop: 16, gap: 10, paddingBottom: 20 },
   card: {
     flexDirection: 'row', alignItems: 'center', gap: 14,
