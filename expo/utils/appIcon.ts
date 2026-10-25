@@ -31,11 +31,11 @@ export const ICON_OPTIONS = [
   { key: 'holo',      label: 'Holo' },
   { key: 'arctic',    label: 'Arctic' },
   { key: 'lagoon',    label: 'Lagoon' },
-  { key: 'teddy-purple', label: 'Teddy Purple' },
-  { key: 'teddy-blue',   label: 'Teddy Blue' },
-  { key: 'teddy-peach',  label: 'Teddy Peach' },
-  { key: 'dev-logo',     label: 'Logo du développement' },
-  { key: 'og-orange',    label: 'OG Logo Orange' },
+  { key: 'teddy_purple', label: 'Teddy Purple' },
+  { key: 'teddy_blue',   label: 'Teddy Blue' },
+  { key: 'teddy_peach',  label: 'Teddy Peach' },
+  { key: 'dev_logo',     label: 'Logo du développement' },
+  { key: 'og_orange',    label: 'OG Logo Orange' },
 ] as const;
 
 export type AppIconKey = typeof ICON_OPTIONS[number]['key'];
@@ -66,11 +66,11 @@ export const ICON_PREVIEWS: Record<AppIconKey, ReturnType<typeof require>> = {
   holo:      require('@/assets/images/holo.png'),
   arctic:    require('@/assets/images/arctic.png'),
   lagoon:    require('@/assets/images/lagoon.png'),
-  'teddy-purple': require('@/assets/images/teddy-purple.png'),
-  'teddy-blue':   require('@/assets/images/teddy-blue.png'),
-  'teddy-peach':  require('@/assets/images/teddy-peach.png'),
-  'dev-logo':     require('@/assets/images/dev-logo.png'),
-  'og-orange':    require('@/assets/images/og-orange.png'),
+  'teddy_purple': require('@/assets/images/teddy_purple.png'),
+  'teddy_blue':   require('@/assets/images/teddy_blue.png'),
+  'teddy_peach':  require('@/assets/images/teddy_peach.png'),
+  'dev_logo':     require('@/assets/images/dev_logo.png'),
+  'og_orange':    require('@/assets/images/og_orange.png'),
 };
 
 export async function getSavedIcon(): Promise<AppIconKey> {

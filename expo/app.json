@@ -91,11 +91,11 @@
           "holo":      { "image": "./assets/images/holo.png",      "prerendered": true },
           "arctic":    { "image": "./assets/images/arctic.png",    "prerendered": true },
           "lagoon":    { "image": "./assets/images/lagoon.png",    "prerendered": true },
-          "teddy-purple": { "image": "./assets/images/teddy-purple.png", "prerendered": true },
-          "teddy-blue":   { "image": "./assets/images/teddy-blue.png",   "prerendered": true },
-          "teddy-peach":  { "image": "./assets/images/teddy-peach.png",  "prerendered": true },
-          "dev-logo":     { "image": "./assets/images/dev-logo.png",     "prerendered": true },
-          "og-orange":    { "image": "./assets/images/og-orange.png",    "prerendered": true }
+          "teddy_purple": { "image": "./assets/images/teddy_purple.png", "prerendered": true },
+          "teddy_blue":   { "image": "./assets/images/teddy_blue.png",   "prerendered": true },
+          "teddy_peach":  { "image": "./assets/images/teddy_peach.png",  "prerendered": true },
+          "dev_logo":     { "image": "./assets/images/dev_logo.png",     "prerendered": true },
+          "og_orange":    { "image": "./assets/images/og_orange.png",    "prerendered": true }
         }
       ]
     ],
