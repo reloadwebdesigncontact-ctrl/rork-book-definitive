@@ -3,13 +3,14 @@ import {
   View,
   Text,
   StyleSheet,
-  Pressable,
+  TouchableOpacity,
   Modal,
   ScrollView,
   Animated,
   PanResponder,
   Dimensions,
   Image,
+  Pressable,
 } from 'react-native';
 import { Check, Wand2 } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -256,13 +257,10 @@ export function FicheAssistant({ onCommandSelect, activeCommandId }: FicheAssist
                       },
                     ]}
                   >
-                    <Pressable
+                    <TouchableOpacity
                       onPress={() => { void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); onCommandSelect(cmd); setModalOpen(false); }}
-                      android_ripple={null}
-                      style={({ pressed }) => [
-                        styles.cardInner,
-                        pressed && { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)' },
-                      ]}
+                      activeOpacity={0.7}
+                      style={styles.cardInner}
                     >
                       <View style={[styles.emojiWrap, { backgroundColor: `${colors.primary}18` }]}>
                         <Text style={styles.emoji}>{cmd.emoji}</Text>
@@ -282,7 +280,7 @@ export function FicheAssistant({ onCommandSelect, activeCommandId }: FicheAssist
                           : <View style={[styles.arrow, isDarkMode && styles.arrowDark]}><Text style={[styles.arrowTxt, { color: isDarkMode ? '#666' : '#CCC' }]}>›</Text></View>
                         }
                       </View>
-                    </Pressable>
+                    </TouchableOpacity>
                   </View>
                 );
               })}

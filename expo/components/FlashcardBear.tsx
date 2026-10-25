@@ -8,6 +8,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
   PanResponder,
 } from 'react-native';
@@ -207,17 +208,14 @@ export function FlashcardBear({ difficulty, onDifficultyChange }: FlashcardBearP
                       },
                     ]}
                   >
-                    <Pressable
+                    <TouchableOpacity
                       onPress={() => {
                         void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                         onDifficultyChange(opt.id);
                         setModalOpen(false);
                       }}
-                      android_ripple={null}
-                      style={({ pressed }) => [
-                        styles.cardInner,
-                        pressed && { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)' },
-                      ]}
+                      activeOpacity={0.7}
+                      style={styles.cardInner}
                     >
                       <View style={[styles.emojiWrap, { backgroundColor: `${colors.primary}18` }]}>
                         <Text style={styles.emoji}>{opt.emoji}</Text>
@@ -253,7 +251,7 @@ export function FlashcardBear({ difficulty, onDifficultyChange }: FlashcardBearP
                           </View>
                         )}
                       </View>
-                    </Pressable>
+                    </TouchableOpacity>
                   </View>
                 );
               })}
