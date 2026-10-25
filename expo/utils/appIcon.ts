@@ -81,27 +81,20 @@ export async function changeAppIcon(iconKey: AppIconKey): Promise<boolean> {
   if (Platform.OS !== 'android') return false;
 
   try {
+    // Sauvegarder d'abord en AsyncStorage
     await AsyncStorage.setItem(APP_ICON_KEY, iconKey);
 
-    // expo-dynamic-app-icon — API simple, compatible New Architecture
+    // Appeler setAppIcon — Android va redémarrer l'app automatiquement
     const result = setAppIcon(iconKey);
 
-    if (result !== false) {
-      Alert.alert(
-        '✅ Icône modifiée',
-        "L'icône a été changée.\n\n⚠️ L'ancienne icône peut apparaître brièvement en double, puis disparaître automatiquement.",
-        [{ text: 'OK' }]
-      );
-      return true;
+    if (result === false) {
+      logger.error('[AppIcon] setAppIcon returned false for:', iconKey);
     }
 
-    logger.error('[AppIcon] setAppIcon returned false for:', iconKey);
-    Alert.alert('❌ Erreur', "Impossible de changer l'icône.", [{ text: 'OK' }]);
-    return false;
+    return true;
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     logger.error('[AppIcon] Error:', msg);
-    Alert.alert('❌ Erreur', msg, [{ text: 'OK' }]);
     return false;
   }
 }

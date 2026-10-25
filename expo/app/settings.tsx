@@ -6,6 +6,7 @@ import Constants from 'expo-constants';
 import * as Haptics from "expo-haptics";
 import React, { useState, useRef, useEffect } from "react";
 import {
+  Alert,
   Animated,
   Easing,
   Pressable,
@@ -429,10 +430,25 @@ export default function SettingsScreen() {
                   {ICON_OPTIONS.map((option) => (
                   <Pressable
                     key={option.key}
-                    onPress={async () => {
+                    onPress={() => {
+                      if (selectedIcon === option.key) return;
                       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                      setSelectedIcon(option.key);
-                      await changeAppIcon(option.key);
+                      Alert.alert(
+                        language === 'fr' ? 'Changer l\'icône' : 'Change icon',
+                        language === 'fr'
+                          ? 'L\'application va redémarrer pour appliquer la nouvelle icône.'
+                          : 'The app will restart to apply the new icon.',
+                        [
+                          { text: language === 'fr' ? 'Annuler' : 'Cancel', style: 'cancel' },
+                          {
+                            text: language === 'fr' ? 'Confirmer' : 'Confirm',
+                            onPress: async () => {
+                              setSelectedIcon(option.key);
+                              await changeAppIcon(option.key);
+                            },
+                          },
+                        ]
+                      );
                     }}
                     style={[
                       styles.iconOption,
