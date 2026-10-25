@@ -90,7 +90,10 @@
           "tartan":    { "image": "./assets/images/tartan.png",    "prerendered": true },
           "holo":      { "image": "./assets/images/holo.png",      "prerendered": true },
           "arctic":    { "image": "./assets/images/arctic.png",    "prerendered": true },
-          "lagoon":    { "image": "./assets/images/lagoon.png",    "prerendered": true }
+          "lagoon":    { "image": "./assets/images/lagoon.png",    "prerendered": true },
+          "teddy-purple": { "image": "./assets/images/teddy-purple.png", "prerendered": true },
+          "teddy-blue":   { "image": "./assets/images/teddy-blue.png",   "prerendered": true },
+          "teddy-peach":  { "image": "./assets/images/teddy-peach.png",  "prerendered": true }
         }
       ]
     ],

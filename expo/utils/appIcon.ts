@@ -31,6 +31,9 @@ export const ICON_OPTIONS = [
   { key: 'holo',      label: 'Holo' },
   { key: 'arctic',    label: 'Arctic' },
   { key: 'lagoon',    label: 'Lagoon' },
+  { key: 'teddy-purple', label: 'Teddy Purple' },
+  { key: 'teddy-blue',   label: 'Teddy Blue' },
+  { key: 'teddy-peach',  label: 'Teddy Peach' },
 ] as const;
 
 export type AppIconKey = typeof ICON_OPTIONS[number]['key'];
@@ -61,6 +64,9 @@ export const ICON_PREVIEWS: Record<AppIconKey, ReturnType<typeof require>> = {
   holo:      require('@/assets/images/holo.png'),
   arctic:    require('@/assets/images/arctic.png'),
   lagoon:    require('@/assets/images/lagoon.png'),
+  'teddy-purple': require('@/assets/images/teddy-purple.png'),
+  'teddy-blue':   require('@/assets/images/teddy-blue.png'),
+  'teddy-peach':  require('@/assets/images/teddy-peach.png'),
 };
 
 export async function getSavedIcon(): Promise<AppIconKey> {
