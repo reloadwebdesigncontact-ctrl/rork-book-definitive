@@ -260,7 +260,7 @@ export function FicheAssistant({ onCommandSelect, activeCommandId }: FicheAssist
                     <TouchableOpacity
                       onPress={() => { void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); onCommandSelect(cmd); setModalOpen(false); }}
                       activeOpacity={0.7}
-                      style={styles.cardInner}
+                      style={[styles.cardInner, { backgroundColor: cardBg }]}
                     >
                       <View style={[styles.emojiWrap, { backgroundColor: `${colors.primary}18` }]}>
                         <Text style={styles.emoji}>{cmd.emoji}</Text>
