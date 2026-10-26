@@ -266,11 +266,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    flexWrap: 'wrap',
   },
   themeName: {
     fontSize: 17,
     fontWeight: '700' as const,
     color: '#2C1810',
+    flexShrink: 1,
   },
   themeNameDark: { color: '#FFF' },
   premiumBadge: {
@@ -280,6 +282,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 7,
     paddingVertical: 3,
     borderRadius: 8,
+    flexShrink: 0,
   },
   premiumBadgeText: {
     fontSize: 10,
