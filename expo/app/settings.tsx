@@ -8,6 +8,7 @@ import React, { useState, useRef, useEffect } from "react";
 import {
   Alert,
   Animated,
+  BackHandler,
   Easing,
   Pressable,
   ScrollView,
@@ -445,6 +446,9 @@ export default function SettingsScreen() {
                             onPress: async () => {
                               setSelectedIcon(option.key);
                               await changeAppIcon(option.key);
+                              // Fermer l'app proprement après le changement
+                              // Android la relancera sur l'écran d'accueil
+                              setTimeout(() => BackHandler.exitApp(), 500);
                             },
                           },
                         ]
