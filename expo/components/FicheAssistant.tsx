@@ -242,8 +242,8 @@ export function FicheAssistant({ onCommandSelect, activeCommandId }: FicheAssist
                 const cardBg = isActive
                   ? `${colors.primary}12`
                   : isDarkMode ? 'rgba(255,255,255,0.07)' : '#FFF';
-                const cardBorder = isActive ? colors.primary : isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
-                const cardBorderWidth = isActive ? 2 : 1.5;
+                const cardBorder = isActive ? colors.primary : 'transparent';
+                const cardBorderWidth = isActive ? 2 : 0;
 
                 return (
                   <View
@@ -362,12 +362,12 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: 'row', alignItems: 'center', gap: 14,
     backgroundColor: '#FFF', borderRadius: 18, padding: 0,
-    borderWidth: 1.5, borderColor: 'rgba(0,0,0,0.06)',
+    borderWidth: 0, borderColor: 'transparent',
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05, shadowRadius: 6, elevation: 2,
     overflow: 'hidden',
   },
-  cardDark: { backgroundColor: 'rgba(255,255,255,0.07)', borderColor: 'rgba(255,255,255,0.08)', shadowOpacity: 0, elevation: 0 },
+  cardDark: { backgroundColor: 'rgba(255,255,255,0.07)', shadowOpacity: 0, elevation: 0 },
   cardInner: {
     flex: 1,
     flexDirection: 'row',
