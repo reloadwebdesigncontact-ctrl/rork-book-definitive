@@ -23,6 +23,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { logger } from "@/utils/logger";
 import { FicheAssistant, type AssistantCommand, type HighlightRule } from "@/components/FicheAssistant";
+import { getBearTheme } from "@/utils/bearTheme";
 
 // Composant surlignage animé : View arrondie avec fade-in + pulse subtil
 function AnimatedHighlight({ text, color, bgColor }: { text: string; color: string; bgColor: string }) {
@@ -84,7 +85,7 @@ export default function FicheScreen() {
 
   // Image de l'ours via URL GitHub — évite les require statiques qui crashent
   const BEAR_BASE = 'https://raw.githubusercontent.com/reloadwebdesigncontact-ctrl/rork-book-definitive/master/expo/assets/images/assistant-bear';
-  const bearImage = { uri: `${BEAR_BASE}/assistant-bear-${appTheme}.png` };
+  const bearImage = { uri: `${BEAR_BASE}/assistant-bear-${getBearTheme(appTheme)}.png` };
   const [activeCommandId, setActiveCommandId] = useState<string | null>(null);
   const [activeRules, setActiveRules] = useState<HighlightRule[]>([]);
   const fadeAnim = useRef(new Animated.Value(0)).current;

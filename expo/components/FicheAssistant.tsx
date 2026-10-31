@@ -17,6 +17,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { getBearTheme } from '@/utils/bearTheme';
 
 const { width: W, height: H } = Dimensions.get('window');
 const BTN = 72;
@@ -148,7 +149,7 @@ export function FicheAssistant({ onCommandSelect, activeCommandId }: FicheAssist
   const i18n = CMD_I18N[language] ?? CMD_I18N['fr'];
   const [visible, setVisible] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
-  const bearUri = `${BEAR_BASE}/assistant-bear-${appTheme}.png`;
+  const bearUri = `${BEAR_BASE}/assistant-bear-${getBearTheme(appTheme)}.png`;
 
   const isDragging = useRef(false);
   const posX = useRef(W - BTN - 20);
