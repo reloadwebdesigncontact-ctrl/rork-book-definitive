@@ -247,10 +247,13 @@ export function FicheAssistant({ onCommandSelect, activeCommandId }: FicheAssist
                 const cardBorderWidth = isActive ? 2 : 0;
 
                 return (
-                  <View
+                  <TouchableOpacity
                     key={cmd.id}
+                    onPress={() => { void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); onCommandSelect(cmd); setModalOpen(false); }}
+                    activeOpacity={0.75}
                     style={[
                       styles.card,
+                      isDarkMode && styles.cardDark,
                       {
                         backgroundColor: cardBg,
                         borderColor: cardBorder,
@@ -258,11 +261,6 @@ export function FicheAssistant({ onCommandSelect, activeCommandId }: FicheAssist
                       },
                     ]}
                   >
-                    <TouchableOpacity
-                      onPress={() => { void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); onCommandSelect(cmd); setModalOpen(false); }}
-                      activeOpacity={0.7}
-                      style={[styles.cardInner, { backgroundColor: cardBg }]}
-                    >
                       <View style={[styles.emojiWrap, { backgroundColor: `${colors.primary}18` }]}>
                         <Text style={styles.emoji}>{cmd.emoji}</Text>
                       </View>
@@ -281,8 +279,7 @@ export function FicheAssistant({ onCommandSelect, activeCommandId }: FicheAssist
                           : <View style={[styles.arrow, isDarkMode && styles.arrowDark]}><Text style={[styles.arrowTxt, { color: isDarkMode ? '#666' : '#CCC' }]}>›</Text></View>
                         }
                       </View>
-                    </TouchableOpacity>
-                  </View>
+                  </TouchableOpacity>
                 );
               })}
             </ScrollView>
@@ -362,11 +359,10 @@ const styles = StyleSheet.create({
   list: { paddingHorizontal: 16, paddingTop: 16, gap: 10, paddingBottom: 20 },
   card: {
     flexDirection: 'row', alignItems: 'center', gap: 14,
-    backgroundColor: '#FFF', borderRadius: 18, padding: 0,
+    backgroundColor: '#FFF', borderRadius: 18, padding: 14,
     borderWidth: 0, borderColor: 'transparent',
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05, shadowRadius: 6, elevation: 2,
-    overflow: 'hidden',
   },
   cardDark: { backgroundColor: 'rgba(255,255,255,0.07)', shadowOpacity: 0, elevation: 0 },
   cardInner: {

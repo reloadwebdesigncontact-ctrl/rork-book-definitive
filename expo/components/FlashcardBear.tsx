@@ -198,10 +198,17 @@ export function FlashcardBear({ difficulty, onDifficultyChange }: FlashcardBearP
                 const cardBorderWidth = isActive ? 2 : 0;
 
                 return (
-                  <View
+                  <TouchableOpacity
                     key={opt.id}
+                    onPress={() => {
+                      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      onDifficultyChange(opt.id);
+                      setModalOpen(false);
+                    }}
+                    activeOpacity={0.75}
                     style={[
                       styles.card,
+                      isDarkMode && styles.cardDark,
                       {
                         backgroundColor: cardBg,
                         borderColor: cardBorder,
@@ -209,15 +216,6 @@ export function FlashcardBear({ difficulty, onDifficultyChange }: FlashcardBearP
                       },
                     ]}
                   >
-                    <TouchableOpacity
-                      onPress={() => {
-                        void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                        onDifficultyChange(opt.id);
-                        setModalOpen(false);
-                      }}
-                      activeOpacity={0.7}
-                      style={[styles.cardInner, { backgroundColor: cardBg }]}
-                    >
                       <View style={[styles.emojiWrap, { backgroundColor: `${colors.primary}18` }]}>
                         <Text style={styles.emoji}>{opt.emoji}</Text>
                       </View>
@@ -252,8 +250,7 @@ export function FlashcardBear({ difficulty, onDifficultyChange }: FlashcardBearP
                           </View>
                         )}
                       </View>
-                    </TouchableOpacity>
-                  </View>
+                  </TouchableOpacity>
                 );
               })}
 
@@ -373,7 +370,7 @@ const styles = StyleSheet.create({
     gap: 14,
     backgroundColor: '#FFF',
     borderRadius: 18,
-    padding: 0,
+    padding: 14,
     borderWidth: 0,
     borderColor: 'transparent',
     shadowColor: '#000',
@@ -381,7 +378,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 6,
     elevation: 2,
-    overflow: 'hidden',
   },
   cardDark: {
     backgroundColor: 'rgba(255,255,255,0.07)',
