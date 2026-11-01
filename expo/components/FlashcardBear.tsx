@@ -205,7 +205,7 @@ export function FlashcardBear({ difficulty, onDifficultyChange }: FlashcardBearP
                       onDifficultyChange(opt.id);
                       setModalOpen(false);
                     }}
-                    activeOpacity={0.75}
+                    activeOpacity={1}
                     style={[
                       styles.card,
                       isDarkMode && styles.cardDark,

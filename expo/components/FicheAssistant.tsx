@@ -250,7 +250,7 @@ export function FicheAssistant({ onCommandSelect, activeCommandId }: FicheAssist
                   <TouchableOpacity
                     key={cmd.id}
                     onPress={() => { void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); onCommandSelect(cmd); setModalOpen(false); }}
-                    activeOpacity={0.75}
+                    activeOpacity={1}
                     style={[
                       styles.card,
                       isDarkMode && styles.cardDark,
