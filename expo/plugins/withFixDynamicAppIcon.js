@@ -55,7 +55,10 @@ class ExpoDynamicAppIconModule : Module() {
         val allAliases = listOf(
           "orange", "red", "purple", "turquoise", "pink", "yellow",
           "coral", "lime", "sunset", "dreamy", "neon", "flamingo",
-          "aurora", "ocean", "silver", "gold", "tropical"
+          "aurora", "ocean", "silver", "gold", "tropical", "peach",
+          "velvet", "glacier", "galaxy", "tartan", "holo", "arctic",
+          "lagoon", "teddy_purple", "teddy_blue", "teddy_peach",
+          "dev_logo", "og_orange"
         )
 
         val mainActivity = ComponentName(packageName, "\$packageName.MainActivity")
