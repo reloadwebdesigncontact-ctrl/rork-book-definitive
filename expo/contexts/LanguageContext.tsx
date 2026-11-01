@@ -10,9 +10,9 @@ function detectDeviceLanguage(): Language {
   try {
     const locales = getLocales();
     const code = locales?.[0]?.languageCode ?? 'fr';
-    // On supporte fr et en, tout le reste → fr par défaut
-    if (code === 'en') return 'en';
-    return 'fr';
+    const supported: Language[] = ['fr', 'en', 'es', 'ar', 'pt', 'de', 'ja', 'zh', 'ru', 'ko', 'hi', 'it'];
+    if (supported.includes(code as Language)) return code as Language;
+    return 'en'; // fallback anglais pour les langues non supportées
   } catch {
     return 'fr';
   }

@@ -224,51 +224,42 @@ export default function SettingsScreen() {
                 {t.settings.language}
               </Text>
             </View>
-            <View style={styles.optionGroup}>
-              <Animated.View style={{ transform: [{ scale: frOptionScale }] }}>
+            <View style={styles.languageGrid}>
+              {([
+                { code: 'fr', label: 'Français', flag: '🇫🇷' },
+                { code: 'en', label: 'English',  flag: '🇬🇧' },
+                { code: 'es', label: 'Español',  flag: '🇪🇸' },
+                { code: 'ar', label: 'العربية',  flag: '🇸🇦' },
+                { code: 'pt', label: 'Português', flag: '🇧🇷' },
+                { code: 'de', label: 'Deutsch',  flag: '🇩🇪' },
+                { code: 'ja', label: '日本語',   flag: '🇯🇵' },
+                { code: 'zh', label: '中文',     flag: '🇨🇳' },
+                { code: 'ru', label: 'Русский',  flag: '🇷🇺' },
+                { code: 'ko', label: '한국어',   flag: '🇰🇷' },
+                { code: 'hi', label: 'हिन्दी',  flag: '🇮🇳' },
+                { code: 'it', label: 'Italiano', flag: '🇮🇹' },
+              ] as const).map((lang) => (
                 <Pressable
-                  onPress={() => {
-                    animateOptionPress(frOptionScale);
-                    void changeLanguage('fr');
-                  }}
+                  key={lang.code}
+                  onPress={() => { void changeLanguage(lang.code); }}
+                  android_ripple={null}
                   style={[
-                    styles.option,
-                    isDarkMode && styles.optionDark,
-                    language === 'fr' && { backgroundColor: `${colors.primary}1F` },
+                    styles.langOption,
+                    isDarkMode && styles.langOptionDark,
+                    language === lang.code && { backgroundColor: `${colors.primary}22`, borderColor: colors.primary, borderWidth: 2 },
                   ]}
                 >
-                  <Text style={[styles.optionText, isDarkMode && styles.optionTextDark]}>
-                    {t.settings.french}
+                  <Text style={styles.langFlag}>{lang.flag}</Text>
+                  <Text style={[styles.langLabel, isDarkMode && styles.langLabelDark, language === lang.code && { color: colors.primary, fontWeight: '700' as const }]} numberOfLines={1}>
+                    {lang.label}
                   </Text>
-                  {language === 'fr' && (
-                    <View style={[styles.checkmark, { backgroundColor: colors.primary }]}>
-                      <Text style={styles.checkmarkText}>✓</Text>
+                  {language === lang.code && (
+                    <View style={[styles.langCheck, { backgroundColor: colors.primary }]}>
+                      <Text style={{ color: '#FFF', fontSize: 10, fontWeight: '700' as const }}>✓</Text>
                     </View>
                   )}
                 </Pressable>
-              </Animated.View>
-              <Animated.View style={{ transform: [{ scale: enOptionScale }] }}>
-                <Pressable
-                  onPress={() => {
-                    animateOptionPress(enOptionScale);
-                    void changeLanguage('en');
-                  }}
-                  style={[
-                    styles.option,
-                    isDarkMode && styles.optionDark,
-                    language === 'en' && { backgroundColor: `${colors.primary}1F` },
-                  ]}
-                >
-                  <Text style={[styles.optionText, isDarkMode && styles.optionTextDark]}>
-                    {t.settings.english}
-                  </Text>
-                  {language === 'en' && (
-                    <View style={[styles.checkmark, { backgroundColor: colors.primary }]}>
-                      <Text style={styles.checkmarkText}>✓</Text>
-                    </View>
-                  )}
-                </Pressable>
-              </Animated.View>
+              ))}
             </View>
           </Animated.View>
 
@@ -787,6 +778,47 @@ const styles = StyleSheet.create({
   },
   optionGroup: {
     gap: 12,
+  },
+  languageGrid: {
+    flexDirection: 'row' as const,
+    flexWrap: 'wrap' as const,
+    gap: 10,
+  },
+  langOption: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    backgroundColor: '#F5F5F5',
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: 'transparent',
+    minWidth: '46%' as any,
+    flex: 1,
+    position: 'relative' as const,
+  },
+  langOptionDark: {
+    backgroundColor: 'rgba(255,255,255,0.06)',
+  },
+  langFlag: {
+    fontSize: 20,
+  },
+  langLabel: {
+    fontSize: 14,
+    fontWeight: '600' as const,
+    color: '#3E2723',
+    flex: 1,
+  },
+  langLabelDark: {
+    color: '#FFF',
+  },
+  langCheck: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
   },
   option: {
     flexDirection: "row",
