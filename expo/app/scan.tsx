@@ -31,7 +31,7 @@ export default function ScanScreen() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [showPaywall, setShowPaywall] = useState<boolean>(false);
   const { isPremium } = useSubscription();
-  const { scansToday, remainingFreeScans, hasReachedFreeLimit, dailyLimit, incrementScan } = useScanLimit();
+  const { scansToday, remainingFreeScans, hasReachedFreeLimit, hasReachedLimit, hasReachedPremiumLimit, remainingPremiumScans, dailyLimit, premiumMonthlyLimit, incrementScan } = useScanLimit();
   const cameraRef = useRef<CameraView>(null);
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const backBtnScale = useRef(new Animated.Value(1)).current;
@@ -141,9 +141,17 @@ export default function ScanScreen() {
   }, [pulseAnim, frameOpacity, corner1, corner2, corner3, corner4, framePulse, captureButtonGlow, limitBadgePulse]);
 
   const processImage = async (uri: string) => {
-    if (!isPremium && hasReachedFreeLimit) {
-      logger.log("[Scan] Free daily limit reached, showing paywall");
-      setShowPaywall(true);
+    if (hasReachedLimit) {
+      logger.log("[Scan] Scan limit reached, showing paywall/alert");
+      if (!isPremium) {
+        setShowPaywall(true);
+      } else {
+        Alert.alert(
+          'Limite atteinte',
+          `Vous avez utilisé tous vos scans ce mois-ci (${premiumMonthlyLimit} scans). Revenez le mois prochain.`,
+          [{ text: 'OK' }]
+        );
+      }
       return;
     }
 
@@ -156,25 +164,20 @@ export default function ScanScreen() {
     setIsProcessing(true);
     logger.log("Processing image");
 
-    // On n'incrémente le compteur QU'APRÈS avoir déclenché la navigation
-    // pour éviter de consommer un scan sur une navigation annulée
-    const shouldCount = !isPremium;
-
     setTimeout(() => {
-      if (shouldCount) {
-        incrementScan();
-      }
+      incrementScan(); // on incrémente pour tout le monde (gratuit ET premium)
       setIsProcessing(false);
       router.push({
         pathname: "/summary",
         params: { imageUri: uri, feature: feature || '' },
       });
-    }, 500); // Réduit de 1500ms à 500ms — le délai n'a pas de justification sécuritaire
+    }, 500);
   };
 
   const takePicture = async () => {
-    if (!isPremium && hasReachedFreeLimit) {
-      setShowPaywall(true);
+    if (hasReachedLimit) {
+      if (!isPremium) setShowPaywall(true);
+      else Alert.alert('Limite atteinte', `Vous avez utilisé vos ${premiumMonthlyLimit} scans mensuels.`, [{ text: 'OK' }]);
       return;
     }
     if (cameraRef.current && !isProcessing) {
@@ -194,8 +197,9 @@ export default function ScanScreen() {
 
   const pickImage = async () => {
     if (isProcessing) return;
-    if (!isPremium && hasReachedFreeLimit) {
-      setShowPaywall(true);
+    if (hasReachedLimit) {
+      if (!isPremium) setShowPaywall(true);
+      else Alert.alert('Limite atteinte', `Vous avez utilisé vos ${premiumMonthlyLimit} scans mensuels.`, [{ text: 'OK' }]);
       return;
     }
 
@@ -303,6 +307,17 @@ export default function ScanScreen() {
                     : `${remainingFreeScans} scan${remainingFreeScans > 1 ? 's' : ''} restant${remainingFreeScans > 1 ? 's' : ''} aujourd'hui`}
                 </Text>
                 <Text style={styles.limitBadgeSub}>{scansToday}/{dailyLimit} utilisés • Plan gratuit</Text>
+              </Animated.View>
+            )}
+
+            {isPremium && (
+              <Animated.View style={[styles.limitBadge, styles.limitBadgePremium, { transform: [{ scale: limitBadgePulse }] }]} testID="scan-limit-badge-premium">
+                <Text style={styles.limitBadgeText}>
+                  {hasReachedPremiumLimit
+                    ? `Limite mensuelle atteinte (${premiumMonthlyLimit}/${premiumMonthlyLimit})`
+                    : `${remainingPremiumScans} scan${remainingPremiumScans > 1 ? 's' : ''} restant${remainingPremiumScans > 1 ? 's' : ''} ce mois`}
+                </Text>
+                <Text style={styles.limitBadgeSub}>Plan Premium • {premiumMonthlyLimit} scans/mois</Text>
               </Animated.View>
             )}
 
@@ -567,7 +582,10 @@ const styles = StyleSheet.create({
     borderColor: "rgba(255,255,255,0.15)",
     alignItems: "center",
   },
-  limitBadgeText: {
+  limitBadgePremium: {
+    backgroundColor: "rgba(255,165,0,0.35)",
+    borderColor: "rgba(255,165,0,0.5)",
+  },
     color: "#FFF",
     fontSize: 13,
     fontWeight: "700" as const,

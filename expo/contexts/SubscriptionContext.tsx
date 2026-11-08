@@ -56,6 +56,32 @@ function hasPremiumEntitlement(customerInfo: CustomerInfo | null | undefined) {
   return Boolean(activeEntitlement ?? allEntitlement ?? entitlementByProduct ?? hasActiveSubscription);
 }
 
+/** Retourne le plan premium actif : 'monthly' | 'annual' | 'lifetime' | null */
+export function getPremiumPlan(customerInfo: CustomerInfo | null | undefined): 'monthly' | 'annual' | 'lifetime' | null {
+  if (!customerInfo) return null;
+
+  // Vérifie les abonnements actifs
+  const activeSubs = customerInfo.activeSubscriptions ?? [];
+  if (activeSubs.some(s => s.includes('annual') || s.includes('annuel') || s.includes('yearly'))) return 'annual';
+  if (activeSubs.some(s => s.includes('lifetime') || s.includes('vie'))) return 'lifetime';
+  if (activeSubs.length > 0) return 'monthly';
+
+  // Vérifie via les entitlements
+  const active = customerInfo.entitlements.active ?? {};
+  for (const key of Object.keys(active)) {
+    const productId = active[key]?.productIdentifier ?? '';
+    if (productId.includes('annual') || productId.includes('annuel') || productId.includes('yearly')) return 'annual';
+    if (productId.includes('lifetime') || productId.includes('vie')) return 'lifetime';
+    if (productId) return 'monthly';
+  }
+
+  // Vérifie via les non-subscriptions (lifetime)
+  const nonSub = customerInfo.nonSubscriptionTransactions ?? [];
+  if (nonSub.length > 0) return 'lifetime';
+
+  return null;
+}
+
 async function syncCustomerInfoAfterPurchase() {
   const refreshedCustomerInfo = await Purchases.getCustomerInfo();
   logger.log('Customer info synced after purchase/restore');
@@ -164,6 +190,7 @@ export const [SubscriptionProvider, useSubscription] = createContextHook(() => {
   });
 
   const hasRevenueCatPremium = hasPremiumEntitlement(customerInfo);
+  const premiumPlan = getPremiumPlan(customerInfo);
   // En production, le debug override est complètement désactivé
   const isPremium = IS_DEV ? (hasRevenueCatPremium || premiumDebugOverride) : hasRevenueCatPremium;
 
@@ -207,6 +234,7 @@ export const [SubscriptionProvider, useSubscription] = createContextHook(() => {
 
   return useMemo(() => ({
     isPremium,
+    premiumPlan,
     hasRevenueCatPremium,
     premiumDebugOverride,
     setPremiumDebugAccess,
@@ -227,6 +255,7 @@ export const [SubscriptionProvider, useSubscription] = createContextHook(() => {
     isLoadingCustomerInfo,
     isLoadingOfferings,
     isPremium,
+    premiumPlan,
     premiumDebugOverride,
     purchaseMutation.error,
     purchaseMutation.isPending,
