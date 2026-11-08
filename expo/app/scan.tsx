@@ -17,7 +17,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useSubscription } from "@/contexts/SubscriptionContext";
-import { useScanLimit } from "@/contexts/ScanLimitContext";
+import { useScanLimit, MONTHLY_LIMIT_MONTHLY, MONTHLY_LIMIT_ANNUAL } from "@/contexts/ScanLimitContext";
 import { AnimatedBackground } from "@/components/AnimatedBackground";
 import { Paywall } from "@/components/Paywall";
 import { logger } from "@/utils/logger";
@@ -30,8 +30,16 @@ export default function ScanScreen() {
   const [permission, requestPermission] = useCameraPermissions();
   const [isProcessing, setIsProcessing] = useState(false);
   const [showPaywall, setShowPaywall] = useState<boolean>(false);
-  const { isPremium } = useSubscription();
-  const { scansToday, remainingFreeScans, hasReachedFreeLimit, hasReachedLimit, hasReachedPremiumLimit, remainingPremiumScans, dailyLimit, premiumMonthlyLimit, incrementScan } = useScanLimit();
+  const { isPremium, premiumPlan, customerInfo } = useSubscription();
+  const { scansToday, remainingFreeScans, hasReachedFreeLimit, scansThisMonth, dailyLimit, incrementScan } = useScanLimit();
+
+  // Calcul de la limite mensuelle premium selon le plan
+  const premiumMonthlyLimit = isPremium
+    ? (premiumPlan === 'monthly' ? MONTHLY_LIMIT_MONTHLY : MONTHLY_LIMIT_ANNUAL)
+    : 0;
+  const hasReachedPremiumLimit = isPremium && scansThisMonth >= premiumMonthlyLimit;
+  const remainingPremiumScans  = isPremium ? Math.max(0, premiumMonthlyLimit - scansThisMonth) : 0;
+  const hasReachedLimit = isPremium ? hasReachedPremiumLimit : hasReachedFreeLimit;
   const cameraRef = useRef<CameraView>(null);
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const backBtnScale = useRef(new Animated.Value(1)).current;
@@ -165,7 +173,7 @@ export default function ScanScreen() {
     logger.log("Processing image");
 
     setTimeout(() => {
-      incrementScan(); // on incrémente pour tout le monde (gratuit ET premium)
+      incrementScan(isPremium);
       setIsProcessing(false);
       router.push({
         pathname: "/summary",
