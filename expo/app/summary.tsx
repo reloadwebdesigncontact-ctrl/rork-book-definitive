@@ -2,7 +2,7 @@ import { Image } from "expo-image";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ArrowLeft, BookOpen, Crown, FileText, Loader2, User, Volume2, Maximize2, Layers } from "lucide-react-native";
+import { ArrowLeft, BookOpen, Crown, FileText, Loader2, Sparkles, User, Volume2, Maximize2, Layers } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import {
   Animated,
