@@ -190,7 +190,7 @@ export const [SubscriptionProvider, useSubscription] = createContextHook(() => {
   });
 
   const hasRevenueCatPremium = hasPremiumEntitlement(customerInfo);
-  const premiumPlan = getPremiumPlan(customerInfo);
+  const premiumPlan: 'monthly' | 'annual' | 'lifetime' | null = getPremiumPlan(customerInfo);
   // En production, le debug override est complètement désactivé
   const isPremium = IS_DEV ? (hasRevenueCatPremium || premiumDebugOverride) : hasRevenueCatPremium;
 

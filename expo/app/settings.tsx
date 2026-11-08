@@ -794,8 +794,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1.5,
     borderColor: 'transparent',
-    minWidth: '46%' as any,
-    flex: 1,
+    width: '47%' as const,
     position: 'relative' as const,
   },
   langOptionDark: {
