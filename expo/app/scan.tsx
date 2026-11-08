@@ -594,6 +594,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,165,0,0.35)",
     borderColor: "rgba(255,165,0,0.5)",
   },
+  limitBadgeText: {
     color: "#FFF",
     fontSize: 13,
     fontWeight: "700" as const,
