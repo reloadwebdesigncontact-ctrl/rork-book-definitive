@@ -2,7 +2,7 @@ import { Image } from "expo-image";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ArrowLeft, BookOpen, FileText, Loader2, User, Sparkles, Volume2, Maximize2, Layers } from "lucide-react-native";
+import { ArrowLeft, BookOpen, Crown, FileText, Loader2, User, Volume2, Maximize2, Layers } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import {
   Animated,
@@ -1121,23 +1121,31 @@ return (
               </Animated.View>
 
               <Animated.View style={[styles.actionsSection, isDarkMode && styles.actionsSectionDark, { opacity: actionsCardFade, transform: [{ translateY: actionsCardSlide }] }]}>
+                {/* Header avec badge Premium */}
                 <View style={styles.actionsSectionHeader}>
-                  <Text style={[styles.actionsSectionTitle, isDarkMode && styles.actionsSectionTitleDark]}>
-                    {language === 'fr' ? 'Actions premium' : 'Premium actions'}
-                  </Text>
+                  <View style={styles.actionsSectionTitleRow}>
+                    <Text style={[styles.actionsSectionTitle, isDarkMode && styles.actionsSectionTitleDark]}>
+                      {language === 'fr' ? 'Outils de révision' : 'Study tools'}
+                    </Text>
+                    <View style={[styles.premiumPillBadge, { backgroundColor: colors.primary }]}>
+                      <Crown size={10} color="#FFF" strokeWidth={2.5} />
+                      <Text style={styles.premiumPillText}>Premium</Text>
+                    </View>
+                  </View>
                   <Text style={[styles.actionsSectionSubtitle, isDarkMode && styles.actionsSectionSubtitleDark]}>
                     {language === 'fr'
-                      ? 'Accède plus vite à tes outils de révision.'
-                      : 'Get faster access to your study tools.'}
+                      ? 'Approfondis ta lecture avec des outils IA.'
+                      : 'Deepen your reading with AI-powered tools.'}
                   </Text>
                 </View>
 
-                {/* Bouton principal — pleine largeur */}
+                {/* Bouton principal — Fiche de lecture */}
                 <Animated.View style={{ transform: [{ scale: buttonScale1 }] }}>
                   <Pressable
                     onPress={handleGenerateFiche}
                     style={styles.primaryActionButton}
                     disabled={isGeneratingFiche}
+                    android_ripple={null}
                     testID="generate-fiche-button"
                   >
                     <LinearGradient
@@ -1165,78 +1173,74 @@ return (
                             : 'Complete analysis, key ideas, and reading insights.'}
                         </Text>
                       </View>
-                      <Sparkles size={20} color="#FFF" />
+                      <View style={styles.primaryActionChevron}>
+                        <Text style={styles.primaryActionChevronText}>›</Text>
+                      </View>
                     </LinearGradient>
                   </Pressable>
                 </Animated.View>
 
                 {/* Deux boutons carrés côte à côte */}
                 <View style={styles.secondaryActionsRow}>
+                  {/* Lecture Audio */}
                   <Animated.View style={[styles.secondaryActionColumn, { transform: [{ scale: buttonScale2 }] }]}>
                     <Pressable
                       onPress={handleAudioReading}
                       style={styles.secondaryActionButton}
+                      android_ripple={null}
                       testID="audio-reading-button"
                     >
                       <LinearGradient
-                        colors={colors.gradient}
+                        colors={isDarkMode
+                          ? ['rgba(255,255,255,0.12)', 'rgba(255,255,255,0.06)']
+                          : ['rgba(0,0,0,0.03)', 'rgba(0,0,0,0.01)']}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 1 }}
-                        style={styles.squareActionGradient}
+                        style={[styles.squareCardGradient, isDarkMode && styles.squareCardGradientDark]}
                       >
-                        {/* Icône en haut */}
-                        <View style={styles.squareActionIconWrap}>
-                          <Volume2 size={22} color="#FFF" />
+                        <View style={[styles.squareCardIconWrap, { backgroundColor: `${colors.primary}20` }]}>
+                          <Volume2 size={22} color={colors.primary} />
                         </View>
-                        {/* Titre */}
-                        <Text style={styles.squareActionTitle}>{t.summary.animatedReading}</Text>
-                        {/* Séparateur */}
-                        <View style={styles.squareActionDivider} />
-                        {/* Description */}
-                        <Text style={styles.squareActionSubtitle}>
-                          {language === 'fr' ? 'Écoute le résumé' : 'Listen to the summary'}
+                        <Text style={[styles.squareCardTitle, isDarkMode && styles.squareCardTitleDark]}>
+                          {t.summary.animatedReading}
                         </Text>
-                        {/* Flèche en bas à droite */}
-                        <View style={styles.squareActionArrowWrap}>
-                          <View style={styles.squareActionArrow}>
-                            <Text style={[styles.squareActionArrowText, { color: colors.primary }]}>›</Text>
-                          </View>
+                        <Text style={[styles.squareCardSubtitle, isDarkMode && styles.squareCardSubtitleDark]}>
+                          {language === 'fr' ? 'Écoute le résumé à voix haute' : 'Listen to the summary'}
+                        </Text>
+                        <View style={[styles.squareCardArrow, { backgroundColor: colors.primary }]}>
+                          <Text style={styles.squareCardArrowText}>›</Text>
                         </View>
                       </LinearGradient>
                     </Pressable>
                   </Animated.View>
 
+                  {/* Flash cards */}
                   <Animated.View style={[styles.secondaryActionColumn, { transform: [{ scale: flashcardButtonScale }] }]}>
                     <Pressable
                       onPress={handleGenerateFlashcards}
                       style={styles.secondaryActionButton}
+                      android_ripple={null}
                       testID="flashcard-generate-button"
                     >
                       <LinearGradient
-                        colors={colors.gradient}
+                        colors={isDarkMode
+                          ? ['rgba(255,255,255,0.12)', 'rgba(255,255,255,0.06)']
+                          : ['rgba(0,0,0,0.03)', 'rgba(0,0,0,0.01)']}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 1 }}
-                        style={styles.squareActionGradient}
+                        style={[styles.squareCardGradient, isDarkMode && styles.squareCardGradientDark]}
                       >
-                        {/* Icône en haut */}
-                        <View style={styles.squareActionIconWrap}>
-                          <Layers size={22} color="#FFF" />
+                        <View style={[styles.squareCardIconWrap, { backgroundColor: `${colors.primary}20` }]}>
+                          <Layers size={22} color={colors.primary} />
                         </View>
-                        {/* Titre */}
-                        <Text style={styles.squareActionTitle}>{t.summary.flashcards}</Text>
-                        {/* Séparateur */}
-                        <View style={styles.squareActionDivider} />
-                        {/* Description */}
-                        <Text style={styles.squareActionSubtitle}>
-                          {language === 'fr'
-                            ? 'Teste ta compréhension avec des questions sur le livre.'
-                            : 'Test your understanding with questions about the book.'}
+                        <Text style={[styles.squareCardTitle, isDarkMode && styles.squareCardTitleDark]}>
+                          {t.summary.flashcards}
                         </Text>
-                        {/* Flèche en bas à droite */}
-                        <View style={styles.squareActionArrowWrap}>
-                          <View style={styles.squareActionArrow}>
-                            <Text style={[styles.squareActionArrowText, { color: colors.primary }]}>›</Text>
-                          </View>
+                        <Text style={[styles.squareCardSubtitle, isDarkMode && styles.squareCardSubtitleDark]}>
+                          {language === 'fr' ? 'Teste tes connaissances' : 'Test your knowledge'}
+                        </Text>
+                        <View style={[styles.squareCardArrow, { backgroundColor: colors.primary }]}>
+                          <Text style={styles.squareCardArrowText}>›</Text>
                         </View>
                       </LinearGradient>
                     </Pressable>
@@ -1532,7 +1536,26 @@ const styles = StyleSheet.create({
     shadowOpacity: 0,
   },
   actionsSectionHeader: {
+    gap: 6,
+  },
+  actionsSectionTitleRow: {
+    flexDirection: 'row' as const,
+    alignItems: 'center',
+    gap: 10,
+  },
+  premiumPillBadge: {
+    flexDirection: 'row' as const,
+    alignItems: 'center',
     gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 20,
+  },
+  premiumPillText: {
+    fontSize: 10,
+    fontWeight: '700' as const,
+    color: '#FFF',
+    letterSpacing: 0.5,
   },
   actionsSectionTitle: {
     fontSize: 20,
@@ -1565,7 +1588,7 @@ const styles = StyleSheet.create({
     width: 46,
     height: 46,
     borderRadius: 14,
-    backgroundColor: "rgba(255, 255, 255, 0.16)",
+    backgroundColor: "rgba(255, 255, 255, 0.20)",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -1582,6 +1605,77 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 18,
     color: "rgba(255, 255, 255, 0.86)",
+  },
+  primaryActionChevron: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.22)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  primaryActionChevronText: {
+    fontSize: 22,
+    color: '#FFF',
+    fontWeight: '700' as const,
+    lineHeight: 26,
+    marginTop: -2,
+  },
+  // Cartes secondaires (audio + flashcards)
+  squareCardGradient: {
+    borderRadius: 18,
+    padding: 16,
+    minHeight: 160,
+    justifyContent: 'space-between',
+    backgroundColor: '#F8F4F2',
+    borderWidth: 1.5,
+    borderColor: 'rgba(0,0,0,0.06)',
+  },
+  squareCardGradientDark: {
+    backgroundColor: 'rgba(255,255,255,0.07)',
+    borderColor: 'rgba(255,255,255,0.08)',
+  },
+  squareCardIconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  squareCardTitle: {
+    fontSize: 15,
+    fontWeight: '700' as const,
+    color: '#2F1E1A',
+    lineHeight: 20,
+    marginTop: 8,
+  },
+  squareCardTitleDark: {
+    color: '#FFF',
+  },
+  squareCardSubtitle: {
+    fontSize: 12,
+    color: '#8D6E63',
+    lineHeight: 17,
+    flex: 1,
+  },
+  squareCardSubtitleDark: {
+    color: '#AAA',
+  },
+  squareCardArrow: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'flex-end',
+    marginTop: 8,
+  },
+  squareCardArrowText: {
+    fontSize: 18,
+    color: '#FFF',
+    fontWeight: '700' as const,
+    lineHeight: 22,
+    marginTop: -1,
   },
   secondaryActionsRow: {
     flexDirection: "row",
