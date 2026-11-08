@@ -8,8 +8,8 @@
     "scheme": "coverscan",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/images/icon.png",
-      "resizeMode": "contain",
+      "image": "./assets/images/splash.png",
+      "resizeMode": "cover",
       "backgroundColor": "#FF6B35"
     },
     "ios": {
