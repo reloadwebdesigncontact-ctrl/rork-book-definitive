@@ -1,79 +1,74 @@
 // ============================================================
-// Cover Scan — Backend Proxy API
+// Summshine — Backend Proxy API
 // OWASP Top 10 mitigations applied:
-// A01 Broken Access Control     → token auth + rate limit
+// A01 Broken Access Control     → token auth + dual rate limit (IP + token)
 // A03 Injection                 → body validation, no raw passthrough
 // A04 Insecure Design           → max_tokens cap, model whitelist
-// A05 Security Misconfiguration → security headers, HTTPS only
+// A05 Security Misconfiguration → security headers, CSP, HTTPS only
 // A06 Vulnerable Components     → kept dependencies minimal
 // A07 Auth Failures             → constant-time token comparison
 // ============================================================
 
-// In-memory rate limiter (resets on cold start — acceptable for Vercel hobby)
-const rateLimitMap = new Map();
-const RATE_LIMIT_WINDOW_MS = 60_000;        // 1 minute
-const RATE_LIMIT_MAX_REQUESTS = 15;         // 15 req/min per IP (slightly tightened)
-const MAX_BODY_SIZE_BYTES = 5 * 1024 * 1024; // 5MB max body (images en base64)
-const MAX_IMAGE_BASE64_SIZE = 4 * 1024 * 1024; // 4MB max par image base64
-const ALLOWED_MODELS = new Set(['gpt-4o-mini', 'gpt-4o']);
-const MAX_TOKENS_LIMIT = 4096;
-const MAX_MESSAGES = 10;
-const MAX_TEXT_CONTENT_LENGTH = 20_000; // caractères par message texte
+// In-memory rate limiters (reset on cold start — acceptable for Vercel hobby)
+const ipRateLimitMap   = new Map(); // par IP
+const tokRateLimitMap  = new Map(); // par token (défense en profondeur si token fuite)
 
-// Constant-time string comparison pour éviter les timing attacks (A07)
+const RATE_LIMIT_WINDOW_MS     = 60_000; // 1 minute
+const IP_RATE_LIMIT_MAX        = 15;     // 15 req/min par IP
+const TOKEN_RATE_LIMIT_MAX     = 60;     // 60 req/min pour tout le token (toutes IPs)
+const MAX_BODY_SIZE_BYTES      = 5 * 1024 * 1024;  // 5 MB
+const MAX_IMAGE_BASE64_SIZE    = 4 * 1024 * 1024;  // 4 MB par image
+const ALLOWED_MODELS           = new Set(['gpt-4o-mini', 'gpt-4o']);
+const MAX_TOKENS_LIMIT         = 4096;
+const MAX_MESSAGES             = 10;
+const MAX_TEXT_CONTENT_LENGTH  = 20_000;
+
+// ── Utilitaires ─────────────────────────────────────────────
+
+/** Comparaison en temps constant — évite les timing attacks (OWASP A07) */
 function safeEqual(a, b) {
   if (typeof a !== 'string' || typeof b !== 'string') return false;
   if (a.length !== b.length) {
-    // Effectue quand même la comparaison pour éviter le timing attack sur la longueur
-    let result = 1;
+    let r = 1;
     const minLen = Math.min(a.length, b.length);
-    for (let i = 0; i < minLen; i++) {
-      result |= a.charCodeAt(i) ^ b.charCodeAt(i);
-    }
+    for (let i = 0; i < minLen; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i);
     return false;
   }
   let result = 0;
-  for (let i = 0; i < a.length; i++) {
-    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  }
+  for (let i = 0; i < a.length; i++) result |= a.charCodeAt(i) ^ b.charCodeAt(i);
   return result === 0;
 }
 
-function isRateLimited(ip) {
+function checkRateLimit(map, key, max) {
   const now = Date.now();
-  const entry = rateLimitMap.get(ip);
-
+  const entry = map.get(key);
   if (!entry || now - entry.windowStart > RATE_LIMIT_WINDOW_MS) {
-    rateLimitMap.set(ip, { windowStart: now, count: 1 });
+    map.set(key, { windowStart: now, count: 1 });
     return false;
   }
-
-  if (entry.count >= RATE_LIMIT_MAX_REQUESTS) {
-    return true;
-  }
-
+  if (entry.count >= max) return true;
   entry.count += 1;
   return false;
 }
 
-// Nettoyage périodique de la map
+// Nettoyage périodique des maps
 setInterval(() => {
   const now = Date.now();
-  for (const [key, val] of rateLimitMap.entries()) {
-    if (now - val.windowStart > RATE_LIMIT_WINDOW_MS * 2) {
-      rateLimitMap.delete(key);
+  const cutoff = RATE_LIMIT_WINDOW_MS * 2;
+  for (const map of [ipRateLimitMap, tokRateLimitMap]) {
+    for (const [key, val] of map.entries()) {
+      if (now - val.windowStart > cutoff) map.delete(key);
     }
   }
 }, RATE_LIMIT_WINDOW_MS * 5);
 
-// Valide un seul message
+/** Valide un seul message OpenAI */
 function validateMessage(msg) {
   if (!msg || typeof msg !== 'object') return false;
   if (!['system', 'user', 'assistant'].includes(msg.role)) return false;
 
   if (typeof msg.content === 'string') {
-    if (msg.content.length > MAX_TEXT_CONTENT_LENGTH) return false;
-    return true;
+    return msg.content.length <= MAX_TEXT_CONTENT_LENGTH;
   }
 
   if (Array.isArray(msg.content)) {
@@ -82,18 +77,14 @@ function validateMessage(msg) {
       if (!['text', 'image_url'].includes(part.type)) return false;
 
       if (part.type === 'text') {
-        if (typeof part.text !== 'string') return false;
-        if (part.text.length > MAX_TEXT_CONTENT_LENGTH) return false;
+        if (typeof part.text !== 'string' || part.text.length > MAX_TEXT_CONTENT_LENGTH) return false;
       }
 
       if (part.type === 'image_url') {
         if (!part.image_url || typeof part.image_url.url !== 'string') return false;
         const url = part.image_url.url;
-        // N'accepter que les data URLs base64 d'images
         if (!url.startsWith('data:image/')) return false;
-        // Vérifier la taille de l'image base64
         if (url.length > MAX_IMAGE_BASE64_SIZE) return false;
-        // Vérifier que le mime type est une image reconnue
         if (!/^data:image\/(jpeg|jpg|png|webp|gif);base64,/.test(url)) return false;
       }
     }
@@ -103,47 +94,62 @@ function validateMessage(msg) {
   return false;
 }
 
+// ── Handler principal ────────────────────────────────────────
+
 export default async function handler(req, res) {
+
   // ── Security headers (A05) ──────────────────────────────────
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'DENY');
-  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
-  res.setHeader('Cache-Control', 'no-store');
-  // CORS: wildcard acceptable pour une app mobile (React Native n'envoie pas d'Origin)
-  // La vraie protection = token x-api-token requis sur chaque requête
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'no-referrer');
+  res.setHeader('Content-Security-Policy', "default-src 'none'");
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  // CORS : wildcard acceptable pour app mobile (React Native n'envoie pas d'Origin)
+  // Protection réelle = token x-api-token requis sur chaque requête
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-api-token');
 
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
+  if (req.method === 'OPTIONS') return res.status(200).end();
 
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   // ── Authentication (A01, A07) ───────────────────────────────
-  const clientToken = req.headers['x-api-token'];
+  const clientToken  = req.headers['x-api-token'];
   const expectedToken = process.env.API_SECRET_TOKEN;
 
   if (!expectedToken) {
+    console.error('[Backend] API_SECRET_TOKEN not configured');
     return res.status(500).json({ error: 'Server misconfigured' });
   }
 
   if (!safeEqual(clientToken, expectedToken)) {
+    // Délai artificiel pour ralentir le brute-force (50-150ms aléatoire)
+    await new Promise(r => setTimeout(r, 50 + Math.floor(Math.random() * 100)));
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
-  // ── Rate limiting (A04) ─────────────────────────────────────
+  // ── Rate limiting double (IP + token) ───────────────────────
   const clientIp =
     req.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
     req.headers['x-real-ip'] ||
     req.socket?.remoteAddress ||
     'unknown';
 
-  if (isRateLimited(clientIp)) {
-    return res.status(429).json({ error: 'Too many requests. Please wait before retrying.' });
+  if (checkRateLimit(ipRateLimitMap, clientIp, IP_RATE_LIMIT_MAX)) {
+    return res.status(429).json({ error: 'Too many requests from your IP. Please wait.' });
+  }
+
+  // Limite globale par token (prévient les abus si le token est partagé/fuité)
+  const tokenKey = clientToken ? clientToken.slice(-8) : 'none'; // on stocke seulement les 8 derniers chars
+  if (checkRateLimit(tokRateLimitMap, tokenKey, TOKEN_RATE_LIMIT_MAX)) {
+    return res.status(429).json({ error: 'Service overloaded. Please try again later.' });
   }
 
   // ── Body size check (A03) ───────────────────────────────────
@@ -162,8 +168,10 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Model not allowed' });
   }
 
-  if (body.max_tokens && (typeof body.max_tokens !== 'number' || body.max_tokens > MAX_TOKENS_LIMIT || body.max_tokens < 1)) {
-    return res.status(400).json({ error: `max_tokens must be between 1 and ${MAX_TOKENS_LIMIT}` });
+  if (body.max_tokens !== undefined) {
+    if (typeof body.max_tokens !== 'number' || body.max_tokens > MAX_TOKENS_LIMIT || body.max_tokens < 1) {
+      return res.status(400).json({ error: `max_tokens must be between 1 and ${MAX_TOKENS_LIMIT}` });
+    }
   }
 
   if (!Array.isArray(body.messages) || body.messages.length === 0) {
@@ -183,14 +191,17 @@ export default async function handler(req, res) {
   // ── Build safe payload (A03 — no raw passthrough) ───────────
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
+    console.error('[Backend] OPENAI_API_KEY not configured');
     return res.status(500).json({ error: 'Server misconfigured' });
   }
 
   const safeBody = {
-    model: typeof body.model === 'string' && ALLOWED_MODELS.has(body.model) ? body.model : 'gpt-4o-mini',
+    model: (typeof body.model === 'string' && ALLOWED_MODELS.has(body.model))
+      ? body.model
+      : 'gpt-4o-mini',
     messages: body.messages,
     temperature: typeof body.temperature === 'number'
-      ? Math.min(Math.max(body.temperature, 0), 1.5) // Limite à 1.5 (2.0 génère des outputs imprévisibles)
+      ? Math.min(Math.max(body.temperature, 0), 1.5)
       : 0.7,
     max_tokens: typeof body.max_tokens === 'number' ? body.max_tokens : 4096,
   };
@@ -209,15 +220,14 @@ export default async function handler(req, res) {
     const data = await response.json();
 
     if (!response.ok) {
-      console.error('[Backend] OpenAI error:', response.status);
       // Ne jamais retransmettre les détails d'erreur OpenAI au client
-      return res.status(502).json({ error: 'AI service error' });
+      console.error('[Backend] OpenAI error status:', response.status);
+      return res.status(502).json({ error: 'AI service error. Please try again.' });
     }
 
-    // Ne retransmettre que le champ choices (pas les métadonnées d'usage qui révèlent le modèle/tokens)
-    return res.status(200).json({
-      choices: data.choices,
-    });
+    // Ne retransmettre que les choices (pas les métadonnées d'usage)
+    return res.status(200).json({ choices: data.choices });
+
   } catch (error) {
     console.error('[Backend] Unexpected error:', error?.message);
     return res.status(500).json({ error: 'Internal server error' });
