@@ -11,6 +11,7 @@ import { Paywall } from "@/components/Paywall";
 import { BookLoader } from "@/components/BookLoader";
 import { AnimatedBackground } from "@/components/AnimatedBackground";
 import { FlashcardBear, type Difficulty } from "@/components/FlashcardBear";
+import { LANGUAGE_NAMES } from "@/utils/languageNames";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -280,23 +281,16 @@ export default function FlashcardsScreen() {
         ? previousQuestions.map((question, index) => `${index + 1}. ${question}`).join("\n")
         : "";
 
-      const difficultyInstructionFr =
-        difficulty === 'easy'
-          ? 'Les questions doivent être simples, portant sur les grandes idées et les éléments principaux du livre. Les mauvaises réponses doivent être clairement incorrectes.'
-          : difficulty === 'hard'
-          ? 'Les questions doivent être difficiles, portant sur des détails précis, des analyses approfondies ou des nuances subtiles. Les mauvaises réponses doivent être très proches de la bonne réponse.'
-          : 'Les questions doivent être de difficulté moyenne, testant la compréhension générale avec quelques nuances. Les mauvaises réponses doivent être plausibles.';
+      const langName = LANGUAGE_NAMES[language] ?? 'English';
 
-      const difficultyInstructionEn =
+      const difficultyInstruction =
         difficulty === 'easy'
-          ? 'Questions should be simple, focusing on main ideas and key elements of the book. Wrong answers should be clearly incorrect.'
+          ? 'Questions should be simple, focusing on main ideas. Wrong answers should be clearly incorrect.'
           : difficulty === 'hard'
-          ? 'Questions should be challenging, focusing on specific details, deep analysis or subtle nuances. Wrong answers should be very close to the correct one.'
-          : 'Questions should be of medium difficulty, testing general comprehension with some nuance. Wrong answers should be plausible.';
+          ? 'Questions should be challenging, focusing on specific details and subtle nuances. Wrong answers should be very close to the correct one.'
+          : 'Questions should be of medium difficulty, testing general comprehension. Wrong answers should be plausible.';
 
-      const flashcardPrompt = language === "fr"
-        ? `À partir de ce résumé du livre "${title || "Livre"}" de ${author || "Auteur inconnu"}, génère 5 questions de révision sous forme de QCM. ${difficultyInstructionFr} Chaque question doit avoir exactement 3 réponses possibles et une seule bonne réponse. Réponds UNIQUEMENT avec un JSON valide au format suivant: {"questions":[{"question":"...","options":["...","...","..."],"correctAnswer":"..."}]}. Assure-toi que correctAnswer correspond exactement à l'une des options.${mode === "refresh" ? ` Ceci est une régénération. Génère un NOUVEAU lot avec des formulations et angles différents. N'utilise pas ces anciennes questions :\n${previousQuestionsText}\nUtilise ce token unique pour forcer une nouvelle génération : ${refreshToken}.` : ` Utilise ce token unique : ${refreshToken}.`} Résumé: ${cleanedSummary}`
-        : `Based on this summary of the book "${title || "Book"}" by ${author || "Unknown author"}, generate 5 revision multiple-choice questions. ${difficultyInstructionEn} Each question must have exactly 3 possible answers and only one correct answer. Respond ONLY with valid JSON in this format: {"questions":[{"question":"...","options":["...","...","..."],"correctAnswer":"..."}]}. Make sure correctAnswer matches exactly one of the options.${mode === "refresh" ? ` This is a regeneration. Create a NEW batch with different wording and different focus. Do not reuse these previous questions:\n${previousQuestionsText}\nUse this unique token to force a fresh generation: ${refreshToken}.` : ` Use this unique token: ${refreshToken}.`} Summary: ${cleanedSummary}`;
+      const flashcardPrompt = `Based on this summary of the book "${title || "Book"}" by ${author || "Unknown author"}, generate 5 revision multiple-choice questions. ${difficultyInstruction} Each question must have exactly 3 possible answers and only one correct answer. IMPORTANT: All questions, options, and the correctAnswer field MUST be written entirely in ${langName}. Respond ONLY with valid JSON in this exact format: {"questions":[{"question":"...","options":["...","...","..."],"correctAnswer":"..."}]}. Make sure correctAnswer matches exactly one of the options.${mode === "refresh" ? ` This is a regeneration. Create a NEW batch with different wording. Do not reuse these previous questions:\n${previousQuestionsText}\nUnique token: ${refreshToken}.` : ` Unique token: ${refreshToken}.`} Summary: ${cleanedSummary}`;
 
       const response = await generateText(flashcardPrompt);
       logger.log("Flash cards response received, length:", response?.length);

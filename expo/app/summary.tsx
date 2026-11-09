@@ -4,6 +4,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ArrowLeft, BookOpen, Crown, FileText, Loader2, Sparkles, User, Volume2, Maximize2, Layers } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
+import { LANGUAGE_NAMES } from "@/utils/languageNames";
 import {
   Animated,
   Easing,
@@ -167,9 +168,7 @@ export default function SummaryScreen() {
               },
               {
                 type: "text",
-                text: language === 'fr' 
-                  ? "Analyse cette couverture de livre et identifie le titre et l'auteur. Réponds UNIQUEMENT au format JSON: {\"title\": \"titre du livre\", \"author\": \"nom de l'auteur\"}"
-                  : "Analyze this book cover and identify the title and author. Respond ONLY in JSON format: {\"title\": \"book title\", \"author\": \"author name\"}",
+                text: `Analyze this book cover and identify the title and author. Respond ONLY in JSON format: {"title": "book title", "author": "author name"}`,
               },
             ],
           },
@@ -323,23 +322,16 @@ export default function SummaryScreen() {
       logger.log(`Generating ${type} summary with AI...`);
 
       let summaryPrompt = '';
+      const langName = LANGUAGE_NAMES[language] ?? 'English';
       
       if (type === 'normal') {
-        summaryPrompt = language === 'fr'
-          ? bookInfo.description
-            ? `Écris un résumé concis du livre "${bookInfo.title}" de ${bookInfo.author} en environ 10 lignes. Voici la description officielle: ${bookInfo.description}. Rends le résumé clair, structuré et fidèle au livre. IMPORTANT: Ne réponds qu'avec le résumé uniquement, sans introduction, sans message conversationnel, sans demander si je veux poursuivre. Commence directement par le contenu du résumé.`
-            : `Écris un résumé concis du livre "${bookInfo.title}" de ${bookInfo.author} en environ 10 lignes. Base-toi sur tes connaissances du livre. Rends le résumé clair, structuré et fidèle au livre. IMPORTANT: Ne réponds qu'avec le résumé uniquement, sans introduction, sans message conversationnel, sans demander si je veux poursuivre. Commence directement par le contenu du résumé.`
-          : bookInfo.description
-            ? `Write a concise summary of the book "${bookInfo.title}" by ${bookInfo.author} in about 10 lines. Here is the official description: ${bookInfo.description}. Make the summary clear, structured and faithful to the book. IMPORTANT: Only respond with the summary, without introduction, without conversational messages, without asking if I want to continue. Start directly with the summary content.`
-            : `Write a concise summary of the book "${bookInfo.title}" by ${bookInfo.author} in about 10 lines. Base it on your knowledge of the book. Make the summary clear, structured and faithful to the book. IMPORTANT: Only respond with the summary, without introduction, without conversational messages, without asking if I want to continue. Start directly with the summary content.`;
+        summaryPrompt = bookInfo.description
+          ? `Write a concise summary of the book "${bookInfo.title}" by ${bookInfo.author} in about 10 lines. Here is the official description: ${bookInfo.description}. Make the summary clear, structured and faithful to the book. IMPORTANT: Respond ENTIRELY in ${langName}. Only respond with the summary, without introduction, without conversational messages. Start directly with the summary content.`
+          : `Write a concise summary of the book "${bookInfo.title}" by ${bookInfo.author} in about 10 lines. Base it on your knowledge of the book. Make the summary clear, structured and faithful to the book. IMPORTANT: Respond ENTIRELY in ${langName}. Only respond with the summary, without introduction, without conversational messages. Start directly with the summary content.`;
       } else {
-        summaryPrompt = language === 'fr'
-          ? bookInfo.description
-            ? `Génère un résumé détaillé chapitre par chapitre du livre "${bookInfo.title}" de ${bookInfo.author}. Voici la description officielle: ${bookInfo.description}. Pour chaque chapitre, indique le titre du chapitre (s'il existe) et un résumé de 3-4 lignes. Structure le résumé avec des titres clairs pour chaque chapitre. Utilise le format:\n\n**Chapitre 1: [Titre]**\n[Résumé du chapitre]\n\nSois précis et fidèle au livre. IMPORTANT: Ne réponds qu'avec le résumé chapitre par chapitre uniquement, sans introduction comme "Voici un résumé détaillé", sans conclusion, sans message conversationnel, sans demander si je veux poursuivre. Commence directement par le Chapitre 1.`
-            : `Génère un résumé détaillé chapitre par chapitre du livre "${bookInfo.title}" de ${bookInfo.author}. Pour chaque chapitre, indique le titre du chapitre (s'il existe) et un résumé de 3-4 lignes. Structure le résumé avec des titres clairs pour chaque chapitre. Utilise le format:\n\n**Chapitre 1: [Titre]**\n[Résumé du chapitre]\n\nSois précis et fidèle au livre. IMPORTANT: Ne réponds qu'avec le résumé chapitre par chapitre uniquement, sans introduction comme "Voici un résumé détaillé", sans conclusion, sans message conversationnel, sans demander si je veux poursuivre. Commence directement par le Chapitre 1.`
-          : bookInfo.description
-            ? `Generate a detailed chapter-by-chapter summary of the book "${bookInfo.title}" by ${bookInfo.author}. Here is the official description: ${bookInfo.description}. For each chapter, indicate the chapter title (if any) and a 3-4 line summary. Structure the summary with clear titles for each chapter. Use the format:\n\n**Chapter 1: [Title]**\n[Chapter summary]\n\nBe precise and faithful to the book. IMPORTANT: Only respond with the chapter-by-chapter summary, without introduction like "Here is a detailed summary", without conclusion, without conversational messages, without asking if I want to continue. Start directly with Chapter 1.`
-            : `Generate a detailed chapter-by-chapter summary of the book "${bookInfo.title}" by ${bookInfo.author}. For each chapter, indicate the chapter title (if any) and a 3-4 line summary. Structure the summary with clear titles for each chapter. Use the format:\n\n**Chapter 1: [Title]**\n[Chapter summary]\n\nBe precise and faithful to the book. IMPORTANT: Only respond with the chapter-by-chapter summary, without introduction like "Here is a detailed summary", without conclusion, without conversational messages, without asking if I want to continue. Start directly with Chapter 1.`;
+        summaryPrompt = bookInfo.description
+          ? `Generate a detailed chapter-by-chapter summary of the book "${bookInfo.title}" by ${bookInfo.author}. Here is the official description: ${bookInfo.description}. For each chapter, indicate the chapter title (if any) and a 3-4 line summary. Use the format:\n\n**Chapter 1: [Title]**\n[Chapter summary]\n\nIMPORTANT: Respond ENTIRELY in ${langName}. Only respond with the chapter-by-chapter summary, without introduction, without conclusion. Start directly with Chapter 1.`
+          : `Generate a detailed chapter-by-chapter summary of the book "${bookInfo.title}" by ${bookInfo.author}. For each chapter, indicate the chapter title (if any) and a 3-4 line summary. Use the format:\n\n**Chapter 1: [Title]**\n[Chapter summary]\n\nIMPORTANT: Respond ENTIRELY in ${langName}. Only respond with the chapter-by-chapter summary, without introduction, without conclusion. Start directly with Chapter 1.`;
       }
 
       const summary = await generateText(summaryPrompt);
@@ -495,33 +487,8 @@ const { mutate: generateFiche, isPending: isGeneratingFiche } = useMutation({
       
       logger.log("Génération de la fiche de lecture complète...");
       
-      const fichePrompt = language === 'fr'
-        ? `Génère une fiche de lecture complète et détaillée pour le livre "${book.title}" de ${book.author}.
-
-La fiche doit suivre EXACTEMENT ce format avec des sections claires et structurées:
-
-**Fiche de Lecture : ${book.title}**
-
-**Informations Générales**
-- **Auteur**: [nom de l'auteur]
-- **Date de publication**: [année]
-- **Genre**: [genre littéraire]
-- **Cadre spatio-temporel**: [lieu et époque]
-
-**Contexte et Mouvement**
-[Paragraphe sur le contexte historique et le mouvement littéraire]
-
-**Personnages Clés**
-[Liste des personnages principaux avec descriptions détaillées]
-
-**Résumé de l'Intrigue**
-[Résumé détaillé en plusieurs paragraphes]
-
-**Thèmes Principaux**
-[Liste des thèmes avec explications]
-
-Sois précis, détaillé et fidèle au livre. Utilise tes connaissances approfondies du livre pour créer une fiche de lecture académique complète.`
-        : `Generate a complete and detailed reading sheet for the book "${book.title}" by ${book.author}.
+      const langName = LANGUAGE_NAMES[language] ?? 'English';
+      const fichePrompt = `Generate a complete and detailed reading sheet for the book "${book.title}" by ${book.author}.
 
 The sheet must follow EXACTLY this format with clear and structured sections:
 
@@ -545,7 +512,7 @@ The sheet must follow EXACTLY this format with clear and structured sections:
 **Main Themes**
 [List of themes with explanations]
 
-Be precise, detailed and faithful to the book. Use your in-depth knowledge of the book to create a complete academic reading sheet.`;
+IMPORTANT: Respond ENTIRELY in ${langName}. Be precise, detailed and faithful to the book.`;
 
       const fiche = await generateText(fichePrompt);
       return sanitizeAiResponse(fiche);

@@ -19,6 +19,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { SPEECH_LOCALES } from "@/utils/languageNames";
 import { useVoice } from "@/contexts/VoiceContext";
 import { logger } from "@/utils/logger";
 import { sanitizeAiResponse, sanitizeText } from "@/utils/sanitize";
@@ -136,7 +137,7 @@ export default function LyricsReaderScreen() {
     isPlayingRef.current = true;
     setCurrentParagraphIndex(-1);
 
-    const languageCode = language === 'fr' ? 'fr-FR' : 'en-US';
+    const languageCode = SPEECH_LOCALES[language] ?? 'en-US';
     
     const voiceSettings = voiceType === 'male' 
       ? { pitch: 0.7, rate: 0.85 }
