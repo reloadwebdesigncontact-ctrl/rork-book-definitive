@@ -7,6 +7,7 @@ import React, { useState } from "react";
 import { AnimatedBackground } from "@/components/AnimatedBackground";
 import { TitleUnderline } from "@/components/TitleUnderline";
 import { SummshineTitle } from "@/components/SummshineTitle";
+import { TypewriterText } from "@/components/TypewriterText";
 import {
   Animated,
   Easing,
@@ -342,9 +343,14 @@ export default function HomeScreen() {
                 <TitleUnderline colors={colors} themeKey={appTheme} />
               </Animated.View>
             </View>
-            <Animated.Text style={[styles.subtitle, isDarkMode && styles.subtitleDark, { opacity: titleOpacity, transform: [{ translateY: subtitleSlide }] }]}>
-              {t.home.subtitle}
-            </Animated.Text>
+            <TypewriterText
+              text={t.home.subtitle}
+              style={[styles.subtitle, isDarkMode && styles.subtitleDark]}
+              opacity={titleOpacity}
+              transform={[{ translateY: subtitleSlide }]}
+              delay={900}
+              speed={36}
+            />
             
             {isSignedIn && user && (
               <View style={[styles.userInfoCard, isDarkMode && styles.userInfoCardDark]}>
