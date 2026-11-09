@@ -10,7 +10,7 @@
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "cover",
-      "backgroundColor": "#FF6B35"
+      "backgroundColor": "#F95D5D"
     },
     "ios": {
       "supportsTablet": false,
@@ -47,6 +47,14 @@
       ],
       "expo-font",
       "expo-web-browser",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash.png",
+          "resizeMode": "cover",
+          "backgroundColor": "#F95D5D"
+        }
+      ],
       [
         "expo-camera",
         {
