@@ -60,6 +60,7 @@ export default function SettingsScreen() {
   const legalOption1Scale = useRef(new Animated.Value(1)).current;
   const legalOption2Scale = useRef(new Animated.Value(1)).current;
   const legalOption3Scale = useRef(new Animated.Value(1)).current;
+  const legalOption4Scale = useRef(new Animated.Value(1)).current;
   const versionFade = useRef(new Animated.Value(0)).current;
   const upgradeButtonScale = useRef(new Animated.Value(1)).current;
   const restoreButtonScale = useRef(new Animated.Value(1)).current;
@@ -677,6 +678,20 @@ export default function SettingsScreen() {
               >
                 <Text style={[styles.legalOptionText, isDarkMode && styles.legalOptionTextDark]}>
                   Politique de confidentialité
+                </Text>
+                <ChevronRight size={20} color={isDarkMode ? "#999" : "#666"} />
+              </Pressable>
+            </Animated.View>
+            <Animated.View style={{ transform: [{ scale: legalOption4Scale }], marginTop: 12 }}>
+              <Pressable
+                onPress={() => {
+                  animateOptionPress(legalOption4Scale);
+                  void Linking.openURL('https://book-definitive-backend.vercel.app/cgv');
+                }}
+                style={[styles.legalOption, isDarkMode && styles.legalOptionDark]}
+              >
+                <Text style={[styles.legalOptionText, isDarkMode && styles.legalOptionTextDark]}>
+                  {language === 'fr' ? 'Conditions Générales de Vente' : 'Terms of Sale'}
                 </Text>
                 <ChevronRight size={20} color={isDarkMode ? "#999" : "#666"} />
               </Pressable>
