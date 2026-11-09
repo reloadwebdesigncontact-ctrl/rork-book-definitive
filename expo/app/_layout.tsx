@@ -53,6 +53,7 @@ export default function RootLayout() {
     return () => clearTimeout(timer);
   }, []);
 
+  // Cacher le splash natif le plus tôt possible — notre AnimatedSplash JS prend le relais
   useEffect(() => {
     void SplashScreen.hideAsync();
   }, []);
