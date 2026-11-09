@@ -10,7 +10,7 @@
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "cover",
-      "backgroundColor": "#F95D5D"
+      "backgroundColor": "#F4604A"
     },
     "ios": {
       "supportsTablet": false,
@@ -52,7 +52,9 @@
         {
           "image": "./assets/images/splash.png",
           "resizeMode": "cover",
-          "backgroundColor": "#F95D5D"
+          "backgroundColor": "#F4604A",
+          "imageResizeMode": "cover",
+          "enableFullScreenImage_legacy": true
         }
       ],
       [
