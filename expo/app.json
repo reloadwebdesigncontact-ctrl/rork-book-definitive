@@ -24,7 +24,7 @@
     "android": {
       "icon": "./assets/images/icon.png",
       "package": "app.coverscan",
-      "versionCode": 103,
+      "versionCode": 104,
       "allowBackup": false,
       "blockedPermissions": [],
       "permissions": [
@@ -73,6 +73,7 @@
       ],
       "./plugins/withFixDynamicAppIconJvm.js",
       "./plugins/withFixDynamicAppIcon.js",
+      "./plugins/withAndroidWidget.js",
       [
         "expo-dynamic-app-icon",
         {
