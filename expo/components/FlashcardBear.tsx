@@ -34,25 +34,25 @@ export interface DifficultyOption {
 }
 
 const DIFFICULTY_OPTIONS: DifficultyOption[] = [
-  {
-    id: 'easy',
-    emoji: '🌱',
-    label: 'Facile',
-    description: 'Questions simples sur les grandes idées du livre',
-  },
-  {
-    id: 'medium',
-    emoji: '⚡',
-    label: 'Moyen',
-    description: 'Questions de compréhension avec des nuances',
-  },
-  {
-    id: 'hard',
-    emoji: '🔥',
-    label: 'Difficile',
-    description: 'Questions pointues sur les détails et analyses',
-  },
+  { id: 'easy',   emoji: '🌱', label: 'easy',   description: 'easy_desc' },
+  { id: 'medium', emoji: '⚡', label: 'medium', description: 'medium_desc' },
+  { id: 'hard',   emoji: '🔥', label: 'hard',   description: 'hard_desc' },
 ];
+
+const DIFF_I18N: Record<string, Record<string, string>> = {
+  fr: { easy: 'Facile', easy_desc: 'Questions simples sur les grandes idées du livre', medium: 'Moyen', medium_desc: 'Questions de compréhension avec des nuances', hard: 'Difficile', hard_desc: 'Questions pointues sur les détails et analyses', headerSub: 'Niveau de difficulté', note: '💡 La difficulté sera appliquée à la prochaine génération de questions.' },
+  en: { easy: 'Easy', easy_desc: 'Simple questions about the main ideas', medium: 'Medium', medium_desc: 'Comprehension questions with nuance', hard: 'Hard', hard_desc: 'Detailed questions on analysis and specifics', headerSub: 'Difficulty level', note: '💡 Difficulty will be applied on the next question generation.' },
+  es: { easy: 'Fácil', easy_desc: 'Preguntas simples sobre las ideas principales', medium: 'Medio', medium_desc: 'Preguntas de comprensión con matices', hard: 'Difícil', hard_desc: 'Preguntas detalladas sobre análisis', headerSub: 'Nivel de dificultad', note: '💡 La dificultad se aplicará en la próxima generación de preguntas.' },
+  ar: { easy: 'سهل', easy_desc: 'أسئلة بسيطة عن الأفكار الرئيسية', medium: 'متوسط', medium_desc: 'أسئلة فهم مع فروق دقيقة', hard: 'صعب', hard_desc: 'أسئلة تفصيلية حول التحليل', headerSub: 'مستوى الصعوبة', note: '💡 سيتم تطبيق مستوى الصعوبة على الجولة القادمة.' },
+  pt: { easy: 'Fácil', easy_desc: 'Perguntas simples sobre as ideias principais', medium: 'Médio', medium_desc: 'Perguntas de compreensão com nuances', hard: 'Difícil', hard_desc: 'Perguntas detalhadas sobre análise', headerSub: 'Nível de dificuldade', note: '💡 A dificuldade será aplicada na próxima geração de perguntas.' },
+  de: { easy: 'Einfach', easy_desc: 'Einfache Fragen zu den Hauptideen', medium: 'Mittel', medium_desc: 'Verständnisfragen mit Nuancen', hard: 'Schwer', hard_desc: 'Detailfragen zur Analyse', headerSub: 'Schwierigkeitsgrad', note: '💡 Der Schwierigkeitsgrad wird bei der nächsten Generierung angewendet.' },
+  ja: { easy: '簡単', easy_desc: 'メインアイデアに関するシンプルな質問', medium: '普通', medium_desc: 'ニュアンスのある理解問題', hard: '難しい', hard_desc: '分析に関する詳細な質問', headerSub: '難易度', note: '💡 難易度は次の問題生成に適用されます。' },
+  zh: { easy: '简单', easy_desc: '关于主要思想的简单问题', medium: '中等', medium_desc: '有细微差别的理解问题', hard: '困难', hard_desc: '关于分析的详细问题', headerSub: '难度级别', note: '💡 难度将应用于下一次问题生成。' },
+  ru: { easy: 'Легко', easy_desc: 'Простые вопросы об основных идеях', medium: 'Средне', medium_desc: 'Вопросы на понимание с нюансами', hard: 'Сложно', hard_desc: 'Детальные вопросы по анализу', headerSub: 'Уровень сложности', note: '💡 Сложность будет применена в следующем поколении вопросов.' },
+  ko: { easy: '쉬움', easy_desc: '주요 아이디어에 대한 간단한 질문', medium: '보통', medium_desc: '뉘앙스가 있는 이해 질문', hard: '어려움', hard_desc: '분석에 관한 상세한 질문', headerSub: '난이도', note: '💡 난이도는 다음 질문 생성에 적용됩니다.' },
+  hi: { easy: 'आसान', easy_desc: 'मुख्य विचारों पर सरल प्रश्न', medium: 'मध्यम', medium_desc: 'सूक्ष्मताओं के साथ समझ के प्रश्न', hard: 'कठिन', hard_desc: 'विश्लेषण पर विस्तृत प्रश्न', headerSub: 'कठिनाई स्तर', note: '💡 कठिनाई अगली प्रश्न पीढ़ी पर लागू होगी।' },
+  it: { easy: 'Facile', easy_desc: 'Domande semplici sulle idee principali', medium: 'Medio', medium_desc: 'Domande di comprensione con sfumature', hard: 'Difficile', hard_desc: 'Domande dettagliate sull\'analisi', headerSub: 'Livello di difficoltà', note: '💡 La difficoltà sarà applicata alla prossima generazione di domande.' },
+};
 
 interface FlashcardBearProps {
   difficulty: Difficulty;
@@ -62,6 +62,7 @@ interface FlashcardBearProps {
 export function FlashcardBear({ difficulty, onDifficultyChange }: FlashcardBearProps) {
   const { appTheme, colors, isDarkMode } = useTheme();
   const { language } = useLanguage();
+  const d18n = DIFF_I18N[language] ?? DIFF_I18N['en'];
   const [visible, setVisible] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -178,9 +179,7 @@ export function FlashcardBear({ difficulty, onDifficultyChange }: FlashcardBearP
                   style={styles.headerLogo}
                   resizeMode="contain"
                 />
-                <Text style={styles.headerSub}>
-                  {language === 'fr' ? 'Niveau de difficulté' : 'Difficulty level'}
-                </Text>
+                <Text style={styles.headerSub}>{d18n.headerSub}</Text>
               </View>
             </LinearGradient>
 
@@ -220,23 +219,11 @@ export function FlashcardBear({ difficulty, onDifficultyChange }: FlashcardBearP
                         <Text style={styles.emoji}>{opt.emoji}</Text>
                       </View>
                       <View style={styles.cardText}>
-                        <Text
-                          style={[
-                            styles.cardLabel,
-                            isDarkMode && styles.cardLabelDark,
-                            isActive && { color: colors.primary },
-                          ]}
-                        >
-                          {language === 'fr' ? opt.label : opt.id === 'easy' ? 'Easy' : opt.id === 'medium' ? 'Medium' : 'Hard'}
+                        <Text style={[styles.cardLabel, isDarkMode && styles.cardLabelDark, isActive && { color: colors.primary }]}>
+                          {d18n[opt.id]}
                         </Text>
                         <Text style={[styles.cardDesc, isDarkMode && styles.cardDescDark]}>
-                          {language === 'fr'
-                            ? opt.description
-                            : opt.id === 'easy'
-                              ? 'Simple questions about the main ideas'
-                              : opt.id === 'medium'
-                                ? 'Comprehension questions with nuance'
-                                : 'Detailed questions on analysis and specifics'}
+                          {d18n[`${opt.id}_desc`]}
                         </Text>
                       </View>
                       <View style={styles.cardRight}>
@@ -257,9 +244,7 @@ export function FlashcardBear({ difficulty, onDifficultyChange }: FlashcardBearP
               {/* Note explicative */}
               <View style={[styles.note, isDarkMode && styles.noteDark]}>
                 <Text style={[styles.noteText, isDarkMode && styles.noteTextDark]}>
-                  {language === 'fr'
-                    ? '💡 La difficulté sera appliquée à la prochaine génération de questions.'
-                    : '💡 Difficulty will be applied on the next question generation.'}
+                  {d18n.note}
                 </Text>
               </View>
             </ScrollView>
