@@ -240,9 +240,10 @@ export function FicheAssistant({ onCommandSelect, activeCommandId }: FicheAssist
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.list}>
               {ASSISTANT_COMMANDS.map((cmd) => {
                 const isActive = activeCommandId === cmd.id;
+                // Couleur pleine (pas de transparence) pour éviter les artefacts de rendu Android
                 const cardBg = isActive
-                  ? `${colors.primary}12`
-                  : isDarkMode ? 'rgba(255,255,255,0.07)' : '#FFF';
+                  ? (isDarkMode ? `${colors.primary}25` : `${colors.primary}18`)
+                  : (isDarkMode ? 'rgba(255,255,255,0.07)' : '#FFF');
                 const cardBorder = isActive ? colors.primary : 'transparent';
                 const cardBorderWidth = isActive ? 2 : 0;
 

@@ -192,8 +192,8 @@ export function FlashcardBear({ difficulty, onDifficultyChange }: FlashcardBearP
               {DIFFICULTY_OPTIONS.map((opt) => {
                 const isActive = difficulty === opt.id;
                 const cardBg = isActive
-                  ? `${colors.primary}12`
-                  : isDarkMode ? 'rgba(255,255,255,0.07)' : '#FFF';
+                  ? (isDarkMode ? `${colors.primary}25` : `${colors.primary}18`)
+                  : (isDarkMode ? 'rgba(255,255,255,0.07)' : '#FFF');
                 const cardBorder = isActive ? colors.primary : 'transparent';
                 const cardBorderWidth = isActive ? 2 : 0;
 
