@@ -12,6 +12,9 @@ expo-env.d.ts
 # Native
 ios/
 android/
+# Exception : modules locaux natifs (doivent être commités)
+!modules/*/android/
+!modules/*/android/**
 *.orig.*
 *.jks
 *.p8

@@ -25,6 +25,13 @@ import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.LinearGradient
+import android.graphics.Paint
+import android.graphics.RectF
+import android.graphics.Shader
 import android.widget.RemoteViews
 import java.util.Calendar
 
@@ -51,7 +58,6 @@ class IdeeDuJourWidgetProvider : AppWidgetProvider() {
         cancelMidnightAlarm(context)
     }
 
-    // ACTION_MIDNIGHT recu via le BroadcastReceiver : on force la maj de tous les widgets
     override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)
         if (intent.action == ACTION_MIDNIGHT) {
@@ -62,7 +68,6 @@ class IdeeDuJourWidgetProvider : AppWidgetProvider() {
             for (id in ids) {
                 updateWidget(context, appWidgetManager, id)
             }
-            // Replanifier pour le lendemain
             scheduleMidnightAlarm(context)
         }
     }
@@ -123,6 +128,36 @@ class IdeeDuJourWidgetProvider : AppWidgetProvider() {
             "Un livre bien choisi vous sauve de tout, meme de vous-meme. — Daniel Pennac"
         )
 
+        // Génère un Bitmap avec dégradé arrondi aux couleurs du thème utilisateur
+        private fun makeGradientBitmap(w: Int, h: Int, c0: Int, c1: Int, c2: Int): Bitmap {
+            val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+            val canvas = Canvas(bmp)
+            val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+            // Dégradé diagonal (haut-gauche → bas-droite) avec 3 couleurs
+            paint.shader = LinearGradient(
+                0f, 0f, w.toFloat(), h.toFloat(),
+                intArrayOf(c0, c1, c2),
+                floatArrayOf(0f, 0.5f, 1f),
+                Shader.TileMode.CLAMP
+            )
+            val radius = (20 * w / 320f) // ~20dp adaptatif
+            canvas.drawRoundRect(RectF(0f, 0f, w.toFloat(), h.toFloat()), radius, radius, paint)
+            return bmp
+        }
+
+        // Lit les couleurs depuis SharedPreferences (écrit par WidgetThemeModule depuis React Native)
+        private fun getThemeColors(context: Context): Triple<Int, Int, Int> {
+            val prefs = context.getSharedPreferences("widget_theme", Context.MODE_PRIVATE)
+            val g0 = prefs.getString("gradient0", "#FF6B35") ?: "#FF6B35"
+            val g1 = prefs.getString("gradient1", "#D63B6E") ?: "#D63B6E"
+            val g2 = prefs.getString("gradient2", "#8B1A8B") ?: "#8B1A8B"
+            return try {
+                Triple(Color.parseColor(g0), Color.parseColor(g1), Color.parseColor(g2))
+            } catch (e: Exception) {
+                Triple(Color.parseColor("#FF6B35"), Color.parseColor("#D63B6E"), Color.parseColor("#8B1A8B"))
+            }
+        }
+
         fun updateWidget(context: Context, appWidgetManager: AppWidgetManager, appWidgetId: Int) {
             try {
                 val views = RemoteViews(context.packageName, R.layout.widget_idee_du_jour)
@@ -137,14 +172,22 @@ class IdeeDuJourWidgetProvider : AppWidgetProvider() {
                 views.setTextViewText(R.id.widget_quote, quoteText)
                 views.setTextViewText(R.id.widget_author, authorText)
 
+                // Appliquer le dégradé aux couleurs du thème utilisateur
+                val (c0, c1, c2) = getThemeColors(context)
+                val options = appWidgetManager.getAppWidgetOptions(appWidgetId)
+                val w = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH, 320)
+                val h = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 180)
+                val widthPx = (w * context.resources.displayMetrics.density).toInt().coerceAtLeast(320)
+                val heightPx = (h * context.resources.displayMetrics.density).toInt().coerceAtLeast(160)
+                val bmp = makeGradientBitmap(widthPx, heightPx, c0, c1, c2)
+                views.setImageViewBitmap(R.id.widget_bg, bmp)
+
                 // Clic sur le widget → ouvre l'app
                 val launchIntent = context.packageManager.getLaunchIntentForPackage(context.packageName)
                 if (launchIntent != null) {
                     launchIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
                     val pendingIntent = PendingIntent.getActivity(
-                        context,
-                        0,
-                        launchIntent,
+                        context, 0, launchIntent,
                         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                     )
                     views.setOnClickPendingIntent(R.id.widget_root, pendingIntent)
@@ -156,37 +199,23 @@ class IdeeDuJourWidgetProvider : AppWidgetProvider() {
             }
         }
 
-        // Planifie une alarme exacte à minuit (heure locale) pour rafraîchir la citation
         fun scheduleMidnightAlarm(context: Context) {
             val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-
-            // Calculer le prochain minuit
             val midnight = Calendar.getInstance().apply {
                 set(Calendar.HOUR_OF_DAY, 0)
                 set(Calendar.MINUTE, 0)
-                set(Calendar.SECOND, 5) // 5s après minuit pour laisser Android respirer
+                set(Calendar.SECOND, 5)
                 set(Calendar.MILLISECOND, 0)
-                if (before(Calendar.getInstance())) {
-                    add(Calendar.DAY_OF_YEAR, 1)
-                }
+                if (before(Calendar.getInstance())) add(Calendar.DAY_OF_YEAR, 1)
             }
-
             val intent = Intent(context, IdeeDuJourWidgetProvider::class.java).apply {
                 action = ACTION_MIDNIGHT
             }
             val pendingIntent = PendingIntent.getBroadcast(
-                context,
-                1001,
-                intent,
+                context, 1001, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
-
-            // setExactAndAllowWhileIdle garantit le déclenchement même en mode Doze
-            alarmManager.setExactAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                midnight.timeInMillis,
-                pendingIntent
-            )
+            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, midnight.timeInMillis, pendingIntent)
         }
 
         fun cancelMidnightAlarm(context: Context) {
@@ -195,9 +224,7 @@ class IdeeDuJourWidgetProvider : AppWidgetProvider() {
                 action = ACTION_MIDNIGHT
             }
             val pendingIntent = PendingIntent.getBroadcast(
-                context,
-                1001,
-                intent,
+                context, 1001, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
             alarmManager.cancel(pendingIntent)
@@ -209,29 +236,33 @@ class IdeeDuJourWidgetProvider : AppWidgetProvider() {
 // ─── Layout XML ────────────────────────────────────────────────────────────────
 
 const WIDGET_LAYOUT_XML = `<?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/widget_root"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@drawable/widget_background"
-    android:padding="0dp">
+    android:layout_height="match_parent">
 
-    <!-- Grand guillemet décoratif en arrière-plan -->
+    <!-- Background dynamique : ImageView rempli par le Bitmap dégradé du thème -->
+    <ImageView
+        android:id="@+id/widget_bg"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="fitXY" />
+
+    <!-- Grand guillemet décoratif -->
     <TextView
         android:id="@+id/widget_deco"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginTop="-8dp"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="-4dp"
         android:layout_marginEnd="8dp"
         android:text="&quot;"
         android:textColor="#22FFFFFF"
         android:textSize="96sp"
         android:textStyle="bold" />
 
-    <!-- Contenu principal : padding intérieur via LinearLayout -->
+    <!-- Contenu principal -->
     <LinearLayout
         android:id="@+id/widget_content"
         android:layout_width="match_parent"
@@ -240,7 +271,7 @@ const WIDGET_LAYOUT_XML = `<?xml version="1.0" encoding="utf-8"?>
         android:padding="14dp"
         android:gravity="center_vertical">
 
-        <!-- En-tête : point coloré + titre -->
+        <!-- En-tête -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -267,7 +298,7 @@ const WIDGET_LAYOUT_XML = `<?xml version="1.0" encoding="utf-8"?>
 
         </LinearLayout>
 
-        <!-- Séparateur -->
+        <!-- Séparateur court -->
         <TextView
             android:id="@+id/widget_divider"
             android:layout_width="40dp"
@@ -303,7 +334,7 @@ const WIDGET_LAYOUT_XML = `<?xml version="1.0" encoding="utf-8"?>
 
     </LinearLayout>
 
-</RelativeLayout>
+</FrameLayout>
 `;
 
 // ─── Dégradé arrière-plan ──────────────────────────────────────────────────────

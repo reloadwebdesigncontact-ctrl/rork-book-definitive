@@ -1,0 +1,7 @@
+{
+  "name": "widget-theme-module",
+  "version": "1.0.0",
+  "description": "Local native module to sync app theme colors to Android widget via SharedPreferences",
+  "main": "index.ts",
+  "private": true
+}

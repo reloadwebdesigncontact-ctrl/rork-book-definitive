@@ -1,0 +1,7 @@
+{
+  "name": "widget-theme-module",
+  "platforms": ["android"],
+  "android": {
+    "modules": ["app.coverscan.widgettheme.WidgetThemeModule"]
+  }
+}
