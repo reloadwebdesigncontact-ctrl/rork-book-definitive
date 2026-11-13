@@ -127,8 +127,15 @@ class IdeeDuJourWidgetProvider : AppWidgetProvider() {
             try {
                 val views = RemoteViews(context.packageName, R.layout.widget_idee_du_jour)
                 val dayOfYear = Calendar.getInstance().get(Calendar.DAY_OF_YEAR)
-                val quote = QUOTES[dayOfYear % QUOTES.size]
-                views.setTextViewText(R.id.widget_quote, quote)
+                val full = QUOTES[dayOfYear % QUOTES.size]
+
+                // Séparer citation et auteur sur " — "
+                val parts = full.split(" — ", limit = 2)
+                val quoteText = if (parts.size == 2) parts[0] else full
+                val authorText = if (parts.size == 2) "— ${parts[1]}" else ""
+
+                views.setTextViewText(R.id.widget_quote, quoteText)
+                views.setTextViewText(R.id.widget_author, authorText)
 
                 // Clic sur le widget → ouvre l'app
                 val launchIntent = context.packageManager.getLaunchIntentForPackage(context.packageName)
@@ -200,12 +207,6 @@ class IdeeDuJourWidgetProvider : AppWidgetProvider() {
 `;
 
 // ─── Layout XML ────────────────────────────────────────────────────────────────
-// IMPORTANT : RemoteViews sur Android supporte uniquement :
-// FrameLayout, LinearLayout, RelativeLayout, GridLayout
-// AnalogClock, Button, Chronometer, ImageButton, ImageView, ProgressBar,
-// TextView, ViewFlipper, ListView, GridView, StackView, AdapterViewFlipper
-// Attributs INTERDITS dans les widgets : fontFamily, letterSpacing,
-// lineSpacingMultiplier, alpha (XML), View séparateur standalone
 
 const WIDGET_LAYOUT_XML = `<?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
@@ -214,55 +215,93 @@ const WIDGET_LAYOUT_XML = `<?xml version="1.0" encoding="utf-8"?>
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/widget_background"
-    android:padding="14dp">
+    android:padding="0dp">
 
-    <!-- Titre en haut -->
+    <!-- Grand guillemet décoratif en arrière-plan -->
     <TextView
-        android:id="@+id/widget_title"
+        android:id="@+id/widget_deco"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true"
-        android:text="L'idee du jour"
-        android:textColor="#FFFFFF"
-        android:textSize="13sp"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="-8dp"
+        android:layout_marginEnd="8dp"
+        android:text="&quot;"
+        android:textColor="#22FFFFFF"
+        android:textSize="96sp"
         android:textStyle="bold" />
 
-    <!-- Séparateur horizontal simulé avec un TextView vide -->
-    <TextView
-        android:id="@+id/widget_divider"
+    <!-- Contenu principal : padding intérieur via LinearLayout -->
+    <LinearLayout
+        android:id="@+id/widget_content"
         android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_below="@id/widget_title"
-        android:layout_marginTop="6dp"
-        android:background="#66FFFFFF"
-        android:text="" />
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="14dp"
+        android:gravity="center_vertical">
 
-    <!-- Citation (zone principale) -->
-    <TextView
-        android:id="@+id/widget_quote"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/widget_divider"
-        android:layout_above="@id/widget_footer"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="4dp"
-        android:text="Lire, c'est voyager sans bouger de sa chaise."
-        android:textColor="#FFFFFF"
-        android:textSize="11sp"
-        android:maxLines="4"
-        android:ellipsize="end" />
+        <!-- En-tête : point coloré + titre -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
-    <!-- Footer -->
-    <TextView
-        android:id="@+id/widget_footer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:text="Summshine - Citation du jour"
-        android:textColor="#CCFFFFFF"
-        android:textSize="9sp"
-        android:gravity="end" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="&#9670;"
+                android:textColor="#FFE0CC"
+                android:textSize="8sp"
+                android:layout_marginEnd="6dp" />
+
+            <TextView
+                android:id="@+id/widget_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="L'idee du jour"
+                android:textColor="#FFE0CC"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <!-- Séparateur -->
+        <TextView
+            android:id="@+id/widget_divider"
+            android:layout_width="40dp"
+            android:layout_height="2dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="10dp"
+            android:background="#80FFFFFF"
+            android:text="" />
+
+        <!-- Citation -->
+        <TextView
+            android:id="@+id/widget_quote"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Lire, c'est voyager sans bouger de sa chaise."
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:maxLines="3"
+            android:ellipsize="end" />
+
+        <!-- Auteur -->
+        <TextView
+            android:id="@+id/widget_author"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text=""
+            android:textColor="#CCFFFFFF"
+            android:textSize="10sp"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
+    </LinearLayout>
 
 </RelativeLayout>
 `;
@@ -274,13 +313,13 @@ const WIDGET_BACKGROUND_XML = `<?xml version="1.0" encoding="utf-8"?>
     android:shape="rectangle">
 
     <gradient
-        android:startColor="#F4604A"
-        android:centerColor="#E8445A"
-        android:endColor="#C62A6E"
+        android:startColor="#FF6B35"
+        android:centerColor="#D63B6E"
+        android:endColor="#8B1A8B"
         android:angle="135"
         android:type="linear" />
 
-    <corners android:radius="16dp" />
+    <corners android:radius="20dp" />
 
 </shape>
 `;
