@@ -18,9 +18,11 @@ const path = require("path");
 
 const WIDGET_PROVIDER_KOTLIN = `package app.coverscan
 
+import android.app.AlarmManager
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.widget.RemoteViews
@@ -36,9 +38,37 @@ class IdeeDuJourWidgetProvider : AppWidgetProvider() {
         for (appWidgetId in appWidgetIds) {
             updateWidget(context, appWidgetManager, appWidgetId)
         }
+        scheduleMidnightAlarm(context)
+    }
+
+    override fun onEnabled(context: Context) {
+        super.onEnabled(context)
+        scheduleMidnightAlarm(context)
+    }
+
+    override fun onDisabled(context: Context) {
+        super.onDisabled(context)
+        cancelMidnightAlarm(context)
+    }
+
+    // ACTION_MIDNIGHT recu via le BroadcastReceiver : on force la maj de tous les widgets
+    override fun onReceive(context: Context, intent: Intent) {
+        super.onReceive(context, intent)
+        if (intent.action == ACTION_MIDNIGHT) {
+            val appWidgetManager = AppWidgetManager.getInstance(context)
+            val ids = appWidgetManager.getAppWidgetIds(
+                ComponentName(context, IdeeDuJourWidgetProvider::class.java)
+            )
+            for (id in ids) {
+                updateWidget(context, appWidgetManager, id)
+            }
+            // Replanifier pour le lendemain
+            scheduleMidnightAlarm(context)
+        }
     }
 
     companion object {
+        private const val ACTION_MIDNIGHT = "app.coverscan.WIDGET_MIDNIGHT_UPDATE"
 
         private val QUOTES = arrayOf(
             "Lire, c'est boire et manger. L'esprit qui ne lit pas maigrit. — Victor Hugo",
@@ -117,6 +147,53 @@ class IdeeDuJourWidgetProvider : AppWidgetProvider() {
             } catch (e: Exception) {
                 e.printStackTrace()
             }
+        }
+
+        // Planifie une alarme exacte à minuit (heure locale) pour rafraîchir la citation
+        fun scheduleMidnightAlarm(context: Context) {
+            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+            // Calculer le prochain minuit
+            val midnight = Calendar.getInstance().apply {
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 5) // 5s après minuit pour laisser Android respirer
+                set(Calendar.MILLISECOND, 0)
+                if (before(Calendar.getInstance())) {
+                    add(Calendar.DAY_OF_YEAR, 1)
+                }
+            }
+
+            val intent = Intent(context, IdeeDuJourWidgetProvider::class.java).apply {
+                action = ACTION_MIDNIGHT
+            }
+            val pendingIntent = PendingIntent.getBroadcast(
+                context,
+                1001,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+
+            // setExactAndAllowWhileIdle garantit le déclenchement même en mode Doze
+            alarmManager.setExactAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                midnight.timeInMillis,
+                pendingIntent
+            )
+        }
+
+        fun cancelMidnightAlarm(context: Context) {
+            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            val intent = Intent(context, IdeeDuJourWidgetProvider::class.java).apply {
+                action = ACTION_MIDNIGHT
+            }
+            val pendingIntent = PendingIntent.getBroadcast(
+                context,
+                1001,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            alarmManager.cancel(pendingIntent)
         }
     }
 }
@@ -303,6 +380,11 @@ const withAndroidWidgetManifest = (config) => {
                 {
                   $: {
                     "android:name": "android.appwidget.action.APPWIDGET_UPDATE",
+                  },
+                },
+                {
+                  $: {
+                    "android:name": "app.coverscan.WIDGET_MIDNIGHT_UPDATE",
                   },
                 },
               ],
