@@ -17,3 +17,15 @@ __tests__
 *.spec.tsx
 # Images ours chargées via URL GitHub — pas besoin dans le build
 assets/images/assistant-bear
+# Cache et fichiers temporaires
+.expo/web
+.expo/devices.json
+.expo/settings.json*
+*.jAGf8BfIaB08rEMWGw__YyqopgLppvpaG1ubTeYiU8M
+# Builds locaux
+*.apk
+*.aab
+*.ipa
+# IDE
+.vscode
+.kiro

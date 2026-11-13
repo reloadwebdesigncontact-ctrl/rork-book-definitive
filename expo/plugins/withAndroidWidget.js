@@ -18,9 +18,11 @@ const path = require("path");
 
 const WIDGET_PROVIDER_KOTLIN = `package app.coverscan
 
+import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
+import android.content.Intent
 import android.widget.RemoteViews
 import java.util.Calendar
 
@@ -97,6 +99,20 @@ class IdeeDuJourWidgetProvider : AppWidgetProvider() {
                 val dayOfYear = Calendar.getInstance().get(Calendar.DAY_OF_YEAR)
                 val quote = QUOTES[dayOfYear % QUOTES.size]
                 views.setTextViewText(R.id.widget_quote, quote)
+
+                // Clic sur le widget → ouvre l'app
+                val launchIntent = context.packageManager.getLaunchIntentForPackage(context.packageName)
+                if (launchIntent != null) {
+                    launchIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    val pendingIntent = PendingIntent.getActivity(
+                        context,
+                        0,
+                        launchIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                    )
+                    views.setOnClickPendingIntent(R.id.widget_root, pendingIntent)
+                }
+
                 appWidgetManager.updateAppWidget(appWidgetId, views)
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -117,6 +133,7 @@ class IdeeDuJourWidgetProvider : AppWidgetProvider() {
 const WIDGET_LAYOUT_XML = `<?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/widget_background"
