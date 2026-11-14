@@ -3,7 +3,6 @@ import createContextHook from "@nkzw/create-context-hook";
 import { useEffect, useState } from "react";
 import { APP_THEMES, AppTheme, ColorPalette } from "@/constants/appThemes";
 import { logger } from "@/utils/logger";
-import { saveThemeName } from "@/modules/app-icon/index";
 
 export const [ThemeProvider, useTheme] = createContextHook(() => {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -25,8 +24,6 @@ export const [ThemeProvider, useTheme] = createContextHook(() => {
       }
       if (storedAppTheme !== null) {
         setAppTheme(storedAppTheme as AppTheme);
-        // Sync le nom du thème vers le widget au démarrage
-        saveThemeName(storedAppTheme);
       }
     } catch (error) {
       logger.error("Error loading theme:", error);
@@ -49,15 +46,13 @@ export const [ThemeProvider, useTheme] = createContextHook(() => {
     setAppTheme(theme);
     try {
       await AsyncStorage.setItem("appTheme", theme);
-      // Envoyer le nom du thème au widget — les couleurs sont résolues côté Kotlin
-      saveThemeName(theme);
     } catch (error) {
       logger.error("Error saving app theme:", error);
     }
   };
 
   const toggleAnimatedBackground = async () => {
-    // Le fond animé est toujours actif — cette fonction ne fait rien
+    // Le fond animé est toujours actif
   };
 
   const colors: ColorPalette = APP_THEMES[appTheme];

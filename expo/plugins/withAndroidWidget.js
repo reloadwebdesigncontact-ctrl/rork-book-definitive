@@ -177,11 +177,37 @@ class IdeeDuJourWidgetProvider : AppWidgetProvider() {
             "og_orange" to Triple("#FF5200", "#FF6A00", "#FF8533")
         )
 
-        // Lit le nom du thème depuis SharedPreferences et retourne les 3 couleurs du gradient
+        // Lit le nom du thème : SharedPreferences d'abord, puis fallback AsyncStorage SQLite
         private fun getThemeColors(context: Context): Triple<Int, Int, Int> {
+            // 1. Essayer SharedPreferences (mis à jour par l'app via WidgetPrefsModule)
             val prefs = context.getSharedPreferences("widget_theme", Context.MODE_PRIVATE)
-            val themeName = prefs.getString("theme_name", "orange") ?: "orange"
-            val (h0, h1, h2) = THEME_COLORS[themeName] ?: THEME_COLORS["orange"]!!
+            var themeName = prefs.getString("theme_name", null)
+
+            // 2. Fallback : lire AsyncStorage SQLite directement
+            if (themeName == null) {
+                try {
+                    val dbPath = context.getDatabasePath("RKAsyncStorageDb")
+                    if (dbPath.exists()) {
+                        val db = android.database.sqlite.SQLiteDatabase.openDatabase(
+                            dbPath.path, null,
+                            android.database.sqlite.SQLiteDatabase.OPEN_READONLY
+                        )
+                        val cursor = db.rawQuery(
+                            "SELECT value FROM catalystLocalStorage WHERE key='appTheme'", null
+                        )
+                        if (cursor.moveToFirst()) {
+                            themeName = cursor.getString(0)
+                        }
+                        cursor.close()
+                        db.close()
+                    }
+                } catch (e: Exception) {
+                    // Ignorer silencieusement
+                }
+            }
+
+            val name = themeName ?: "orange"
+            val (h0, h1, h2) = THEME_COLORS[name] ?: THEME_COLORS["orange"]!!
             return try {
                 Triple(Color.parseColor(h0), Color.parseColor(h1), Color.parseColor(h2))
             } catch (e: Exception) {
