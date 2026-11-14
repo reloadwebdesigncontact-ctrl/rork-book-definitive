@@ -11,25 +11,31 @@ class WidgetThemeModule : Module() {
     override fun definition() = ModuleDefinition {
         Name("WidgetThemeModule")
 
-        // Sauvegarde les couleurs du gradient dans SharedPreferences et force le rafraîchissement du widget
+        // Sauvegarde uniquement le NOM du thème (ex: "purple", "ocean")
+        // Les couleurs sont résolues côté Kotlin depuis une table en dur — plus fiable
         Function("saveThemeColors") { gradient0: String, gradient1: String, gradient2: String ->
+            val context = appContext.reactContext ?: return@Function false
+            true // no-op : les couleurs ne sont plus transmises depuis JS
+        }
+
+        // Nouvelle fonction simple : juste le nom du thème
+        Function("saveThemeName") { themeName: String ->
             val context = appContext.reactContext ?: return@Function false
             try {
                 val prefs = context.getSharedPreferences("widget_theme", Context.MODE_PRIVATE)
-                prefs.edit()
-                    .putString("gradient0", gradient0)
-                    .putString("gradient1", gradient1)
-                    .putString("gradient2", gradient2)
-                    .apply()
+                prefs.edit().putString("theme_name", themeName).commit() // commit() synchrone
 
                 // Forcer la mise à jour immédiate du widget
-                val intent = Intent(AppWidgetManager.ACTION_APPWIDGET_UPDATE)
-                val ids = AppWidgetManager.getInstance(context).getAppWidgetIds(
+                val manager = AppWidgetManager.getInstance(context)
+                val ids = manager.getAppWidgetIds(
                     ComponentName(context, "app.coverscan.IdeeDuJourWidgetProvider")
                 )
-                intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
-                context.sendBroadcast(intent)
-
+                if (ids.isNotEmpty()) {
+                    val intent = Intent(context, Class.forName("app.coverscan.IdeeDuJourWidgetProvider"))
+                    intent.action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
+                    intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
+                    context.sendBroadcast(intent)
+                }
                 true
             } catch (e: Exception) {
                 false

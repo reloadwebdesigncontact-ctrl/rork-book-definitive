@@ -3,7 +3,7 @@ import createContextHook from "@nkzw/create-context-hook";
 import { useEffect, useState } from "react";
 import { APP_THEMES, AppTheme, ColorPalette } from "@/constants/appThemes";
 import { logger } from "@/utils/logger";
-import { saveThemeColors } from "@/modules/widget-theme/index";
+import { saveThemeName } from "@/modules/widget-theme/index";
 
 export const [ThemeProvider, useTheme] = createContextHook(() => {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -25,9 +25,8 @@ export const [ThemeProvider, useTheme] = createContextHook(() => {
       }
       if (storedAppTheme !== null) {
         setAppTheme(storedAppTheme as AppTheme);
-        // Sync vers le widget au démarrage
-        const palette = APP_THEMES[storedAppTheme as AppTheme];
-        saveThemeColors(palette.gradient[0], palette.gradient[1], palette.gradient[2]);
+        // Sync le nom du thème vers le widget au démarrage
+        saveThemeName(storedAppTheme);
       }
     } catch (error) {
       logger.error("Error loading theme:", error);
@@ -50,9 +49,8 @@ export const [ThemeProvider, useTheme] = createContextHook(() => {
     setAppTheme(theme);
     try {
       await AsyncStorage.setItem("appTheme", theme);
-      // Synchroniser les couleurs vers le widget Android
-      const palette = APP_THEMES[theme];
-      saveThemeColors(palette.gradient[0], palette.gradient[1], palette.gradient[2]);
+      // Envoyer le nom du thème au widget — les couleurs sont résolues côté Kotlin
+      saveThemeName(theme);
     } catch (error) {
       logger.error("Error saving app theme:", error);
     }

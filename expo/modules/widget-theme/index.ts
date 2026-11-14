@@ -1,8 +1,8 @@
-// Module Expo local — synchronise les couleurs du thème vers le widget Android
-// via SharedPreferences (accessible depuis Kotlin sans pont JS)
+// Module Expo local — synchronise le thème vers le widget Android via SharedPreferences
 
 interface WidgetThemeNativeModule {
   saveThemeColors(gradient0: string, gradient1: string, gradient2: string): boolean;
+  saveThemeName(themeName: string): boolean;
 }
 
 let _module: WidgetThemeNativeModule | null = null;
@@ -20,10 +20,13 @@ function getModule(): WidgetThemeNativeModule | null {
 
 export function saveThemeColors(gradient0: string, gradient1: string, gradient2: string): boolean {
   const mod = getModule();
-  if (!mod) return false; // silencieux sur iOS ou si le module n'est pas dispo
-  try {
-    return mod.saveThemeColors(gradient0, gradient1, gradient2);
-  } catch {
-    return false;
-  }
+  if (!mod) return false;
+  try { return mod.saveThemeColors(gradient0, gradient1, gradient2); } catch { return false; }
+}
+
+// Méthode principale : envoie juste le nom du thème, les couleurs sont résolues côté Kotlin
+export function saveThemeName(themeName: string): boolean {
+  const mod = getModule();
+  if (!mod) return false;
+  try { return mod.saveThemeName(themeName); } catch { return false; }
 }

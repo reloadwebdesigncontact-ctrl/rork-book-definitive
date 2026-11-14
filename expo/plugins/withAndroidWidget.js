@@ -145,16 +145,47 @@ class IdeeDuJourWidgetProvider : AppWidgetProvider() {
             return bmp
         }
 
-        // Lit les couleurs depuis SharedPreferences (écrit par WidgetThemeModule depuis React Native)
+        // Table complète des thèmes — dupliquée depuis appThemes.ts pour éviter tout pont JS
+        // Format : themeName -> Triple(gradient0, gradient1, gradient2) en hex
+        private val THEME_COLORS = mapOf(
+            "orange"    to Triple("#FFA726", "#FF6B35", "#F44771"),
+            "red"       to Triple("#FF4444", "#FF6B6B", "#FF9999"),
+            "purple"    to Triple("#7B2FBE", "#9B4DCA", "#B06AE8"),
+            "turquoise" to Triple("#00C9FF", "#22D3EE", "#67E8F9"),
+            "pink"      to Triple("#FF3DA8", "#FF69B4", "#FF8FCE"),
+            "yellow"    to Triple("#FFE55A", "#FFED7A", "#FFF59D"),
+            "coral"     to Triple("#C4845A", "#D4906A", "#E4A880"),
+            "lime"      to Triple("#A8E063", "#BEF77A", "#D4FF99"),
+            "sunset"    to Triple("#FF5A8A", "#FF6B4A", "#FF9566"),
+            "dreamy"    to Triple("#C9748F", "#A98BC4", "#8BA6D8"),
+            "neon"      to Triple("#39FF14", "#AAFF00", "#00E5FF"),
+            "flamingo"  to Triple("#E84393", "#FF6B6B", "#FF8C42"),
+            "aurora"    to Triple("#FF9A3C", "#E879A0", "#D06ECC"),
+            "ocean"     to Triple("#2E8B9A", "#4CBECC", "#A8E6CF"),
+            "silver"    to Triple("#757575", "#9E9E9E", "#E0E0E0"),
+            "gold"      to Triple("#B8860B", "#C9962A", "#F5D77E"),
+            "tropical"  to Triple("#4158D0", "#C850C0", "#F64F8B"),
+            "peach"     to Triple("#FFBB6C", "#FF8A65", "#F06292"),
+            "velvet"    to Triple("#B5294E", "#D44B70", "#E87090"),
+            "glacier"   to Triple("#00B4D8", "#00D4FF", "#90E8FF"),
+            "galaxy"    to Triple("#6B35E8", "#9B5FFF", "#C89FFF"),
+            "tartan"    to Triple("#CC1A1A", "#E03030", "#F05050"),
+            "holo"      to Triple("#9B7FE8", "#B8A9E8", "#D4CCF5"),
+            "arctic"    to Triple("#7B35E8", "#5B5FFF", "#00D4FF"),
+            "lagoon"    to Triple("#0097B2", "#00B4D8", "#48CAE4"),
+            "dev_logo"  to Triple("#F97C3C", "#FB8C00", "#FFA040"),
+            "og_orange" to Triple("#FF5200", "#FF6A00", "#FF8533")
+        )
+
+        // Lit le nom du thème depuis SharedPreferences et retourne les 3 couleurs du gradient
         private fun getThemeColors(context: Context): Triple<Int, Int, Int> {
             val prefs = context.getSharedPreferences("widget_theme", Context.MODE_PRIVATE)
-            val g0 = prefs.getString("gradient0", "#FF6B35") ?: "#FF6B35"
-            val g1 = prefs.getString("gradient1", "#D63B6E") ?: "#D63B6E"
-            val g2 = prefs.getString("gradient2", "#8B1A8B") ?: "#8B1A8B"
+            val themeName = prefs.getString("theme_name", "orange") ?: "orange"
+            val (h0, h1, h2) = THEME_COLORS[themeName] ?: THEME_COLORS["orange"]!!
             return try {
-                Triple(Color.parseColor(g0), Color.parseColor(g1), Color.parseColor(g2))
+                Triple(Color.parseColor(h0), Color.parseColor(h1), Color.parseColor(h2))
             } catch (e: Exception) {
-                Triple(Color.parseColor("#FF6B35"), Color.parseColor("#D63B6E"), Color.parseColor("#8B1A8B"))
+                Triple(Color.parseColor("#FFA726"), Color.parseColor("#FF6B35"), Color.parseColor("#F44771"))
             }
         }
 
