@@ -189,31 +189,61 @@ class IdeeDuJourWidgetProvider : AppWidgetProvider() {
             }
         }
 
+        // Bitmap dégradé arrondi pour le fond du widget
+        private fun makeGradientBitmap(w: Int, h: Int, c0: Int, c1: Int, c2: Int): Bitmap {
+            val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+            val canvas = Canvas(bmp)
+            val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+            paint.shader = LinearGradient(
+                0f, 0f, w.toFloat(), h.toFloat(),
+                intArrayOf(c0, c1, c2),
+                floatArrayOf(0f, 0.5f, 1f),
+                Shader.TileMode.CLAMP
+            )
+            val radius = (20 * w / 320f)
+            canvas.drawRoundRect(RectF(0f, 0f, w.toFloat(), h.toFloat()), radius, radius, paint)
+            return bmp
+        }
+
+        // Bitmap blanc semi-transparent arrondi pour le bloc citation
+        private fun makeCardBitmap(w: Int, h: Int): Bitmap {
+            val bmp = Bitmap.createBitmap(w.coerceAtLeast(1), h.coerceAtLeast(1), Bitmap.Config.ARGB_8888)
+            val canvas = Canvas(bmp)
+            val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+            paint.color = 0xCCFFFFFF.toInt()
+            val radius = (16 * w / 320f)
+            canvas.drawRoundRect(RectF(0f, 0f, w.toFloat(), h.toFloat()), radius, radius, paint)
+            return bmp
+        }
+
         fun updateWidget(context: Context, appWidgetManager: AppWidgetManager, appWidgetId: Int) {
             try {
                 val views = RemoteViews(context.packageName, R.layout.widget_idee_du_jour)
                 val dayOfYear = Calendar.getInstance().get(Calendar.DAY_OF_YEAR)
                 val full = QUOTES[dayOfYear % QUOTES.size]
 
-                // Séparer citation et auteur sur " — "
-                val parts = full.split(" — ", limit = 2)
-                val quoteText = if (parts.size == 2) parts[0] else full
-                val authorText = if (parts.size == 2) "— \${parts[1]}" else ""
+                // Citation uniquement (sans auteur) pour lisibilité
+                val quoteOnly = if (full.contains(" — ")) full.substringBefore(" — ") else full
+                views.setTextViewText(R.id.widget_quote, quoteOnly)
 
-                views.setTextViewText(R.id.widget_quote, quoteText)
-                views.setTextViewText(R.id.widget_author, authorText)
-
-                // Appliquer le dégradé aux couleurs du thème utilisateur
+                // Dimensions du widget
                 val (c0, c1, c2) = getThemeColors(context)
                 val options = appWidgetManager.getAppWidgetOptions(appWidgetId)
-                val w = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH, 320)
-                val h = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 180)
-                val widthPx = (w * context.resources.displayMetrics.density).toInt().coerceAtLeast(320)
-                val heightPx = (h * context.resources.displayMetrics.density).toInt().coerceAtLeast(160)
-                val bmp = makeGradientBitmap(widthPx, heightPx, c0, c1, c2)
-                views.setImageViewBitmap(R.id.widget_bg, bmp)
+                val density = context.resources.displayMetrics.density
+                val wDp = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH, 320)
+                val hDp = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 180)
+                val wPx = (wDp * density).toInt().coerceAtLeast(320)
+                val hPx = (hDp * density).toInt().coerceAtLeast(160)
 
-                // Clic sur le widget → ouvre l'app
+                // Fond dégradé
+                views.setImageViewBitmap(R.id.widget_bg, makeGradientBitmap(wPx, hPx, c0, c1, c2))
+
+                // Carte blanche pour la citation
+                val cardW = (wPx * 0.92f).toInt()
+                val cardH = (hPx * 0.52f).toInt()
+                views.setImageViewBitmap(R.id.widget_card_bg, makeCardBitmap(cardW, cardH))
+
+                // Clic → ouvre l'app
                 val launchIntent = context.packageManager.getLaunchIntentForPackage(context.packageName)
                 if (launchIntent != null) {
                     launchIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
@@ -273,95 +303,119 @@ const WIDGET_LAYOUT_XML = `<?xml version="1.0" encoding="utf-8"?>
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Background dynamique : ImageView rempli par le Bitmap dégradé du thème -->
+    <!-- Background dégradé dynamique (couleur du thème) -->
     <ImageView
         android:id="@+id/widget_bg"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scaleType="fitXY" />
 
-    <!-- Grand guillemet décoratif -->
-    <TextView
-        android:id="@+id/widget_deco"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="top|end"
-        android:layout_marginTop="-4dp"
-        android:layout_marginEnd="8dp"
-        android:text="&quot;"
-        android:textColor="#22FFFFFF"
-        android:textSize="96sp"
-        android:textStyle="bold" />
-
-    <!-- Contenu principal -->
+    <!-- Layout principal vertical -->
     <LinearLayout
-        android:id="@+id/widget_content"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:padding="14dp"
-        android:gravity="center_vertical">
+        android:padding="10dp">
 
-        <!-- En-tête -->
+        <!-- EN-TÊTE : ampoule + séparateur + titre -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="1"
             android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:paddingStart="4dp">
 
+            <!-- Ampoule (simulée en texte) -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="&#9670;"
-                android:textColor="#FFE0CC"
-                android:textSize="8sp"
-                android:layout_marginEnd="6dp" />
+                android:text="&#128161;"
+                android:textSize="22sp" />
 
+            <!-- Séparateur vertical blanc -->
             <TextView
-                android:id="@+id/widget_title"
-                android:layout_width="0dp"
+                android:layout_width="2dp"
+                android:layout_height="28dp"
+                android:background="#AAFFFFFF"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="10dp"
+                android:text="" />
+
+            <!-- Titre -->
+            <TextView
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="L'idee du jour"
-                android:textColor="#FFE0CC"
-                android:textSize="11sp"
+                android:text="L\'idee du jour"
+                android:textColor="#FFFFFF"
+                android:textSize="17sp"
                 android:textStyle="bold" />
 
         </LinearLayout>
 
-        <!-- Séparateur court -->
-        <TextView
-            android:id="@+id/widget_divider"
-            android:layout_width="40dp"
-            android:layout_height="2dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="10dp"
-            android:background="#80FFFFFF"
-            android:text="" />
-
-        <!-- Citation -->
-        <TextView
-            android:id="@+id/widget_quote"
+        <!-- BLOC CITATION avec fond blanc arrondi -->
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Lire, c'est voyager sans bouger de sa chaise."
-            android:textColor="#FFFFFF"
-            android:textSize="13sp"
-            android:textStyle="bold"
-            android:maxLines="3"
-            android:ellipsize="end" />
+            android:layout_height="0dp"
+            android:layout_weight="2.2"
+            android:layout_marginBottom="2dp">
 
-        <!-- Auteur -->
+            <!-- Fond blanc arrondi (généré programmatiquement) -->
+            <ImageView
+                android:id="@+id/widget_card_bg"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="fitXY" />
+
+            <!-- Guillemet ouvrant -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|start"
+                android:layout_margin="6dp"
+                android:text="&#8220;"
+                android:textColor="#CC333333"
+                android:textSize="28sp"
+                android:textStyle="bold" />
+
+            <!-- Guillemet fermant -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|end"
+                android:layout_margin="6dp"
+                android:text="&#8221;"
+                android:textColor="#CC333333"
+                android:textSize="28sp"
+                android:textStyle="bold" />
+
+            <!-- Texte de la citation -->
+            <TextView
+                android:id="@+id/widget_quote"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginStart="28dp"
+                android:layout_marginEnd="28dp"
+                android:gravity="center"
+                android:text="Le succes vient davantage de la constance que de la motivation."
+                android:textColor="#222222"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:maxLines="3"
+                android:ellipsize="end" />
+
+        </FrameLayout>
+
+        <!-- BAS : soleil centré -->
         <TextView
-            android:id="@+id/widget_author"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:text=""
-            android:textColor="#CCFFFFFF"
-            android:textSize="10sp"
-            android:maxLines="1"
-            android:ellipsize="end" />
+            android:layout_height="0dp"
+            android:layout_weight="0.6"
+            android:text="&#127774;"
+            android:textSize="16sp"
+            android:gravity="center"
+            android:textColor="#FFFFFF" />
 
     </LinearLayout>
 
