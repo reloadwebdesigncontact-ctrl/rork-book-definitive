@@ -11,6 +11,7 @@
     "ios": "expo run:ios"
   },
   "dependencies": {
+    "widget-theme-module": "file:./modules/widget-theme",
     "@expo-google-fonts/baloo-2": "^0.4.2",
     "@expo/vector-icons": "^15.0.3",
     "@nkzw/create-context-hook": "^1.1.0",
@@ -33,6 +34,7 @@
     "expo-image-picker": "~17.0.11",
     "expo-linear-gradient": "~15.0.8",
     "expo-linking": "~8.0.12",
+    "expo-localization": "~16.0.1",
     "expo-location": "~19.0.8",
     "expo-print": "~15.0.8",
     "expo-router": "~6.0.23",
