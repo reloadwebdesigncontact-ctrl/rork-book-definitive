@@ -3,7 +3,7 @@ import createContextHook from "@nkzw/create-context-hook";
 import { useEffect, useState } from "react";
 import { APP_THEMES, AppTheme, ColorPalette } from "@/constants/appThemes";
 import { logger } from "@/utils/logger";
-import { saveThemeName } from "@/modules/widget-theme/index";
+import { saveThemeName } from "@/modules/app-icon/index";
 
 export const [ThemeProvider, useTheme] = createContextHook(() => {
   const [isDarkMode, setIsDarkMode] = useState(false);

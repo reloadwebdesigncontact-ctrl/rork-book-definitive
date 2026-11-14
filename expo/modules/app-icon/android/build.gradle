@@ -3,7 +3,7 @@ apply plugin: 'kotlin-android'
 
 android {
   compileSdkVersion 35
-  namespace "app.coverscan.widgettheme"
+  namespace "app.coverscan.appicon"
 
   defaultConfig {
     minSdkVersion 24
