@@ -128,23 +128,6 @@ class IdeeDuJourWidgetProvider : AppWidgetProvider() {
             "Un livre bien choisi vous sauve de tout, meme de vous-meme. — Daniel Pennac"
         )
 
-        // Génère un Bitmap avec dégradé arrondi aux couleurs du thème utilisateur
-        private fun makeGradientBitmap(w: Int, h: Int, c0: Int, c1: Int, c2: Int): Bitmap {
-            val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
-            val canvas = Canvas(bmp)
-            val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-            // Dégradé diagonal (haut-gauche → bas-droite) avec 3 couleurs
-            paint.shader = LinearGradient(
-                0f, 0f, w.toFloat(), h.toFloat(),
-                intArrayOf(c0, c1, c2),
-                floatArrayOf(0f, 0.5f, 1f),
-                Shader.TileMode.CLAMP
-            )
-            val radius = (20 * w / 320f) // ~20dp adaptatif
-            canvas.drawRoundRect(RectF(0f, 0f, w.toFloat(), h.toFloat()), radius, radius, paint)
-            return bmp
-        }
-
         // Table complète des thèmes — dupliquée depuis appThemes.ts pour éviter tout pont JS
         // Format : themeName -> Triple(gradient0, gradient1, gradient2) en hex
         private val THEME_COLORS = mapOf(
