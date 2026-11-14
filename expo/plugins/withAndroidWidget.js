@@ -167,7 +167,7 @@ class IdeeDuJourWidgetProvider : AppWidgetProvider() {
                 // Séparer citation et auteur sur " — "
                 val parts = full.split(" — ", limit = 2)
                 val quoteText = if (parts.size == 2) parts[0] else full
-                val authorText = if (parts.size == 2) "— ${parts[1]}" else ""
+                val authorText = if (parts.size == 2) "— \${parts[1]}" else ""
 
                 views.setTextViewText(R.id.widget_quote, quoteText)
                 views.setTextViewText(R.id.widget_author, authorText)
