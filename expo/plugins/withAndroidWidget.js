@@ -169,7 +169,7 @@ class IdeeDuJourWidgetProvider : AppWidgetProvider() {
             // 2. Fallback : lire AsyncStorage SQLite directement
             if (themeName == null) {
                 try {
-                    val dbPath = context.getDatabasePath("RKAsyncStorageDb")
+                    val dbPath = context.getDatabasePath("RKStorage")
                     if (dbPath.exists()) {
                         val db = android.database.sqlite.SQLiteDatabase.openDatabase(
                             dbPath.path, null,
@@ -491,6 +491,71 @@ const withAndroidWidgetFiles = (config) => {
         WIDGET_PROVIDER_KOTLIN
       );
 
+      // Module natif minimal pour rafraîchir le widget depuis React Native
+      const WIDGET_MODULE_KT = `package app.coverscan
+
+import android.appwidget.AppWidgetManager
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.bridge.ReactContextBaseJavaModule
+import com.facebook.react.bridge.ReactMethod
+
+class WidgetThemeModule(reactContext: ReactApplicationContext) :
+    ReactContextBaseJavaModule(reactContext) {
+
+    override fun getName() = "WidgetThemeModule"
+
+    @ReactMethod
+    fun saveThemeName(themeName: String) {
+        try {
+            val ctx = reactApplicationContext
+            val prefs = ctx.getSharedPreferences("widget_theme", Context.MODE_PRIVATE)
+            prefs.edit().putString("theme_name", themeName).commit()
+            val manager = AppWidgetManager.getInstance(ctx)
+            val ids = manager.getAppWidgetIds(
+                ComponentName(ctx, IdeeDuJourWidgetProvider::class.java)
+            )
+            if (ids.isNotEmpty()) {
+                val intent = Intent(AppWidgetManager.ACTION_APPWIDGET_UPDATE)
+                intent.component = ComponentName(ctx, IdeeDuJourWidgetProvider::class.java)
+                intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
+                ctx.sendBroadcast(intent)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+}
+`;
+      writeFileInProject(
+        projectRoot,
+        `app/src/main/java/${pkg}/WidgetThemeModule.kt`,
+        WIDGET_MODULE_KT
+      );
+
+      // Package pour enregistrer le module
+      const WIDGET_PACKAGE_KT = `package app.coverscan
+
+import com.facebook.react.ReactPackage
+import com.facebook.react.bridge.NativeModule
+import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.uimanager.ViewManager
+
+class WidgetThemePackage : ReactPackage {
+    override fun createNativeModules(ctx: ReactApplicationContext): List<NativeModule> =
+        listOf(WidgetThemeModule(ctx))
+    override fun createViewManagers(ctx: ReactApplicationContext): List<ViewManager<*, *>> =
+        emptyList()
+}
+`;
+      writeFileInProject(
+        projectRoot,
+        `app/src/main/java/${pkg}/WidgetThemePackage.kt`,
+        WIDGET_PACKAGE_KT
+      );
+
       writeFileInProject(
         projectRoot,
         "app/src/main/res/layout/widget_idee_du_jour.xml",
@@ -508,6 +573,29 @@ const withAndroidWidgetFiles = (config) => {
         "app/src/main/res/xml/widget_idee_du_jour_info.xml",
         WIDGET_INFO_XML
       );
+
+      // Enregistrer WidgetThemePackage dans MainApplication.kt
+      const mainAppPath = require("path").join(
+        projectRoot,
+        "android/app/src/main/java/app/coverscan/MainApplication.kt"
+      );
+      if (require("fs").existsSync(mainAppPath)) {
+        let mainApp = require("fs").readFileSync(mainAppPath, "utf8");
+        if (!mainApp.includes("WidgetThemePackage")) {
+          // Ajouter l'import
+          mainApp = mainApp.replace(
+            "import expo.modules.ReactNativeHostWrapper",
+            "import app.coverscan.WidgetThemePackage\nimport expo.modules.ReactNativeHostWrapper"
+          );
+          // Ajouter dans la liste des packages
+          mainApp = mainApp.replace(
+            "packages.add(ReactNativeHostWrapper(",
+            "packages.add(WidgetThemePackage())\n          packages.add(ReactNativeHostWrapper("
+          );
+          require("fs").writeFileSync(mainAppPath, mainApp, "utf8");
+          console.log("[withAndroidWidget] Registered WidgetThemePackage in MainApplication.kt");
+        }
+      }
 
       return config;
     },

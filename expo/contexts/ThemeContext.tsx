@@ -1,8 +1,22 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import createContextHook from "@nkzw/create-context-hook";
 import { useEffect, useState } from "react";
+import { NativeModules, Platform } from "react-native";
 import { APP_THEMES, AppTheme, ColorPalette } from "@/constants/appThemes";
 import { logger } from "@/utils/logger";
+
+// Notifie le widget Android du nouveau thème via SharedPreferences + broadcast
+function notifyWidget(themeName: string) {
+  if (Platform.OS !== 'android') return;
+  try {
+    const { WidgetThemeModule } = NativeModules;
+    if (WidgetThemeModule?.saveThemeName) {
+      WidgetThemeModule.saveThemeName(themeName);
+    }
+  } catch {
+    // Silencieux
+  }
+}
 
 export const [ThemeProvider, useTheme] = createContextHook(() => {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -24,6 +38,7 @@ export const [ThemeProvider, useTheme] = createContextHook(() => {
       }
       if (storedAppTheme !== null) {
         setAppTheme(storedAppTheme as AppTheme);
+        notifyWidget(storedAppTheme);
       }
     } catch (error) {
       logger.error("Error loading theme:", error);
@@ -46,6 +61,7 @@ export const [ThemeProvider, useTheme] = createContextHook(() => {
     setAppTheme(theme);
     try {
       await AsyncStorage.setItem("appTheme", theme);
+      notifyWidget(theme);
     } catch (error) {
       logger.error("Error saving app theme:", error);
     }
