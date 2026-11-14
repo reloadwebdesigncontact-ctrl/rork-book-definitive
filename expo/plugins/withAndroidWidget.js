@@ -222,9 +222,12 @@ class IdeeDuJourWidgetProvider : AppWidgetProvider() {
                 val dayOfYear = Calendar.getInstance().get(Calendar.DAY_OF_YEAR)
                 val full = QUOTES[dayOfYear % QUOTES.size]
 
-                // Citation uniquement (sans auteur) pour lisibilité
+                // Citation + auteur séparés
                 val quoteOnly = if (full.contains(" — ")) full.substringBefore(" — ") else full
+                val authorRaw = if (full.contains(" — ")) full.substringAfter(" — ") else ""
+                val authorOnly = if (authorRaw.isNotEmpty()) "— $authorRaw" else ""
                 views.setTextViewText(R.id.widget_quote, quoteOnly)
+                views.setTextViewText(R.id.widget_author, authorOnly)
 
                 // Dimensions du widget
                 val (c0, c1, c2) = getThemeColors(context)
@@ -303,119 +306,115 @@ const WIDGET_LAYOUT_XML = `<?xml version="1.0" encoding="utf-8"?>
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Background dégradé dynamique (couleur du thème) -->
+    <!-- Background dégradé dynamique -->
     <ImageView
         android:id="@+id/widget_bg"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scaleType="fitXY" />
 
-    <!-- Layout principal vertical -->
+    <!-- Layout principal -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:padding="10dp">
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp">
 
-        <!-- EN-TÊTE : ampoule + séparateur + titre -->
+        <!-- LABEL en haut : point + titre uppercase -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
+            android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:paddingStart="4dp">
+            android:layout_marginBottom="8dp">
 
-            <!-- Ampoule (simulée en texte) -->
             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="&#128161;"
-                android:textSize="22sp" />
-
-            <!-- Séparateur vertical blanc -->
-            <TextView
-                android:layout_width="2dp"
-                android:layout_height="28dp"
-                android:background="#AAFFFFFF"
-                android:layout_marginStart="8dp"
-                android:layout_marginEnd="10dp"
+                android:layout_width="6dp"
+                android:layout_height="6dp"
+                android:background="@android:color/white"
                 android:text="" />
 
-            <!-- Titre -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="L\'idee du jour"
+                android:layout_marginStart="7dp"
+                android:text="L\'IDEE DU JOUR"
                 android:textColor="#FFFFFF"
-                android:textSize="17sp"
+                android:textSize="10sp"
                 android:textStyle="bold" />
 
         </LinearLayout>
 
-        <!-- BLOC CITATION avec fond blanc arrondi -->
+        <!-- BLOC CITATION : fond blanc arrondi -->
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="2.2"
-            android:layout_marginBottom="2dp">
+            android:layout_weight="1">
 
-            <!-- Fond blanc arrondi (généré programmatiquement) -->
+            <!-- Fond blanc arrondi -->
             <ImageView
                 android:id="@+id/widget_card_bg"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="fitXY" />
 
-            <!-- Guillemet ouvrant -->
+            <!-- Guillemet ouvrant (haut gauche) -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="top|start"
-                android:layout_margin="6dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="2dp"
                 android:text="&#8220;"
-                android:textColor="#CC333333"
-                android:textSize="28sp"
+                android:textColor="#55000000"
+                android:textSize="32sp"
                 android:textStyle="bold" />
 
-            <!-- Guillemet fermant -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom|end"
-                android:layout_margin="6dp"
-                android:text="&#8221;"
-                android:textColor="#CC333333"
-                android:textSize="28sp"
-                android:textStyle="bold" />
-
-            <!-- Texte de la citation -->
+            <!-- Citation centrée -->
             <TextView
                 android:id="@+id/widget_quote"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:layout_marginStart="28dp"
-                android:layout_marginEnd="28dp"
+                android:layout_marginStart="32dp"
+                android:layout_marginEnd="32dp"
                 android:gravity="center"
-                android:text="Le succes vient davantage de la constance que de la motivation."
-                android:textColor="#222222"
-                android:textSize="12sp"
-                android:textStyle="bold"
+                android:text="Le succes vient de la constance."
+                android:textColor="#1A1A1A"
+                android:textSize="13sp"
+                android:textStyle="italic"
                 android:maxLines="3"
                 android:ellipsize="end" />
 
+            <!-- Guillemet fermant (bas droite) -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|end"
+                android:layout_marginEnd="10dp"
+                android:layout_marginBottom="2dp"
+                android:text="&#8221;"
+                android:textColor="#55000000"
+                android:textSize="32sp"
+                android:textStyle="bold" />
+
         </FrameLayout>
 
-        <!-- BAS : soleil centré -->
+        <!-- Auteur en bas -->
         <TextView
+            android:id="@+id/widget_author"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="0.6"
-            android:text="&#127774;"
-            android:textSize="16sp"
-            android:gravity="center"
-            android:textColor="#FFFFFF" />
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:gravity="end"
+            android:text=""
+            android:textColor="#DDFFFFFF"
+            android:textSize="9sp"
+            android:maxLines="1"
+            android:ellipsize="end" />
 
     </LinearLayout>
 
