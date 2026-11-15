@@ -23,12 +23,15 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useUser } from "@/contexts/UserContext";
 import { APP_THEMES, AppTheme } from "@/constants/appThemes";
 import { resolveThemeIcon } from "@/utils/themeIcon";
+import { useInAppReview } from "@/hooks/useInAppReview";
 
 export default function HomeScreen() {
   const router = useRouter();
   const { isDarkMode, colors, appTheme, changeAppTheme } = useTheme();
   const { t } = useLanguage();
   const { user, isSignedIn, signOut } = useUser();
+
+  useInAppReview();
   const scaleAnim = React.useRef(new Animated.Value(1)).current;
   const logoScale = React.useRef(new Animated.Value(0)).current;
   const titleOpacity = React.useRef(new Animated.Value(0)).current;
