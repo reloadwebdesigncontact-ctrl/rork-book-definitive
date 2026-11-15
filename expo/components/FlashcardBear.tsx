@@ -212,6 +212,7 @@ export function FlashcardBear({ difficulty, onDifficultyChange }: FlashcardBearP
                         backgroundColor: cardBg,
                         borderColor: cardBorder,
                         borderWidth: cardBorderWidth,
+                        ...(isActive && !isDarkMode && { shadowOpacity: 0, elevation: 0 }),
                       },
                     ]}
                   >

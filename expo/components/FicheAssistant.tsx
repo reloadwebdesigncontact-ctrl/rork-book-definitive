@@ -409,6 +409,7 @@ export function FicheAssistant({ onCommandSelect, activeCommandId }: FicheAssist
                         backgroundColor: cardBg,
                         borderColor: cardBorder,
                         borderWidth: cardBorderWidth,
+                        ...(isActive && !isDarkMode && { shadowOpacity: 0, elevation: 0 }),
                       },
                     ]}
                   >
