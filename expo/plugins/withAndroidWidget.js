@@ -288,7 +288,18 @@ class IdeeDuJourWidgetProvider : AppWidgetProvider() {
                 context, 1001, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
-            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, midnight.timeInMillis, pendingIntent)
+            // Android 12+ : setExactAndAllowWhileIdle nécessite SCHEDULE_EXACT_ALARM
+            // On utilise canScheduleExactAlarms() quand disponible, sinon setWindow comme fallback
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                if (alarmManager.canScheduleExactAlarms()) {
+                    alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, midnight.timeInMillis, pendingIntent)
+                } else {
+                    // Fenêtre de 10 minutes autour de minuit
+                    alarmManager.setWindow(AlarmManager.RTC_WAKEUP, midnight.timeInMillis, 10 * 60 * 1000L, pendingIntent)
+                }
+            } else {
+                alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, midnight.timeInMillis, pendingIntent)
+            }
         }
 
         fun cancelMidnightAlarm(context: Context) {
@@ -607,8 +618,20 @@ class WidgetThemePackage : ReactPackage {
 const withAndroidWidgetManifest = (config) => {
   return withAndroidManifest(config, (config) => {
     const manifest = config.modResults;
-    const application = manifest.manifest.application?.[0];
 
+    // Ajouter la permission SCHEDULE_EXACT_ALARM (Android 12+)
+    const permissions = manifest.manifest["uses-permission"] || [];
+    const hasAlarmPerm = permissions.some(
+      (p) => p.$?.["android:name"] === "android.permission.SCHEDULE_EXACT_ALARM"
+    );
+    if (!hasAlarmPerm) {
+      manifest.manifest["uses-permission"] = [
+        ...permissions,
+        { $: { "android:name": "android.permission.SCHEDULE_EXACT_ALARM" } },
+      ];
+    }
+
+    const application = manifest.manifest.application?.[0];
     if (!application) return config;
 
     const receivers = application.receiver || [];
