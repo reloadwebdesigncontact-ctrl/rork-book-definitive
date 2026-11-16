@@ -75,7 +75,7 @@ export function TypewriterText({
     <Animated.Text style={[style, animStyle]}>
       {displayed}
       {!isFinished && (
-        <Animated.Text style={{ opacity: cursorOpacity }}>|</Animated.Text>
+        <Animated.Text style={{ opacity: cursorOpacity, color: '#00FF6F' }}>|</Animated.Text>
       )}
     </Animated.Text>
   );
