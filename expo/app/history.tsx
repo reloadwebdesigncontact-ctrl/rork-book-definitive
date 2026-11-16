@@ -15,7 +15,6 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native";
 import { AnimatedBackground } from "@/components/AnimatedBackground";
-import { BookCoverGlow } from "@/components/BookCoverGlow";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import {
@@ -26,12 +25,27 @@ import {
 } from "@/utils/history";
 
 // Miniature de couverture pour la liste — simple Image avec fallback icône
-function HistoryCover({ uri, size, colors }: { uri: string; size: number; colors: { primary: string } }) {
-  const [error, setError] = useState(false);
+function HistoryCover({ uri, title, size, colors }: { uri?: string; title?: string; size: number; colors: { primary: string } }) {
   const w = size;
   const h = Math.round(size * 1.4);
 
-  if (error || !uri) {
+  // URLs à essayer dans l'ordre : uri fourni → Open Library par titre → icône
+  const fallbackUrl = title
+    ? `https://covers.openlibrary.org/b/title/${encodeURIComponent(title)}-M.jpg`
+    : null;
+
+  const [currentUrl, setCurrentUrl] = useState<string | null>(uri || fallbackUrl);
+  const [failed, setFailed] = useState(false);
+
+  const handleError = () => {
+    if (currentUrl === uri && fallbackUrl) {
+      setCurrentUrl(fallbackUrl);
+    } else {
+      setFailed(true);
+    }
+  };
+
+  if (failed || !currentUrl) {
     return (
       <View style={[styles.historyCoverPlaceholder, { width: w, height: h, backgroundColor: colors.primary + '22' }]}>
         <BookOpen size={size * 0.4} color={colors.primary} />
@@ -41,6 +55,16 @@ function HistoryCover({ uri, size, colors }: { uri: string; size: number; colors
 
   return (
     <View style={[styles.historyCoverWrap, { width: w, height: h }]}>
+      <Image
+        source={{ uri: currentUrl }}
+        style={{ width: w, height: h, borderRadius: 10 }}
+        contentFit="cover"
+        cachePolicy="memory-disk"
+        onError={handleError}
+      />
+    </View>
+  );
+}
       <Image
         source={{ uri }}
         style={{ width: w, height: h, borderRadius: 10 }}
@@ -58,7 +82,6 @@ export default function HistoryScreen() {
   const { language } = useLanguage();
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [selectedEntry, setSelectedEntry] = useState<HistoryEntry | null>(null);
-  const [detailCoverError, setDetailCoverError] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -144,19 +167,12 @@ export default function HistoryScreen() {
           >
             {/* Cover + info */}
             <View style={[styles.detailCard, isDarkMode && styles.detailCardDark]}>
-              {selectedEntry.coverUrl && !detailCoverError ? (
-                <BookCoverGlow
-                  uri={selectedEntry.coverUrl}
-                  width={130}
-                  height={180}
-                  borderRadius={10}
-                  onError={() => setDetailCoverError(true)}
-                />
-              ) : (
-                <View style={[styles.detailCoverPlaceholder, { backgroundColor: colors.primary + '22' }]}>
-                  <BookOpen size={48} color={colors.primary} />
-                </View>
-              )}
+              <HistoryCover
+                uri={selectedEntry.coverUrl}
+                title={selectedEntry.title}
+                size={93}
+                colors={colors}
+              />
               <View style={styles.detailMeta}>
                 <Text style={[styles.detailTitle, isDarkMode && styles.detailTitleDark]}>
                   {selectedEntry.title}
@@ -248,16 +264,10 @@ export default function HistoryScreen() {
             showsVerticalScrollIndicator={false}
             renderItem={({ item }) => (
               <Pressable
-                onPress={() => { setDetailCoverError(false); setSelectedEntry(item); }}
+                onPress={() => { setSelectedEntry(item); }}
                 style={[styles.historyItem, isDarkMode && styles.historyItemDark]}
               >
-                {item.coverUrl ? (
-                  <HistoryCover key={item.id} uri={item.coverUrl} size={64} colors={colors} />
-                ) : (
-                  <View style={[styles.historyCoverPlaceholder, { backgroundColor: colors.primary + '22' }]}>
-                    <BookOpen size={24} color={colors.primary} />
-                  </View>
-                )}
+                <HistoryCover key={item.id} uri={item.coverUrl} title={item.title} size={64} colors={colors} />
                 <View style={styles.historyInfo}>
                   <Text style={[styles.historyTitle, isDarkMode && styles.historyTitleDark]} numberOfLines={2}>
                     {item.title}

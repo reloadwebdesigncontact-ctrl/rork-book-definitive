@@ -253,12 +253,12 @@ export default function SummaryScreen() {
           const safeIsbn = typeof isbn === 'string' && /^[0-9X]{10,13}$/.test(isbn) ? isbn : undefined;
           const openLibraryCover = safeIsbn
             ? `https://covers.openlibrary.org/b/isbn/${safeIsbn}-L.jpg`
-            : undefined;
+            : `https://covers.openlibrary.org/b/title/${encodeURIComponent(rawTitle || parsedInfo.title)}-L.jpg`;
           
           bookData = {
             title: rawTitle || parsedInfo.title,
             author: rawAuthor || parsedInfo.author,
-            coverUrl: coverUrl,
+            coverUrl: coverUrl || openLibraryCover,
             coverUrlFallback: openLibraryCover || coverUrl || uri,
             description: rawDescription,
           };
