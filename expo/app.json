@@ -116,9 +116,6 @@
     "extra": {
       "router": {
         "origin": "https://rork.com/"
-      },
-      "eas": {
-        "projectId": "PLACEHOLDER"
       }
     },
     "owner": "reload_10"
