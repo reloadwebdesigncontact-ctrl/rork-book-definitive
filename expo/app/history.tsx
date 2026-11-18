@@ -65,16 +65,6 @@ function HistoryCover({ uri, title, size, colors }: { uri?: string; title?: stri
     </View>
   );
 }
-      <Image
-        source={{ uri }}
-        style={{ width: w, height: h, borderRadius: 10 }}
-        contentFit="cover"
-        cachePolicy="memory-disk"
-        onError={() => setError(true)}
-      />
-    </View>
-  );
-}
 
 export default function HistoryScreen() {
   const router = useRouter();
