@@ -43,7 +43,7 @@ export default function RootLayout() {
   const [fontTimeout, setFontTimeout] = useState(false);
 
   // Chargement de Baloo 2 : SemiBold (titre) + Regular (textes courants)
-  const [fontsLoaded] = useFonts({
+  const [fontsLoaded, fontError] = useFonts({
     'Baloo2-SemiBold': require('@expo-google-fonts/baloo-2/600SemiBold/Baloo2_600SemiBold.ttf'),
     'Baloo2-Regular':  require('@expo-google-fonts/baloo-2/400Regular/Baloo2_400Regular.ttf'),
   });
@@ -56,7 +56,7 @@ export default function RootLayout() {
 
   // Cacher le splash natif le plus tôt possible — notre AnimatedSplash JS prend le relais
   useEffect(() => {
-    void SplashScreen.hideAsync();
+    void SplashScreen.hideAsync().catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -71,31 +71,44 @@ export default function RootLayout() {
     void checkOnboarding();
   }, []);
 
-  if (showOnboarding === null || (!fontsLoaded && !fontTimeout)) return null;
+  // Si erreur de police ou timeout, on continue quand même
+  if (showOnboarding === null || (!fontsLoaded && !fontTimeout && !fontError)) return null;
+
+  // Wrapper safe pour éviter que les contexts crashent toute l'app
+  const SafeWrapper = ({ children }: { children: React.ReactNode }) => {
+    try {
+      return <>{children}</>;
+    } catch (error) {
+      console.error('Provider error:', error);
+      return <>{children}</>;
+    }
+  };
 
   return (
     <QueryClientProvider client={queryClient}>
-      <LanguageProvider>
-        <VoiceProvider>
-          <ThemeProvider>
-            <UserProvider>
-              <SubscriptionProvider>
-                <ScanLimitProvider>
-                  <GestureHandlerRootView style={{ flex: 1 }}>
-                    <RootLayoutNav />
-                    {showSplash && (
-                      <AnimatedSplash onFinish={() => setShowSplash(false)} />
-                    )}
-                    {showOnboarding && (
-                      <Onboarding onComplete={() => setShowOnboarding(false)} />
-                    )}
-                  </GestureHandlerRootView>
-                </ScanLimitProvider>
-              </SubscriptionProvider>
-            </UserProvider>
-          </ThemeProvider>
-        </VoiceProvider>
-      </LanguageProvider>
+      <SafeWrapper>
+        <LanguageProvider>
+          <VoiceProvider>
+            <ThemeProvider>
+              <UserProvider>
+                <SubscriptionProvider>
+                  <ScanLimitProvider>
+                    <GestureHandlerRootView style={{ flex: 1 }}>
+                      <RootLayoutNav />
+                      {showSplash && (
+                        <AnimatedSplash onFinish={() => setShowSplash(false)} />
+                      )}
+                      {showOnboarding && (
+                        <Onboarding onComplete={() => setShowOnboarding(false)} />
+                      )}
+                    </GestureHandlerRootView>
+                  </ScanLimitProvider>
+                </SubscriptionProvider>
+              </UserProvider>
+            </ThemeProvider>
+          </VoiceProvider>
+        </LanguageProvider>
+      </SafeWrapper>
     </QueryClientProvider>
   );
 }
