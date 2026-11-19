@@ -5,7 +5,7 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useFonts } from "expo-font";
 import React, { useEffect, useState } from "react";
-import { GestureHandlerRootView, Text } from "react-native";
+import { GestureHandlerRootView } from "react-native";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { VoiceProvider } from "@/contexts/VoiceContext";
@@ -47,23 +47,6 @@ export default function RootLayout() {
     'Baloo2-SemiBold': require('@expo-google-fonts/baloo-2/600SemiBold/Baloo2_600SemiBold.ttf'),
     'Baloo2-Regular':  require('@expo-google-fonts/baloo-2/400Regular/Baloo2_400Regular.ttf'),
   });
-
-  // Appliquer Baloo2-Regular comme police par défaut sur tous les Text de l'app
-  // On le fait ici pour que ce soit effectif dès que les polices sont chargées
-  useEffect(() => {
-    if (fontsLoaded || fontTimeout) {
-      const oldRender = (Text as any).render;
-      if (!(Text as any).__baloo2Patched) {
-        const OriginalText = Text as any;
-        OriginalText.defaultProps = OriginalText.defaultProps || {};
-        OriginalText.defaultProps.style = [
-          { fontFamily: 'Baloo2-Regular' },
-          OriginalText.defaultProps.style,
-        ];
-        OriginalText.__baloo2Patched = true;
-      }
-    }
-  }, [fontsLoaded, fontTimeout]);
 
   // Timeout de sécurité : si la police met plus de 3s, on affiche quand même l'app
   useEffect(() => {
