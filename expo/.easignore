@@ -1,31 +1,33 @@
-# Ignorer les fichiers inutiles pour le build EAS
-node_modules
-.git
-*.log
-*.map
-android
-ios
-web-build
-dist
-.expo
-rork-book-definitive-main
-export-test
-__tests__
-*.test.ts
-*.test.tsx
-*.spec.ts
-*.spec.tsx
-# Images ours chargées via URL GitHub — pas besoin dans le build
-assets/images/assistant-bear
-# Cache et fichiers temporaires
-.expo/web
-.expo/devices.json
-.expo/settings.json*
-*.jAGf8BfIaB08rEMWGw__YyqopgLppvpaG1ubTeYiU8M
-# Builds locaux
-*.apk
-*.aab
-*.ipa
+# Build artifacts
+.expo/
+.expo-shared/
+dist/
+build/
+
+# Dependencies
+node_modules/
+
 # IDE
-.vscode
-.kiro
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing
+coverage/
+.nyc_output/
+
+# Misc
+*.pem
+.env.local
+.env.*.local
