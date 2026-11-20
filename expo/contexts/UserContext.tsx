@@ -1,12 +1,10 @@
 import createContextHook from '@nkzw/create-context-hook';
 import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Google from 'expo-auth-session/providers/google';
-import * as WebBrowser from 'expo-web-browser';
-import { Platform } from 'react-native';
 import { logger } from '@/utils/logger';
 
-WebBrowser.maybeCompleteAuthSession();
+// TEMPORAIREMENT DÉSACTIVÉ: expo-auth-session Google pour isoler crash
+// WebBrowser.maybeCompleteAuthSession();
 
 interface User {
   id: string;
@@ -19,16 +17,18 @@ export const [UserProvider, useUser] = createContextHook(() => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const [, response, promptAsync] = Google.useAuthRequest({
-    webClientId: 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com',
-    iosClientId: 'YOUR_IOS_CLIENT_ID.apps.googleusercontent.com',
-    androidClientId: 'YOUR_ANDROID_CLIENT_ID.apps.googleusercontent.com',
-  });
+  // TEMPORAIREMENT DÉSACTIVÉ: Google.useAuthRequest cause crash au démarrage
+  // const [, response, promptAsync] = Google.useAuthRequest({...});
+  const promptAsync = async () => {
+    logger.log('Google Sign-In temporairement désactivé');
+  };
 
   useEffect(() => {
     loadUser();
   }, []);
 
+  // TEMPORAIREMENT DÉSACTIVÉ: response de Google Auth
+  /*
   useEffect(() => {
     if (response?.type === 'success') {
       const { authentication } = response;
@@ -37,6 +37,7 @@ export const [UserProvider, useUser] = createContextHook(() => {
       }
     }
   }, [response]);
+  */
 
   const loadUser = async () => {
     try {

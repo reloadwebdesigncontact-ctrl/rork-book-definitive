@@ -72,43 +72,31 @@ export default function RootLayout() {
   }, []);
 
   // Si erreur de police ou timeout, on continue quand même
-  if (showOnboarding === null || (!fontsLoaded && !fontTimeout && !fontError)) return null;
-
-  // Wrapper safe pour éviter que les contexts crashent toute l'app
-  const SafeWrapper = ({ children }: { children: React.ReactNode }) => {
-    try {
-      return <>{children}</>;
-    } catch (error) {
-      console.error('Provider error:', error);
-      return <>{children}</>;
-    }
-  };
+  if (showOnboarding === null && !fontTimeout && !fontError) return null;
 
   return (
     <QueryClientProvider client={queryClient}>
-      <SafeWrapper>
-        <LanguageProvider>
-          <VoiceProvider>
-            <ThemeProvider>
-              <UserProvider>
-                <SubscriptionProvider>
-                  <ScanLimitProvider>
-                    <GestureHandlerRootView style={{ flex: 1 }}>
-                      <RootLayoutNav />
-                      {showSplash && (
-                        <AnimatedSplash onFinish={() => setShowSplash(false)} />
-                      )}
-                      {showOnboarding && (
-                        <Onboarding onComplete={() => setShowOnboarding(false)} />
-                      )}
-                    </GestureHandlerRootView>
-                  </ScanLimitProvider>
-                </SubscriptionProvider>
-              </UserProvider>
-            </ThemeProvider>
-          </VoiceProvider>
-        </LanguageProvider>
-      </SafeWrapper>
+      <LanguageProvider>
+        <VoiceProvider>
+          <ThemeProvider>
+            <UserProvider>
+              <SubscriptionProvider>
+                <ScanLimitProvider>
+                  <GestureHandlerRootView style={{ flex: 1 }}>
+                    <RootLayoutNav />
+                    {showSplash && (
+                      <AnimatedSplash onFinish={() => setShowSplash(false)} />
+                    )}
+                    {showOnboarding && (
+                      <Onboarding onComplete={() => setShowOnboarding(false)} />
+                    )}
+                  </GestureHandlerRootView>
+                </ScanLimitProvider>
+              </SubscriptionProvider>
+            </UserProvider>
+          </ThemeProvider>
+        </VoiceProvider>
+      </LanguageProvider>
     </QueryClientProvider>
   );
 }
