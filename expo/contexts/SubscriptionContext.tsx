@@ -30,6 +30,8 @@ function getRCToken() {
 const revenueCatApiKey = getRCToken();
 let revenueCatConfigured = false;
 
+// TEMPORAIREMENT DÉSACTIVÉ pour debug crash
+/*
 if (revenueCatApiKey) {
   try {
     Purchases.configure({ apiKey: revenueCatApiKey });
@@ -38,7 +40,9 @@ if (revenueCatApiKey) {
   } catch (error) {
     logger.error('Error configuring RevenueCat:', error);
   }
-} else {
+}
+*/
+logger.log('RevenueCat temporairement désactivé pour debug'); else {
   logger.log('RevenueCat skipped because no API key was found');
 }
 
