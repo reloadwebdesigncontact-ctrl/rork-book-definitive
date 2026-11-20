@@ -42,9 +42,7 @@ if (revenueCatApiKey) {
   }
 }
 */
-logger.log('RevenueCat temporairement désactivé pour debug'); else {
-  logger.log('RevenueCat skipped because no API key was found');
-}
+logger.log('RevenueCat temporairement désactivé pour debug');
 
 function hasPremiumEntitlement(customerInfo: CustomerInfo | null | undefined) {
   const activeEntitlement = customerInfo?.entitlements.active?.[PREMIUM_ENTITLEMENT_KEY];
