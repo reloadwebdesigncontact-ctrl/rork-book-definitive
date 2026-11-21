@@ -3,7 +3,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { useFonts } from "expo-font";
 import React, { useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native";
 import { ThemeProvider } from "@/contexts/ThemeContext";
@@ -40,21 +39,15 @@ function RootLayoutNav() {
 export default function RootLayout() {
   const [showSplash, setShowSplash] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState<boolean | null>(null);
-  const [fontTimeout, setFontTimeout] = useState(false);
+  const [ready, setReady] = useState(false);
 
-  // Chargement de Baloo 2 : SemiBold (titre) + Regular (textes courants)
-  const [fontsLoaded, fontError] = useFonts({
-    'Baloo2-SemiBold': require('@expo-google-fonts/baloo-2/600SemiBold/Baloo2_600SemiBold.ttf'),
-    'Baloo2-Regular':  require('@expo-google-fonts/baloo-2/400Regular/Baloo2_400Regular.ttf'),
-  });
-
-  // Timeout de sécurité : si la police met plus de 3s, on affiche quand même l'app
+  // Timeout de sécurité : au bout de 2s on affiche l'app quoi qu'il arrive
   useEffect(() => {
-    const timer = setTimeout(() => setFontTimeout(true), 3000);
+    const timer = setTimeout(() => setReady(true), 2000);
     return () => clearTimeout(timer);
   }, []);
 
-  // Cacher le splash natif le plus tôt possible — notre AnimatedSplash JS prend le relais
+  // Cacher le splash natif le plus tôt possible
   useEffect(() => {
     void SplashScreen.hideAsync().catch(() => {});
   }, []);
@@ -71,8 +64,7 @@ export default function RootLayout() {
     void checkOnboarding();
   }, []);
 
-  // Si erreur de police ou timeout, on continue quand même
-  if (showOnboarding === null && !fontTimeout && !fontError) return null;
+  if (showOnboarding === null || !ready) return null;
 
   return (
     <QueryClientProvider client={queryClient}>
