@@ -13,6 +13,7 @@ import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import { ScanLimitProvider } from "@/contexts/ScanLimitContext";
 import { AnimatedSplash } from "@/components/AnimatedSplash";
 import Onboarding from "@/components/Onboarding";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 void SplashScreen.preventAutoHideAsync();
 
@@ -67,28 +68,30 @@ export default function RootLayout() {
   if (showOnboarding === null || !ready) return null;
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <LanguageProvider>
-        <VoiceProvider>
-          <ThemeProvider>
-            <UserProvider>
-              <SubscriptionProvider>
-                <ScanLimitProvider>
-                  <GestureHandlerRootView style={{ flex: 1 }}>
-                    <RootLayoutNav />
-                    {showSplash && (
-                      <AnimatedSplash onFinish={() => setShowSplash(false)} />
-                    )}
-                    {showOnboarding && (
-                      <Onboarding onComplete={() => setShowOnboarding(false)} />
-                    )}
-                  </GestureHandlerRootView>
-                </ScanLimitProvider>
-              </SubscriptionProvider>
-            </UserProvider>
-          </ThemeProvider>
-        </VoiceProvider>
-      </LanguageProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <LanguageProvider>
+          <VoiceProvider>
+            <ThemeProvider>
+              <UserProvider>
+                <SubscriptionProvider>
+                  <ScanLimitProvider>
+                    <GestureHandlerRootView style={{ flex: 1 }}>
+                      <RootLayoutNav />
+                      {showSplash && (
+                        <AnimatedSplash onFinish={() => setShowSplash(false)} />
+                      )}
+                      {showOnboarding && (
+                        <Onboarding onComplete={() => setShowOnboarding(false)} />
+                      )}
+                    </GestureHandlerRootView>
+                  </ScanLimitProvider>
+                </SubscriptionProvider>
+              </UserProvider>
+            </ThemeProvider>
+          </VoiceProvider>
+        </LanguageProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
