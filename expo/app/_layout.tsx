@@ -5,6 +5,7 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useFonts } from "expo-font";
 import React, { useEffect, useState } from "react";
+import { Text } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
@@ -16,6 +17,16 @@ import { AnimatedSplash } from "@/components/AnimatedSplash";
 import Onboarding from "@/components/Onboarding";
 
 void SplashScreen.preventAutoHideAsync();
+
+// Police globale Baloo2-Regular sur tous les Text — patch synchrone au niveau module
+if (!(Text as any).__baloo2Patched) {
+  (Text as any).defaultProps = (Text as any).defaultProps ?? {};
+  (Text as any).defaultProps.style = [
+    { fontFamily: 'Baloo2-Regular' },
+    (Text as any).defaultProps.style,
+  ];
+  (Text as any).__baloo2Patched = true;
+}
 
 const queryClient = new QueryClient();
 
