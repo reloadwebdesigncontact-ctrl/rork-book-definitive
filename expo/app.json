@@ -24,7 +24,7 @@
     "android": {
       "icon": "./assets/images/icon.png",
       "package": "app.coverscan",
-      "versionCode": 135,
+      "versionCode": 136,
       "allowBackup": false,
       "blockedPermissions": [],
       "permissions": [
@@ -70,7 +70,8 @@
         {
           "photosPermission": "Allow Summshine to access your photos to select a book cover."
         }
-      ]
+      ],
+      "./plugins/withFixDynamicAppIconJvm.js"
     ],
     "experiments": {
       "typedRoutes": true
