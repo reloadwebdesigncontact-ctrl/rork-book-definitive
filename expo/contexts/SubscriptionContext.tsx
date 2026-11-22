@@ -30,8 +30,6 @@ function getRCToken() {
 const revenueCatApiKey = getRCToken();
 let revenueCatConfigured = false;
 
-// TEMPORAIREMENT DÉSACTIVÉ pour debug crash
-/*
 if (revenueCatApiKey) {
   try {
     Purchases.configure({ apiKey: revenueCatApiKey });
@@ -41,8 +39,6 @@ if (revenueCatApiKey) {
     logger.error('Error configuring RevenueCat:', error);
   }
 }
-*/
-logger.log('RevenueCat temporairement désactivé pour debug');
 
 function hasPremiumEntitlement(customerInfo: CustomerInfo | null | undefined) {
   const activeEntitlement = customerInfo?.entitlements.active?.[PREMIUM_ENTITLEMENT_KEY];

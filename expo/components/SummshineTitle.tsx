@@ -18,7 +18,7 @@ function lerp(a: string, b: string, t: number): string {
   return `rgb(${Math.round(ar+(br-ar)*t)},${Math.round(ag+(bg-ag)*t)},${Math.round(ab+(bb-ab)*t)})`;
 }
 
-const FONT = 'System';
+const FONT = 'Baloo2-SemiBold';
 const FS = 44;
 
 export function SummshineTitle({ colors, themeKey }: SummshineProps) {

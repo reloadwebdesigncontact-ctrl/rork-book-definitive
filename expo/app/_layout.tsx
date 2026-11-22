@@ -3,6 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
+import { useFonts } from "expo-font";
 import React, { useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { ThemeProvider } from "@/contexts/ThemeContext";
@@ -13,7 +14,6 @@ import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import { ScanLimitProvider } from "@/contexts/ScanLimitContext";
 import { AnimatedSplash } from "@/components/AnimatedSplash";
 import Onboarding from "@/components/Onboarding";
-import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 void SplashScreen.preventAutoHideAsync();
 
@@ -40,15 +40,18 @@ function RootLayoutNav() {
 export default function RootLayout() {
   const [showSplash, setShowSplash] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState<boolean | null>(null);
-  const [ready, setReady] = useState(false);
+  const [fontTimeout, setFontTimeout] = useState(false);
 
-  // Timeout de sécurité : au bout de 2s on affiche l'app quoi qu'il arrive
+  const [fontsLoaded, fontError] = useFonts({
+    'Baloo2-SemiBold': require('@expo-google-fonts/baloo-2/600SemiBold/Baloo2_600SemiBold.ttf'),
+    'Baloo2-Regular':  require('@expo-google-fonts/baloo-2/400Regular/Baloo2_400Regular.ttf'),
+  });
+
   useEffect(() => {
-    const timer = setTimeout(() => setReady(true), 2000);
+    const timer = setTimeout(() => setFontTimeout(true), 3000);
     return () => clearTimeout(timer);
   }, []);
 
-  // Cacher le splash natif le plus tôt possible
   useEffect(() => {
     void SplashScreen.hideAsync().catch(() => {});
   }, []);
@@ -65,33 +68,31 @@ export default function RootLayout() {
     void checkOnboarding();
   }, []);
 
-  if (showOnboarding === null || !ready) return null;
+  if (showOnboarding === null || (!fontsLoaded && !fontTimeout && !fontError)) return null;
 
   return (
-    <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <LanguageProvider>
-          <VoiceProvider>
-            <ThemeProvider>
-              <UserProvider>
-                <SubscriptionProvider>
-                  <ScanLimitProvider>
-                    <GestureHandlerRootView style={{ flex: 1 }}>
-                      <RootLayoutNav />
-                      {showSplash && (
-                        <AnimatedSplash onFinish={() => setShowSplash(false)} />
-                      )}
-                      {showOnboarding && (
-                        <Onboarding onComplete={() => setShowOnboarding(false)} />
-                      )}
-                    </GestureHandlerRootView>
-                  </ScanLimitProvider>
-                </SubscriptionProvider>
-              </UserProvider>
-            </ThemeProvider>
-          </VoiceProvider>
-        </LanguageProvider>
-      </QueryClientProvider>
-    </ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <LanguageProvider>
+        <VoiceProvider>
+          <ThemeProvider>
+            <UserProvider>
+              <SubscriptionProvider>
+                <ScanLimitProvider>
+                  <GestureHandlerRootView style={{ flex: 1 }}>
+                    <RootLayoutNav />
+                    {showSplash && (
+                      <AnimatedSplash onFinish={() => setShowSplash(false)} />
+                    )}
+                    {showOnboarding && (
+                      <Onboarding onComplete={() => setShowOnboarding(false)} />
+                    )}
+                  </GestureHandlerRootView>
+                </ScanLimitProvider>
+              </SubscriptionProvider>
+            </UserProvider>
+          </ThemeProvider>
+        </VoiceProvider>
+      </LanguageProvider>
+    </QueryClientProvider>
   );
 }
