@@ -3,6 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
+import * as StoreReview from "expo-store-review";
 import { useFonts } from "expo-font";
 import React, { useEffect, useState } from "react";
 import { Text } from "react-native";
@@ -65,6 +66,21 @@ export default function RootLayout() {
 
   useEffect(() => {
     void SplashScreen.hideAsync().catch(() => {});
+  }, []);
+
+  // Demande de notation Play Store au démarrage (2s après le chargement)
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      try {
+        const isAvailable = await StoreReview.isAvailableAsync();
+        if (isAvailable) {
+          await StoreReview.requestReview();
+        }
+      } catch {
+        // silently fail — ne jamais crasher sur une erreur de notation
+      }
+    }, 2000);
+    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
