@@ -1,16 +1,17 @@
-// template
+﻿// template
 import { Link, Stack } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
+import { AppText } from "@/components/AppText";
 
 export default function NotFoundScreen() {
   return (
     <>
       <Stack.Screen options={{ title: "Oops!" }} />
       <View style={styles.container}>
-        <Text style={styles.title}>This screen doesn&apos;t exist.</Text>
+        <AppText style={styles.title}>This screen doesn&apos;t exist.</AppText>
 
         <Link href="/" style={styles.link}>
-          <Text style={styles.linkText}>Go to home screen!</Text>
+          <AppText style={styles.linkText}>Go to home screen!</AppText>
         </Link>
       </View>
     </>

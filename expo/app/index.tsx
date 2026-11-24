@@ -1,4 +1,4 @@
-import { Image } from "expo-image";
+﻿import { Image } from "expo-image";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
@@ -23,6 +23,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useUser } from "@/contexts/UserContext";
 import { APP_THEMES, AppTheme } from "@/constants/appThemes";
 import { resolveThemeIcon } from "@/utils/themeIcon";
+import { AppText } from "@/components/AppText";
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -358,8 +359,8 @@ export default function HomeScreen() {
                   <User size={20} color="#FFF" strokeWidth={2.5} />
                 </View>
                 <View style={styles.userInfo}>
-                  <Text style={[styles.userName, isDarkMode && styles.userNameDark]}>{user?.name}</Text>
-                  <Text style={[styles.userEmail, isDarkMode && styles.userEmailDark]}>{user?.email}</Text>
+                  <AppText style={[styles.userName, isDarkMode && styles.userNameDark]}>{user?.name}</AppText>
+                  <AppText style={[styles.userEmail, isDarkMode && styles.userEmailDark]}>{user?.email}</AppText>
                 </View>
               </View>
             )}
@@ -413,7 +414,7 @@ export default function HomeScreen() {
                 <Animated.View style={{ opacity: buttonGlow.interpolate({ inputRange: [0, 1], outputRange: [0.85, 1] }), transform: [{ scale: buttonGlow.interpolate({ inputRange: [0, 1], outputRange: [1, 1.08] }) }] }}>
                   <Camera size={28} color="#FFF" strokeWidth={2.5} />
                 </Animated.View>
-                <Text style={styles.buttonText}>{t.home.scanButton}</Text>
+                <AppText style={styles.buttonText}>{t.home.scanButton}</AppText>
               </LinearGradient>
             </Pressable>
           </Animated.View>
@@ -430,7 +431,7 @@ export default function HomeScreen() {
             onPress={() => setShowThemeModal(false)}
           >
             <View style={[styles.modalContent, isDarkMode && styles.modalContentDark]}>
-              <Text style={[styles.modalTitle, isDarkMode && styles.modalTitleDark]}>{t.settings.appColor}</Text>
+              <AppText style={[styles.modalTitle, isDarkMode && styles.modalTitleDark]}>{t.settings.appColor}</AppText>
               <View style={styles.themeGrid}>
                 {(Object.keys(APP_THEMES) as AppTheme[]).map((theme) => (
                   <Pressable
@@ -451,7 +452,7 @@ export default function HomeScreen() {
                     />
                     {appTheme === theme && (
                       <View style={[styles.selectedBadge, { backgroundColor: colors.primary }]}>
-                        <Text style={styles.selectedBadgeText}>✓</Text>
+                        <AppText style={styles.selectedBadgeText}>✓</AppText>
                       </View>
                     )}
                   </Pressable>
@@ -567,10 +568,10 @@ function FeatureItem({
         testID={`home-feature-${icon}`}
       >
         <View style={[styles.featureNumber, { backgroundColor: color }]}>
-          <Text style={styles.featureNumberText}>{icon}</Text>
+          <AppText style={styles.featureNumberText}>{icon}</AppText>
         </View>
         <View style={styles.featureTextContainer}>
-          <Text style={[styles.featureText, highlighted && styles.featureTextHighlighted, isDark && styles.featureTextDark]}>{text}</Text>
+          <AppText style={[styles.featureText, highlighted && styles.featureTextHighlighted, isDark && styles.featureTextDark]}>{text}</AppText>
           <Animated.View style={[styles.highlightUnderline, { backgroundColor: color, transform: [{ scaleX: underlineWidth }] }]} />
         </View>
       </Pressable>

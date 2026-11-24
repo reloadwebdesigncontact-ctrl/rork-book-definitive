@@ -1,4 +1,4 @@
-import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
+﻿import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
 import * as ImagePicker from "expo-image-picker";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
@@ -21,6 +21,7 @@ import { useScanLimit, MONTHLY_LIMIT_MONTHLY, MONTHLY_LIMIT_ANNUAL } from "@/con
 import { AnimatedBackground } from "@/components/AnimatedBackground";
 import { Paywall } from "@/components/Paywall";
 import { logger } from "@/utils/logger";
+import { AppText } from "@/components/AppText";
 
 export default function ScanScreen() {
   const router = useRouter();
@@ -255,13 +256,13 @@ export default function ScanScreen() {
         <SafeAreaView style={styles.safeArea}>
           <View style={styles.permissionContainer}>
             <Camera size={64} color={colors.primary} strokeWidth={2} />
-            <Text style={[styles.permissionTitle, isDarkMode && styles.permissionTitleDark]}>
+            <AppText style={[styles.permissionTitle, isDarkMode && styles.permissionTitleDark]}>
               {t.scan.title}
-            </Text>
-            <Text style={[styles.permissionText, isDarkMode && styles.permissionTextDark]}>
+            </AppText>
+            <AppText style={[styles.permissionText, isDarkMode && styles.permissionTextDark]}>
               Pour scanner les couvertures de livres, nous avons besoin
               d&apos;accéder à votre caméra.
-            </Text>
+            </AppText>
             <Pressable onPress={requestPermission} style={styles.permissionButton}>
               <LinearGradient
                 colors={colors.gradient}
@@ -269,7 +270,7 @@ export default function ScanScreen() {
                 end={{ x: 1, y: 1 }}
                 style={styles.buttonGradient}
               >
-                <Text style={styles.buttonText}>Autoriser</Text>
+                <AppText style={styles.buttonText}>Autoriser</AppText>
               </LinearGradient>
             </Pressable>
           </View>
@@ -303,29 +304,29 @@ export default function ScanScreen() {
                 </View>
               </Pressable>
               </Animated.View>
-              <Text style={styles.topBarText}>Cadrez la couverture</Text>
+              <AppText style={styles.topBarText}>Cadrez la couverture</AppText>
               <View style={{ width: 40 }} />
             </View>
 
             {!isPremium && (
               <Animated.View style={[styles.limitBadge, { transform: [{ scale: limitBadgePulse }] }]} testID="scan-limit-badge">
-                <Text style={styles.limitBadgeText}>
+                <AppText style={styles.limitBadgeText}>
                   {hasReachedFreeLimit
                     ? `Limite quotidienne atteinte (${dailyLimit}/${dailyLimit})`
                     : `${remainingFreeScans} scan${remainingFreeScans > 1 ? 's' : ''} restant${remainingFreeScans > 1 ? 's' : ''} aujourd'hui`}
-                </Text>
-                <Text style={styles.limitBadgeSub}>{scansToday}/{dailyLimit} utilisés • Plan gratuit</Text>
+                </AppText>
+                <AppText style={styles.limitBadgeSub}>{scansToday}/{dailyLimit} utilisés • Plan gratuit</AppText>
               </Animated.View>
             )}
 
             {isPremium && (
               <Animated.View style={[styles.limitBadge, styles.limitBadgePremium, { transform: [{ scale: limitBadgePulse }] }]} testID="scan-limit-badge-premium">
-                <Text style={styles.limitBadgeText}>
+                <AppText style={styles.limitBadgeText}>
                   {hasReachedPremiumLimit
                     ? `Limite mensuelle atteinte (${premiumMonthlyLimit}/${premiumMonthlyLimit})`
                     : `${remainingPremiumScans} scan${remainingPremiumScans > 1 ? 's' : ''} restant${remainingPremiumScans > 1 ? 's' : ''} ce mois`}
-                </Text>
-                <Text style={styles.limitBadgeSub}>Plan Premium • {premiumMonthlyLimit} scans/mois</Text>
+                </AppText>
+                <AppText style={styles.limitBadgeSub}>Plan Premium • {premiumMonthlyLimit} scans/mois</AppText>
               </Animated.View>
             )}
 

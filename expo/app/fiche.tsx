@@ -1,4 +1,4 @@
-import { Image } from "expo-image";
+﻿import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ArrowLeft, Share2 } from "lucide-react-native";
@@ -24,6 +24,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { logger } from "@/utils/logger";
 import { FicheAssistant, type AssistantCommand, type HighlightRule } from "@/components/FicheAssistant";
 import { getBearTheme } from "@/utils/bearTheme";
+import { AppText } from "@/components/AppText";
 
 // Composant surlignage animé : View arrondie avec fade-in + pulse subtil
 function AnimatedHighlight({ text, color, bgColor }: { text: string; color: string; bgColor: string }) {
@@ -62,7 +63,7 @@ function AnimatedHighlight({ text, color, bgColor }: { text: string; color: stri
         alignSelf: 'center',
       }}
     >
-      <Text
+      <AppText
         style={{
           color,
           fontWeight: '600',
@@ -71,7 +72,7 @@ function AnimatedHighlight({ text, color, bgColor }: { text: string; color: stri
         }}
       >
         {text}
-      </Text>
+      </AppText>
     </Animated.View>
   );
 }
@@ -211,16 +212,16 @@ export default function FicheScreen() {
         segments.forEach((seg, i) => {
           if (seg.start > lastIndex) {
             parts.push(
-              <Text key={`txt-${key++}`} style={[styles.normalText, isDarkMode && styles.normalTextDark]}>
+              <AppText key={`txt-${key++}`} style={[styles.normalText, isDarkMode && styles.normalTextDark]}>
                 {rawLine.substring(lastIndex, seg.start)}
-              </Text>
+              </AppText>
             );
           }
           if (seg.type === 'bold') {
             parts.push(
-              <Text key={`bold-${key++}`} style={[dynamicStyles.boldText, isDarkMode && dynamicStyles.boldTextDark]}>
+              <AppText key={`bold-${key++}`} style={[dynamicStyles.boldText, isDarkMode && dynamicStyles.boldTextDark]}>
                 {seg.text}
-              </Text>
+              </AppText>
             );
           } else {
             parts.push(
@@ -237,9 +238,9 @@ export default function FicheScreen() {
 
         if (lastIndex < rawLine.length) {
           parts.push(
-            <Text key={`txt-${key++}`} style={[styles.normalText, isDarkMode && styles.normalTextDark]}>
+            <AppText key={`txt-${key++}`} style={[styles.normalText, isDarkMode && styles.normalTextDark]}>
               {rawLine.substring(lastIndex)}
-            </Text>
+            </AppText>
           );
         }
         return parts;
@@ -257,9 +258,9 @@ export default function FicheScreen() {
               isDarkMode && { backgroundColor: `${colors.primary}35`, borderLeftColor: colors.tertiary },
             ]}
           >
-            <Text style={[styles.sectionTitle, { color: isDarkMode ? colors.tertiary : colors.primary }]}>
+            <AppText style={[styles.sectionTitle, { color: isDarkMode ? colors.tertiary : colors.primary }]}>
               {cleanTitle}
-            </Text>
+            </AppText>
           </View>
         );
       } else if (isListItem) {
@@ -363,7 +364,7 @@ export default function FicheScreen() {
               <ArrowLeft size={24} color={isDarkMode ? "#FFF" : "#3E2723"} strokeWidth={2.5} />
             </Pressable>
           </Animated.View>
-          <Text style={[styles.headerTitle, isDarkMode && styles.headerTitleDark]} numberOfLines={1}>{t.fiche.title}</Text>
+          <AppText style={[styles.headerTitle, isDarkMode && styles.headerTitleDark]} numberOfLines={1}>{t.fiche.title}</AppText>
           <Animated.View style={{ transform: [{ scale: shareButtonScale }, { rotate: shareButtonRotate.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '15deg'] }) }] }}>
             <Pressable 
               onPress={shareText} 
@@ -425,7 +426,7 @@ export default function FicheScreen() {
               dynamicStyles.titleContainerDynamic,
               isDarkMode && dynamicStyles.titleContainerDynamicDark,
             ]}>
-              <Text style={[styles.mainTitle, isDarkMode && styles.mainTitleDark]}>{title || t.fiche.title}</Text>
+              <AppText style={[styles.mainTitle, isDarkMode && styles.mainTitleDark]}>{title || t.fiche.title}</AppText>
             </View>
 
             <View style={styles.contentContainer}>

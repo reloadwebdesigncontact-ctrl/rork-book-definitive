@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+﻿import React, { useEffect } from 'react';
 import {
   View,
   Text,
@@ -18,6 +18,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { logger } from '@/utils/logger';
 import { ICON_OPTIONS, ICON_PREVIEWS, changeAppIcon, getSavedIcon, type AppIconKey } from '@/utils/appIcon';
+import { AppText } from "@/components/AppText";
 
 interface PaywallProps {
   visible: boolean;
@@ -188,7 +189,7 @@ export function Paywall({ visible, onClose, onSuccess }: PaywallProps) {
               <Animated.View style={{ transform: [{ scale: pillPulse }] }}>
               <LinearGradient colors={colors.gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.pillGradient}>
                 <Sparkles size={12} color="#FFF" />
-                <Text style={styles.pillText}>PREMIUM</Text>
+                <AppText style={styles.pillText}>PREMIUM</AppText>
               </LinearGradient>
               </Animated.View>
             </View>
@@ -214,13 +215,13 @@ export function Paywall({ visible, onClose, onSuccess }: PaywallProps) {
                 </LinearGradient>
                 <View style={[styles.crownGlow, { backgroundColor: colors.primary }]} />
               </Animated.View>
-              <Text style={[styles.title, isDarkMode && styles.titleDark]}>
+              <AppText style={[styles.title, isDarkMode && styles.titleDark]}>
                 {language === 'fr' ? 'Passez à' : 'Upgrade to'}
-              </Text>
-              <Text style={[styles.titleAccent, { color: colors.primary }]}>Premium</Text>
-              <Text style={[styles.subtitle, isDarkMode && styles.subtitleDark]}>
+              </AppText>
+              <AppText style={[styles.titleAccent, { color: colors.primary }]}>Premium</AppText>
+              <AppText style={[styles.subtitle, isDarkMode && styles.subtitleDark]}>
                 {language === 'fr' ? 'Débloquez tout le potentiel de Summshine' : 'Unlock the full potential of Summshine'}
-              </Text>
+              </AppText>
             </View>
 
             {/* Features */}
@@ -238,8 +239,8 @@ export function Paywall({ visible, onClose, onSuccess }: PaywallProps) {
                       <feature.icon size={18} color={colors.primary} />
                     </View>
                     <View style={styles.featureTextWrap}>
-                      <Text style={[styles.featureText, isDarkMode && styles.featureTextDark]}>{feature.text}</Text>
-                      <Text style={[styles.featureDesc, isDarkMode && styles.featureDescDark]}>{feature.desc}</Text>
+                      <AppText style={[styles.featureText, isDarkMode && styles.featureTextDark]}>{feature.text}</AppText>
+                      <AppText style={[styles.featureDesc, isDarkMode && styles.featureDescDark]}>{feature.desc}</AppText>
                     </View>
                     <View style={[styles.checkCircle, { backgroundColor: colors.primary }]}>
                       <Check size={11} color="#FFF" strokeWidth={3} />
@@ -257,9 +258,9 @@ export function Paywall({ visible, onClose, onSuccess }: PaywallProps) {
             ) : isPremium ? (
               /* Déjà premium — sélecteur d'icône */
               <View style={[styles.iconPickerSection, isDarkMode && styles.iconPickerSectionDark]}>
-                <Text style={[styles.iconPickerTitle, isDarkMode && styles.iconPickerTitleDark]}>
+                <AppText style={[styles.iconPickerTitle, isDarkMode && styles.iconPickerTitleDark]}>
                   {language === 'fr' ? "🎨 Choisir l'icône de l'app" : '🎨 Choose app icon'}
-                </Text>
+                </AppText>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.iconScrollContent}>
                   {ICON_OPTIONS.map((option, iconIndex) => (
                     <Animated.View
@@ -324,9 +325,9 @@ export function Paywall({ visible, onClose, onSuccess }: PaywallProps) {
                       >
                         {isPopular && (
                           <View style={[styles.popularBadge, { backgroundColor: colors.primary }]}>
-                            <Text style={styles.popularBadgeText}>
+                            <AppText style={styles.popularBadgeText}>
                               {language === 'fr' ? '⭐ Populaire' : '⭐ Popular'}
-                            </Text>
+                            </AppText>
                           </View>
                         )}
                         <View style={styles.planCardContent}>
@@ -334,18 +335,18 @@ export function Paywall({ visible, onClose, onSuccess }: PaywallProps) {
                             {isSelected && <View style={styles.planRadioDot} />}
                           </View>
                           <View style={styles.planInfo}>
-                            <Text style={[styles.planLabel, isDarkMode && styles.planLabelDark]}>{plan.label}</Text>
+                            <AppText style={[styles.planLabel, isDarkMode && styles.planLabelDark]}>{plan.label}</AppText>
                             {plan.badge && plan.key !== 'lifetime' && (
                               <View style={[styles.planSaveBadge, { backgroundColor: `${colors.primary}20` }]}>
-                                <Text style={[styles.planSaveBadgeText, { color: colors.primary }]}>{plan.badge}</Text>
+                                <AppText style={[styles.planSaveBadgeText, { color: colors.primary }]}>{plan.badge}</AppText>
                               </View>
                             )}
                           </View>
                           <View style={styles.planPriceWrap}>
-                            <Text style={[styles.planPrice, { color: isSelected ? colors.primary : (isDarkMode ? '#FFF' : '#3E2723') }]}>
+                            <AppText style={[styles.planPrice, { color: isSelected ? colors.primary : (isDarkMode ? '#FFF' : '#3E2723') }]}>
                               {plan.price}
-                            </Text>
-                            <Text style={[styles.planPeriod, isDarkMode && styles.planPeriodDark]}>{plan.period}</Text>
+                            </AppText>
+                            <AppText style={[styles.planPeriod, isDarkMode && styles.planPeriodDark]}>{plan.period}</AppText>
                           </View>
                         </View>
                       </Pressable>
@@ -368,11 +369,11 @@ export function Paywall({ visible, onClose, onSuccess }: PaywallProps) {
                       ) : (
                         <>
                           <Crown size={20} color="#FFF" />
-                          <Text style={styles.buttonText}>
+                          <AppText style={styles.buttonText}>
                             {selectedPlan === 'lifetime'
                               ? (language === 'fr' ? 'Acheter à vie' : 'Buy lifetime access')
                               : (language === 'fr' ? "S'abonner maintenant" : 'Subscribe now')}
-                          </Text>
+                          </AppText>
                         </>
                       )}
                     </LinearGradient>
@@ -381,21 +382,21 @@ export function Paywall({ visible, onClose, onSuccess }: PaywallProps) {
               </>
             )}
 
-            <Text style={[styles.disclaimer, isDarkMode && styles.disclaimerDark]}>
+            <AppText style={[styles.disclaimer, isDarkMode && styles.disclaimerDark]}>
               {selectedPlan === 'lifetime'
                 ? (language === 'fr' ? 'Paiement unique. Accès illimité à vie.' : 'One-time payment. Lifetime access.')
                 : (language === 'fr' ? 'Renouvellement automatique. Annulez à tout moment.' : 'Auto-renews. Cancel anytime.')}
-            </Text>
+            </AppText>
 
             <Pressable
               onPress={async () => { try { await restorePurchases(); onSuccess?.(); onClose(); } catch {} }}
               style={styles.restoreButton}
             >
-              <Text style={[styles.restoreText, isDarkMode && styles.restoreTextDark]}>
+              <AppText style={[styles.restoreText, isDarkMode && styles.restoreTextDark]}>
                 {isRestoring
                   ? (language === 'fr' ? 'Restauration...' : 'Restoring...')
                   : (language === 'fr' ? 'Restaurer les achats' : 'Restore purchases')}
-              </Text>
+              </AppText>
             </Pressable>
           </ScrollView>
         </View>

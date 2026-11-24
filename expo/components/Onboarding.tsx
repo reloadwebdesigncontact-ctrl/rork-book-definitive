@@ -1,4 +1,4 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+﻿import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LinearGradient } from "expo-linear-gradient";
 import {
   BookOpen,
@@ -27,6 +27,7 @@ import {
 import { APP_THEMES, AppTheme } from "@/constants/appThemes";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { AppText } from "@/components/AppText";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const THEME_KEYS = Object.keys(APP_THEMES) as AppTheme[];
@@ -139,7 +140,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
 
       {currentPage < TOTAL_PAGES - 1 && (
         <Pressable style={styles.skipButton} onPress={handleSkip}>
-          <Text style={styles.skipText}>{isFr ? "Passer" : "Skip"}</Text>
+          <AppText style={styles.skipText}>{isFr ? "Passer" : "Skip"}</AppText>
         </Pressable>
       )}
 
@@ -158,10 +159,10 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
         </View>
         <Pressable style={({ pressed }) => [styles.nextButton, { backgroundColor: "#fff", opacity: pressed ? 0.85 : 1 }]} onPress={handleNext}>
           {isLastPage ? (
-            <Text style={[styles.nextButtonText, { color: colors.primary }]}>{isFr ? "Commencer" : "Get started"}</Text>
+            <AppText style={[styles.nextButtonText, { color: colors.primary }]}>{isFr ? "Commencer" : "Get started"}</AppText>
           ) : (
             <View style={styles.nextButtonInner}>
-              <Text style={[styles.nextButtonText, { color: colors.primary }]}>{isFr ? "Suivant" : "Next"}</Text>
+              <AppText style={[styles.nextButtonText, { color: colors.primary }]}>{isFr ? "Suivant" : "Next"}</AppText>
               <ChevronRight size={20} color={colors.primary} strokeWidth={2.5} />
             </View>
           )}
@@ -181,17 +182,17 @@ function WelcomePage({ isFr, pulseAnim, floatAnim }: { isFr: boolean; pulseAnim:
         <View style={styles.orbitDot} />
         <View style={styles.orbitDot2} />
       </Animated.View>
-      <Text style={styles.welcomeTitle}>{isFr ? "Bienvenue sur" : "Welcome to"}</Text>
-      <Text style={styles.appName}>Summshine</Text>
-      <Text style={styles.welcomeSubtitle}>
+      <AppText style={styles.welcomeTitle}>{isFr ? "Bienvenue sur" : "Welcome to"}</AppText>
+      <AppText style={styles.appName}>Summshine</AppText>
+      <AppText style={styles.welcomeSubtitle}>
         {isFr
           ? "Transformez n'importe quelle couverture de livre en résumé instantané grâce à l'intelligence artificielle."
           : "Transform any book cover into an instant summary powered by artificial intelligence."}
-      </Text>
+      </AppText>
       <View style={styles.pillsRow}>
         {(isFr ? ["📷 Scanner", "🤖 IA", "📚 Résumé"] : ["📷 Scan", "🤖 AI", "📚 Summary"]).map((label) => (
           <View key={label} style={styles.pill}>
-            <Text style={styles.pillText}>{label}</Text>
+            <AppText style={styles.pillText}>{label}</AppText>
           </View>
         ))}
       </View>
@@ -213,8 +214,8 @@ function FeaturePage({ page, isFr }: { page: PageContent; isFr: boolean }) {
       <Animated.View style={[styles.featureIconWrap, { transform: [{ scale: scaleAnim }], opacity: opacityAnim }]}>
         <View style={styles.featureIconBg}>{page.icon}</View>
       </Animated.View>
-      <Text style={styles.featureTitle}>{isFr ? page.titleFr : page.titleEn}</Text>
-      <Text style={styles.featureDesc}>{isFr ? page.descFr : page.descEn}</Text>
+      <AppText style={styles.featureTitle}>{isFr ? page.titleFr : page.titleEn}</AppText>
+      <AppText style={styles.featureDesc}>{isFr ? page.descFr : page.descEn}</AppText>
     </View>
   );
 }
@@ -232,10 +233,10 @@ function ThemePickerPage({ isFr, appTheme, changeAppTheme, primaryColor }: { isF
       <View style={styles.settingsIconWrap}>
         <Layers size={64} color="#fff" strokeWidth={1.5} />
       </View>
-      <Text style={styles.featureTitle}>{isFr ? "Choisissez votre couleur" : "Choose your color"}</Text>
-      <Text style={styles.featureDesc}>
+      <AppText style={styles.featureTitle}>{isFr ? "Choisissez votre couleur" : "Choose your color"}</AppText>
+      <AppText style={styles.featureDesc}>
         {isFr ? "Personnalisez l'apparence de l'application avec votre couleur préférée." : "Personalize the app appearance with your favorite color."}
-      </Text>
+      </AppText>
       <ScrollView contentContainerStyle={styles.themesGrid} showsVerticalScrollIndicator={false}>
         {THEME_KEYS.map((key) => {
           const palette = APP_THEMES[key];
@@ -276,16 +277,16 @@ function DarkModePage({ isFr, isDarkMode, toggleTheme, primaryColor }: { isFr: b
           <Moon size={40} color={!isDarkMode ? "rgba(255,255,255,0.4)" : "#fff"} strokeWidth={1.8} />
         </View>
       </View>
-      <Text style={styles.featureTitle}>{isFr ? "Mode d'affichage" : "Display mode"}</Text>
-      <Text style={styles.featureDesc}>
+      <AppText style={styles.featureTitle}>{isFr ? "Mode d'affichage" : "Display mode"}</AppText>
+      <AppText style={styles.featureDesc}>
         {isFr ? "Choisissez entre le mode clair et le mode sombre selon vos préférences." : "Choose between light and dark mode based on your preference."}
-      </Text>
+      </AppText>
       <View style={styles.toggleCard}>
         <View style={styles.toggleRow}>
           <Sun size={22} color={isDarkMode ? "rgba(255,255,255,0.5)" : "#fff"} />
-          <Text style={styles.toggleLabel}>{isFr ? "Clair" : "Light"}</Text>
+          <AppText style={styles.toggleLabel}>{isFr ? "Clair" : "Light"}</AppText>
           <Switch value={isDarkMode} onValueChange={toggleTheme} trackColor={{ false: "rgba(255,255,255,0.3)", true: primaryColor }} thumbColor="#fff" />
-          <Text style={styles.toggleLabel}>{isFr ? "Sombre" : "Dark"}</Text>
+          <AppText style={styles.toggleLabel}>{isFr ? "Sombre" : "Dark"}</AppText>
           <Moon size={22} color={!isDarkMode ? "rgba(255,255,255,0.5)" : "#fff"} />
         </View>
       </View>
@@ -299,23 +300,23 @@ function AnimatedBgPage({ isFr, animatedBackground, toggleAnimatedBackground, pr
       <View style={styles.settingsIconWrap}>
         <Zap size={64} color="#fff" strokeWidth={1.5} />
       </View>
-      <Text style={styles.featureTitle}>{isFr ? "Fond animé" : "Animated background"}</Text>
-      <Text style={styles.featureDesc}>
+      <AppText style={styles.featureTitle}>{isFr ? "Fond animé" : "Animated background"}</AppText>
+      <AppText style={styles.featureDesc}>
         {isFr ? "Activez un fond animé dynamique pour une expérience visuelle immersive." : "Enable a dynamic animated background for an immersive visual experience."}
-      </Text>
+      </AppText>
       <View style={styles.toggleCard}>
         <View style={styles.toggleRow}>
           <Zap size={22} color={animatedBackground ? "#fff" : "rgba(255,255,255,0.5)"} />
-          <Text style={styles.toggleLabel}>{isFr ? "Fond animé" : "Animated bg"}</Text>
+          <AppText style={styles.toggleLabel}>{isFr ? "Fond animé" : "Animated bg"}</AppText>
           <Switch value={animatedBackground} onValueChange={toggleAnimatedBackground} trackColor={{ false: "rgba(255,255,255,0.3)", true: primaryColor }} thumbColor="#fff" />
         </View>
       </View>
       <View style={styles.noteCard}>
-        <Text style={styles.noteText}>
+        <AppText style={styles.noteText}>
           {isFr
             ? "💡 Ces préférences sont modifiables à tout moment dans les Paramètres."
             : "💡 These preferences can be changed anytime in Settings."}
-        </Text>
+        </AppText>
       </View>
     </View>
   );

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+﻿import React, { useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -17,6 +17,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { AnimatedBackground } from '@/components/AnimatedBackground';
 import { Paywall } from '@/components/Paywall';
+import { AppText } from "@/components/AppText";
 
 const { width } = Dimensions.get('window');
 
@@ -112,17 +113,17 @@ export default function PremiumFeaturesScreen() {
             transform: [{ translateY: titleAnim.interpolate({ inputRange: [0, 1], outputRange: [16, 0] }) }],
           }]}
         >
-          <Text style={[styles.titleTop, isDarkMode && styles.titleTopDark]}>
+          <AppText style={[styles.titleTop, isDarkMode && styles.titleTopDark]}>
             {language === 'fr' ? 'Fonctionnalités' : 'Advanced'}
-          </Text>
-          <Text style={[styles.titleBottom, { color: colors.primary }]}>
+          </AppText>
+          <AppText style={[styles.titleBottom, { color: colors.primary }]}>
             {language === 'fr' ? 'Avancées' : 'Features'}
-          </Text>
-          <Text style={[styles.titleDesc, isDarkMode && styles.titleDescDark]}>
+          </AppText>
+          <AppText style={[styles.titleDesc, isDarkMode && styles.titleDescDark]}>
             {language === 'fr'
               ? 'Scanne un livre et obtiens instantanément'
               : 'Scan a book and instantly get'}
-          </Text>
+          </AppText>
         </Animated.View>
 
         {/* Cards */}
@@ -157,12 +158,12 @@ export default function PremiumFeaturesScreen() {
 
                   {/* Texte */}
                   <View style={styles.cardText}>
-                    <Text style={[styles.cardTitle, isDarkMode && styles.cardTitleDark]}>
+                    <AppText style={[styles.cardTitle, isDarkMode && styles.cardTitleDark]}>
                       {feature.title}
-                    </Text>
-                    <Text style={[styles.cardDesc, isDarkMode && styles.cardDescDark]}>
+                    </AppText>
+                    <AppText style={[styles.cardDesc, isDarkMode && styles.cardDescDark]}>
                       {feature.desc}
-                    </Text>
+                    </AppText>
                   </View>
 
                   {/* Flèche ou cadenas */}
@@ -190,9 +191,9 @@ export default function PremiumFeaturesScreen() {
                 end={{ x: 1, y: 0 }}
                 style={styles.ctaGradient}
               >
-                <Text style={styles.ctaText}>
+                <AppText style={styles.ctaText}>
                   {language === 'fr' ? 'Débloquer avec Premium' : 'Unlock with Premium'}
-                </Text>
+                </AppText>
                 <ChevronRight size={18} color="#FFF" strokeWidth={2.5} />
               </LinearGradient>
             </Pressable>

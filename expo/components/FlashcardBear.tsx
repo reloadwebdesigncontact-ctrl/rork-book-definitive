@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+﻿import React, { useRef, useState } from 'react';
 import {
   Animated,
   Dimensions,
@@ -18,6 +18,7 @@ import { Check } from 'lucide-react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getBearTheme } from '@/utils/bearTheme';
+import { AppText } from "@/components/AppText";
 
 const { width: W, height: H } = Dimensions.get('window');
 const BTN = 72;
@@ -142,7 +143,7 @@ export function FlashcardBear({ difficulty, onDifficultyChange }: FlashcardBearP
           />
           {/* Badge difficulté */}
           <View style={[styles.diffBadge, { backgroundColor: colors.primary }]}>
-            <Text style={styles.diffBadgeEmoji}>{currentDiff.emoji}</Text>
+            <AppText style={styles.diffBadgeEmoji}>{currentDiff.emoji}</AppText>
           </View>
           {/* Croix de fermeture */}
           <Pressable
@@ -179,7 +180,7 @@ export function FlashcardBear({ difficulty, onDifficultyChange }: FlashcardBearP
                   style={styles.headerLogo}
                   resizeMode="contain"
                 />
-                <Text style={styles.headerSub}>{d18n.headerSub}</Text>
+                <AppText style={styles.headerSub}>{d18n.headerSub}</AppText>
               </View>
             </LinearGradient>
 
@@ -217,15 +218,15 @@ export function FlashcardBear({ difficulty, onDifficultyChange }: FlashcardBearP
                     ]}
                   >
                       <View style={[styles.emojiWrap, { backgroundColor: `${colors.primary}18` }]}>
-                        <Text style={styles.emoji}>{opt.emoji}</Text>
+                        <AppText style={styles.emoji}>{opt.emoji}</AppText>
                       </View>
                       <View style={styles.cardText}>
-                        <Text style={[styles.cardLabel, isDarkMode && styles.cardLabelDark, isActive && { color: colors.primary }]}>
+                        <AppText style={[styles.cardLabel, isDarkMode && styles.cardLabelDark, isActive && { color: colors.primary }]}>
                           {d18n[opt.id]}
-                        </Text>
-                        <Text style={[styles.cardDesc, isDarkMode && styles.cardDescDark]}>
+                        </AppText>
+                        <AppText style={[styles.cardDesc, isDarkMode && styles.cardDescDark]}>
                           {d18n[`${opt.id}_desc`]}
-                        </Text>
+                        </AppText>
                       </View>
                       <View style={styles.cardRight}>
                         {isActive ? (
@@ -234,7 +235,7 @@ export function FlashcardBear({ difficulty, onDifficultyChange }: FlashcardBearP
                           </View>
                         ) : (
                           <View style={[styles.arrow, isDarkMode && styles.arrowDark]}>
-                            <Text style={[styles.arrowTxt, { color: isDarkMode ? '#666' : '#CCC' }]}>›</Text>
+                            <AppText style={[styles.arrowTxt, { color: isDarkMode ? '#666' : '#CCC' }]}>›</AppText>
                           </View>
                         )}
                       </View>
@@ -244,9 +245,9 @@ export function FlashcardBear({ difficulty, onDifficultyChange }: FlashcardBearP
 
               {/* Note explicative */}
               <View style={[styles.note, isDarkMode && styles.noteDark]}>
-                <Text style={[styles.noteText, isDarkMode && styles.noteTextDark]}>
+                <AppText style={[styles.noteText, isDarkMode && styles.noteTextDark]}>
                   {d18n.note}
-                </Text>
+                </AppText>
               </View>
             </ScrollView>
           </Pressable>

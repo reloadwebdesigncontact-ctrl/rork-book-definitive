@@ -17,6 +17,7 @@ import { useSubscription } from "@/contexts/SubscriptionContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { logger } from "@/utils/logger";
 import { sanitizeAiResponse, sanitizeText } from "@/utils/sanitize";
+import { AppText } from "@/components/AppText";
 
 interface FlashcardQuestion {
   question: string;
@@ -480,13 +481,13 @@ export default function FlashcardsScreen() {
           </Animated.View>
 
           <View style={styles.headerCenter}>
-            <Text style={[styles.headerTitle, isDarkMode && styles.headerTitleDark]} numberOfLines={1}>
+            <AppText style={[styles.headerTitle, isDarkMode && styles.headerTitleDark]} numberOfLines={1}>
               {title || t.summary.flashcards}
-            </Text>
+            </AppText>
             {author ? (
-              <Text style={[styles.headerSubtitle, isDarkMode && styles.headerSubtitleDark]} numberOfLines={1}>
+              <AppText style={[styles.headerSubtitle, isDarkMode && styles.headerSubtitleDark]} numberOfLines={1}>
                 {author}
-              </Text>
+              </AppText>
             ) : null}
           </View>
 
@@ -510,12 +511,12 @@ export default function FlashcardsScreen() {
                     color={regenerateCount >= MAX_REGENERATIONS ? '#AAA' : colors.primary}
                   />
                   {/* Compteur restant */}
-                  <Text style={[
+                  <AppText style={[
                     styles.refreshCount,
                     { color: regenerateCount >= MAX_REGENERATIONS ? '#AAA' : colors.primary }
                   ]}>
                     {MAX_REGENERATIONS - regenerateCount}
-                  </Text>
+                  </AppText>
                 </View>
               )}
             </Pressable>
@@ -528,9 +529,9 @@ export default function FlashcardsScreen() {
             <View style={[styles.progressTrack, isDarkMode && styles.progressTrackDark]}>
               <Animated.View style={[styles.progressFill, { width: progressWidth, backgroundColor: colors.primary }]} />
             </View>
-            <Text style={[styles.progressLabel, isDarkMode && styles.progressLabelDark]}>
+            <AppText style={[styles.progressLabel, isDarkMode && styles.progressLabelDark]}>
               {`${currentFlashcardIndex + 1} / ${flashcards.length}`}
-            </Text>
+            </AppText>
           </View>
         )}
 
@@ -540,21 +541,21 @@ export default function FlashcardsScreen() {
           {isPending && flashcards.length === 0 && (
             <View style={styles.centerContainer}>
               <BookLoader />
-              <Text style={[styles.loadingText, isDarkMode && styles.loadingTextDark]}>
+              <AppText style={[styles.loadingText, isDarkMode && styles.loadingTextDark]}>
                 {t.summary.flashcardsGenerating}
-              </Text>
+              </AppText>
             </View>
           )}
 
           {/* Error */}
           {isError && (
             <View style={[styles.messageCard, isDarkMode && styles.messageCardDark]}>
-              <Text style={[styles.messageTitle, isDarkMode && styles.messageTitleDark]}>{t.summary.error}</Text>
-              <Text style={[styles.messageText, isDarkMode && styles.messageTextDark]}>
+              <AppText style={[styles.messageTitle, isDarkMode && styles.messageTitleDark]}>{t.summary.error}</AppText>
+              <AppText style={[styles.messageText, isDarkMode && styles.messageTextDark]}>
                 {error instanceof Error ? error.message : t.summary.retry}
-              </Text>
+              </AppText>
               <Pressable onPress={handleRegenerate} style={[styles.retryButton, { backgroundColor: colors.primary }]}>
-                <Text style={styles.retryButtonText}>{t.summary.retry}</Text>
+                <AppText style={styles.retryButtonText}>{t.summary.retry}</AppText>
               </Pressable>
             </View>
           )}
@@ -563,14 +564,14 @@ export default function FlashcardsScreen() {
           {!isPremium && (
             <View style={[styles.messageCard, isDarkMode && styles.messageCardDark]}>
               <Crown size={32} color={colors.primary} />
-              <Text style={[styles.messageTitle, isDarkMode && styles.messageTitleDark]}>
+              <AppText style={[styles.messageTitle, isDarkMode && styles.messageTitleDark]}>
                 {language === "fr" ? "Fonction premium" : "Premium feature"}
-              </Text>
-              <Text style={[styles.messageText, isDarkMode && styles.messageTextDark]}>
+              </AppText>
+              <AppText style={[styles.messageText, isDarkMode && styles.messageTextDark]}>
                 {language === "fr"
                   ? "Les flash cards sont incluses dans l'abonnement premium."
                   : "Flash cards are included in the premium subscription."}
-              </Text>
+              </AppText>
             </View>
           )}
 
@@ -582,9 +583,9 @@ export default function FlashcardsScreen() {
               <View style={[styles.questionCard, isDarkMode && styles.questionCardDark]}>
                 <View style={[styles.questionLabel, { backgroundColor: `${colors.primary}15` }]}>
                   <HelpCircle size={13} color={colors.primary} strokeWidth={2.5} />
-                  <Text style={[styles.questionLabelText, { color: colors.primary }]}>
+                  <AppText style={[styles.questionLabelText, { color: colors.primary }]}>
                     {language === "fr" ? "QUESTION" : "QUESTION"}
-                  </Text>
+                  </AppText>
                 </View>
                 <Animated.Text style={[styles.questionText, isDarkMode && styles.questionTextDark, { opacity: questionFade }]}>
                   {currentFlashcard.question}
@@ -649,9 +650,9 @@ export default function FlashcardsScreen() {
                         testID={`flashcard-option-${index}`}
                       >
                         <View style={[styles.optionLetter, { backgroundColor: letterBg }]}>
-                          <Text style={[styles.optionLetterText, { color: letterColor }]}>{letter}</Text>
+                          <AppText style={[styles.optionLetterText, { color: letterColor }]}>{letter}</AppText>
                         </View>
-                        <Text
+                        <AppText
                           style={[
                             styles.optionText,
                             isDarkMode && styles.optionTextDark,
@@ -660,7 +661,7 @@ export default function FlashcardsScreen() {
                           numberOfLines={3}
                         >
                           {option}
-                        </Text>
+                        </AppText>
                         {showResult && isCorrect ? <CheckCircle2 size={20} color="#FFF" /> : null}
                         {showResult && isSelected && !isCorrect ? <XCircle size={20} color="#FFF" /> : null}
                       </Pressable>
@@ -672,15 +673,15 @@ export default function FlashcardsScreen() {
               {/* Feedback */}
               {selectedFlashcardAnswer && (
                 <View style={[styles.feedbackCard, isFlashcardAnswerCorrect ? styles.feedbackCorrect : styles.feedbackWrong, isDarkMode && styles.feedbackCardDark]}>
-                  <Text style={styles.feedbackEmoji}>{isFlashcardAnswerCorrect ? "🎉" : "💡"}</Text>
+                  <AppText style={styles.feedbackEmoji}>{isFlashcardAnswerCorrect ? "🎉" : "💡"}</AppText>
                   <View style={{ flex: 1 }}>
-                    <Text style={[styles.feedbackLabel, isDarkMode && styles.feedbackLabelDark]}>
+                    <AppText style={[styles.feedbackLabel, isDarkMode && styles.feedbackLabelDark]}>
                       {isFlashcardAnswerCorrect
                         ? (language === "fr" ? "Bonne réponse !" : "Correct!")
                         : (language === "fr" ? "Bonne réponse :" : "Correct answer:")}
-                    </Text>
+                    </AppText>
                     {!isFlashcardAnswerCorrect && (
-                      <Text style={[styles.feedbackAnswer, isDarkMode && styles.feedbackAnswerDark]}>{currentFlashcard.correctAnswer}</Text>
+                      <AppText style={[styles.feedbackAnswer, isDarkMode && styles.feedbackAnswerDark]}>{currentFlashcard.correctAnswer}</AppText>
                     )}
                   </View>
                 </View>
@@ -699,11 +700,11 @@ export default function FlashcardsScreen() {
                   end={{ x: 1, y: 0 }}
                   style={styles.nextButtonGradient}
                 >
-                  <Text style={styles.nextButtonText}>
+                  <AppText style={styles.nextButtonText}>
                     {currentFlashcardIndex >= flashcards.length - 1
                       ? (language === "fr" ? "Recommencer" : "Restart")
                       : (language === "fr" ? "Question suivante →" : "Next question →")}
-                  </Text>
+                  </AppText>
                 </LinearGradient>
               </Pressable>
 

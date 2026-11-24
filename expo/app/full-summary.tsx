@@ -1,4 +1,4 @@
-import { Image } from "expo-image";
+﻿import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { X, Type, Minus, Plus } from "lucide-react-native";
@@ -17,6 +17,7 @@ import * as Haptics from "expo-haptics";
 import { AnimatedBackground } from "@/components/AnimatedBackground";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { AppText } from "@/components/AppText";
 
 const MIN_SIZE = 14;
 const MAX_SIZE = 26;
@@ -209,24 +210,24 @@ export default function FullSummaryScreen() {
       while ((match = boldPattern.exec(line)) !== null) {
         if (match.index > lastIndex) {
           parts.push(
-            <Text key={`text-${key++}`} style={[fStyles.normalText, { fontSize: textSize, lineHeight: textSize * 1.7 }, isDarkMode && fStyles.normalTextDark]}>
+            <AppText key={`text-${key++}`} style={[fStyles.normalText, { fontSize: textSize, lineHeight: textSize * 1.7 }, isDarkMode && fStyles.normalTextDark]}>
               {line.substring(lastIndex, match.index)}
-            </Text>
+            </AppText>
           );
         }
         parts.push(
-          <Text key={`bold-${key++}`} style={[fStyles.boldText, { fontSize: textSize + 1, color: colors.primary }, isDarkMode && { color: colors.tertiary }]}>
+          <AppText key={`bold-${key++}`} style={[fStyles.boldText, { fontSize: textSize + 1, color: colors.primary }, isDarkMode && { color: colors.tertiary }]}>
             {match[1]}
-          </Text>
+          </AppText>
         );
         lastIndex = match.index + match[0].length;
       }
 
       if (lastIndex < line.length) {
         parts.push(
-          <Text key={`text-${key++}`} style={[fStyles.normalText, { fontSize: textSize, lineHeight: textSize * 1.7 }, isDarkMode && fStyles.normalTextDark]}>
+          <AppText key={`text-${key++}`} style={[fStyles.normalText, { fontSize: textSize, lineHeight: textSize * 1.7 }, isDarkMode && fStyles.normalTextDark]}>
             {line.substring(lastIndex)}
-          </Text>
+          </AppText>
         );
       }
 
@@ -234,7 +235,7 @@ export default function FullSummaryScreen() {
       const isListItem = line.trim().startsWith('-') || line.trim().startsWith('•');
 
       elements.push(
-        <Text
+        <AppText
           key={`line-${lineIndex}`}
           style={[
             fStyles.textLine,
@@ -246,7 +247,7 @@ export default function FullSummaryScreen() {
           ]}
         >
           {parts}
-        </Text>
+        </AppText>
       );
     });
 
@@ -349,7 +350,7 @@ export default function FullSummaryScreen() {
                 />
               </View>
               <Animated.View style={[fStyles.sizeLabel, { transform: [{ scale: sizeTextPop }] }]}>
-                <Text style={[fStyles.sizeLabelText, { color: colors.primary }]}>{textSize}</Text>
+                <AppText style={[fStyles.sizeLabelText, { color: colors.primary }]}>{textSize}</AppText>
               </Animated.View>
             </View>
 
@@ -390,10 +391,10 @@ export default function FullSummaryScreen() {
 
             <Animated.View style={[fStyles.footer, { opacity: footerFade }]}>
               <View style={[fStyles.footerDivider, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)' }]} />
-              <Text style={[fStyles.footerText, isDarkMode && fStyles.footerTextDark]}>
+              <AppText style={[fStyles.footerText, isDarkMode && fStyles.footerTextDark]}>
                 {wordCount} {language === 'fr' ? 'mots' : 'words'}
                 {author ? ` · ${author}` : ''}
-              </Text>
+              </AppText>
             </Animated.View>
           </ScrollView>
         </Animated.View>

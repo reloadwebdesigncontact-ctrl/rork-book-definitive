@@ -1,4 +1,4 @@
-import { Image } from "expo-image";
+﻿import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { ArrowLeft, Check, Crown } from "lucide-react-native";
@@ -20,6 +20,7 @@ import { resolveThemeIcon } from "@/utils/themeIcon";
 import { AnimatedBackground } from "@/components/AnimatedBackground";
 import { Paywall } from "@/components/Paywall";
 import * as Haptics from "expo-haptics";
+import { AppText } from "@/components/AppText";
 
 const THEME_LABELS: Record<AppTheme, { fr: string; en: string }> = {
   orange:    { fr: 'Orange',    en: 'Orange' },
@@ -103,9 +104,9 @@ export default function ThemePickerScreen() {
               <ArrowLeft size={24} color={isDarkMode ? "#FFF" : "#3E2723"} strokeWidth={2.5} />
             </Pressable>
           </Animated.View>
-          <Text style={[styles.headerTitle, isDarkMode && styles.headerTitleDark]}>
+          <AppText style={[styles.headerTitle, isDarkMode && styles.headerTitleDark]}>
             {language === 'fr' ? 'Couleur de l\'app' : 'App color'}
-          </Text>
+          </AppText>
           <View style={{ width: 40 }} />
         </View>
 
@@ -145,13 +146,13 @@ export default function ThemePickerScreen() {
                 {/* Infos du thème */}
                 <View style={styles.themeInfo}>
                   <View style={styles.themeNameRow}>
-                    <Text style={[styles.themeName, isDarkMode && styles.themeNameDark]}>
+                    <AppText style={[styles.themeName, isDarkMode && styles.themeNameDark]}>
                       {label}
-                    </Text>
+                    </AppText>
                     {isPremiumTheme && (
                       <View style={[styles.premiumBadge, { backgroundColor: palette.primary }]}>
                         <Crown size={10} color="#FFF" strokeWidth={2.5} />
-                        <Text style={styles.premiumBadgeText}>Premium</Text>
+                        <AppText style={styles.premiumBadgeText}>Premium</AppText>
                       </View>
                     )}
                   </View>

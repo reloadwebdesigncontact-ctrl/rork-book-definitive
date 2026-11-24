@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+﻿import React, { useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -18,6 +18,7 @@ import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getBearTheme } from '@/utils/bearTheme';
+import { AppText } from "@/components/AppText";
 
 const { width: W, height: H } = Dimensions.get('window');
 const BTN = 72;
@@ -383,7 +384,7 @@ export function FicheAssistant({ onCommandSelect, activeCommandId }: FicheAssist
                   style={styles.headerLogo}
                   resizeMode="contain"
                 />
-                <Text style={styles.headerSub}>{i18n.headerSub}</Text>
+                <AppText style={styles.headerSub}>{i18n.headerSub}</AppText>
               </View>
             </LinearGradient>
 
@@ -414,11 +415,11 @@ export function FicheAssistant({ onCommandSelect, activeCommandId }: FicheAssist
                     ]}
                   >
                       <View style={[styles.emojiWrap, { backgroundColor: `${colors.primary}18` }]}>
-                        <Text style={styles.emoji}>{cmd.emoji}</Text>
+                        <AppText style={styles.emoji}>{cmd.emoji}</AppText>
                       </View>
                       <View style={styles.cardText}>
-                        <Text style={[styles.cardLabel, isDarkMode && styles.cardLabelDark, isActive && { color: colors.primary }]}>{i18n[cmd.label] ?? cmd.label}</Text>
-                        <Text style={[styles.cardDesc, isDarkMode && styles.cardDescDark]}>{i18n[cmd.description] ?? cmd.description}</Text>
+                        <AppText style={[styles.cardLabel, isDarkMode && styles.cardLabelDark, isActive && { color: colors.primary }]}>{i18n[cmd.label] ?? cmd.label}</AppText>
+                        <AppText style={[styles.cardDesc, isDarkMode && styles.cardDescDark]}>{i18n[cmd.description] ?? cmd.description}</AppText>
                       </View>
                       <View style={styles.cardRight}>
                         {cmd.rules.length > 0 && (
@@ -428,7 +429,7 @@ export function FicheAssistant({ onCommandSelect, activeCommandId }: FicheAssist
                         )}
                         {isActive
                           ? <View style={[styles.check, { backgroundColor: colors.primary }]}><Check size={12} color="#FFF" strokeWidth={3} /></View>
-                          : <View style={[styles.arrow, isDarkMode && styles.arrowDark]}><Text style={[styles.arrowTxt, { color: isDarkMode ? '#666' : '#CCC' }]}>›</Text></View>
+                          : <View style={[styles.arrow, isDarkMode && styles.arrowDark]}><AppText style={[styles.arrowTxt, { color: isDarkMode ? '#666' : '#CCC' }]}>›</AppText></View>
                         }
                       </View>
                   </TouchableOpacity>

@@ -1,4 +1,4 @@
-import { Image } from "expo-image";
+﻿import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { ArrowLeft, BookOpen, Clock, Trash2, User } from "lucide-react-native";
@@ -18,6 +18,7 @@ import { AnimatedBackground } from "@/components/AnimatedBackground";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import {
+import { AppText } from "@/components/AppText";
   clearHistory,
   getHistory,
   HistoryEntry,
@@ -143,9 +144,9 @@ export default function HistoryScreen() {
             <Pressable onPress={() => setSelectedEntry(null)} style={styles.backButton}>
               <ArrowLeft size={24} color={isDarkMode ? "#FFF" : "#3E2723"} strokeWidth={2.5} />
             </Pressable>
-            <Text style={[styles.headerTitle, isDarkMode && styles.headerTitleDark]} numberOfLines={1}>
+            <AppText style={[styles.headerTitle, isDarkMode && styles.headerTitleDark]} numberOfLines={1}>
               {selectedEntry.title}
-            </Text>
+            </AppText>
             <Pressable onPress={() => handleDelete(selectedEntry.id)} style={styles.backButton}>
               <Trash2 size={20} color="#EF4444" strokeWidth={2.5} />
             </Pressable>
@@ -164,20 +165,20 @@ export default function HistoryScreen() {
                 colors={colors}
               />
               <View style={styles.detailMeta}>
-                <Text style={[styles.detailTitle, isDarkMode && styles.detailTitleDark]}>
+                <AppText style={[styles.detailTitle, isDarkMode && styles.detailTitleDark]}>
                   {selectedEntry.title}
-                </Text>
+                </AppText>
                 <View style={styles.detailRow}>
                   <User size={14} color={colors.secondary} />
-                  <Text style={[styles.detailAuthor, isDarkMode && styles.detailAuthorDark]}>
+                  <AppText style={[styles.detailAuthor, isDarkMode && styles.detailAuthorDark]}>
                     {selectedEntry.author}
-                  </Text>
+                  </AppText>
                 </View>
                 <View style={styles.detailRow}>
                   <Clock size={14} color={isDarkMode ? '#888' : '#999'} />
-                  <Text style={[styles.detailDate, isDarkMode && styles.detailDateDark]}>
+                  <AppText style={[styles.detailDate, isDarkMode && styles.detailDateDark]}>
                     {formatDate(selectedEntry.scannedAt)}
-                  </Text>
+                  </AppText>
                 </View>
               </View>
             </View>
@@ -185,18 +186,18 @@ export default function HistoryScreen() {
             {/* Summary */}
             {selectedEntry.summary ? (
               <View style={[styles.summaryCard, isDarkMode && styles.summaryCardDark]}>
-                <Text style={[styles.summaryLabel, { color: colors.primary }]}>
+                <AppText style={[styles.summaryLabel, { color: colors.primary }]}>
                   {language === 'fr' ? 'Résumé' : 'Summary'}
-                </Text>
-                <Text style={[styles.summaryText, isDarkMode && styles.summaryTextDark]}>
+                </AppText>
+                <AppText style={[styles.summaryText, isDarkMode && styles.summaryTextDark]}>
                   {selectedEntry.summary}
-                </Text>
+                </AppText>
               </View>
             ) : (
               <View style={[styles.summaryCard, isDarkMode && styles.summaryCardDark]}>
-                <Text style={[styles.summaryText, isDarkMode && styles.summaryTextDark, { textAlign: 'center', opacity: 0.5 }]}>
+                <AppText style={[styles.summaryText, isDarkMode && styles.summaryTextDark, { textAlign: 'center', opacity: 0.5 }]}>
                   {language === 'fr' ? 'Aucun résumé enregistré' : 'No summary saved'}
-                </Text>
+                </AppText>
               </View>
             )}
           </Animated.ScrollView>
@@ -222,9 +223,9 @@ export default function HistoryScreen() {
           <Pressable onPress={() => router.back()} style={styles.backButton}>
             <ArrowLeft size={24} color={isDarkMode ? "#FFF" : "#3E2723"} strokeWidth={2.5} />
           </Pressable>
-          <Text style={[styles.headerTitle, isDarkMode && styles.headerTitleDark]}>
+          <AppText style={[styles.headerTitle, isDarkMode && styles.headerTitleDark]}>
             {language === 'fr' ? 'Historique' : 'History'}
-          </Text>
+          </AppText>
           {history.length > 0 ? (
             <Pressable onPress={handleClearAll} style={styles.backButton}>
               <Trash2 size={20} color="#EF4444" strokeWidth={2.5} />
@@ -237,14 +238,14 @@ export default function HistoryScreen() {
         {history.length === 0 ? (
           <View style={styles.emptyContainer}>
             <BookOpen size={64} color={isDarkMode ? '#444' : '#CCC'} strokeWidth={1.5} />
-            <Text style={[styles.emptyText, isDarkMode && styles.emptyTextDark]}>
+            <AppText style={[styles.emptyText, isDarkMode && styles.emptyTextDark]}>
               {language === 'fr' ? 'Aucun livre scanné' : 'No books scanned yet'}
-            </Text>
-            <Text style={[styles.emptySubtext, isDarkMode && styles.emptySubtextDark]}>
+            </AppText>
+            <AppText style={[styles.emptySubtext, isDarkMode && styles.emptySubtextDark]}>
               {language === 'fr'
                 ? 'Vos livres scannés apparaîtront ici'
                 : 'Your scanned books will appear here'}
-            </Text>
+            </AppText>
           </View>
         ) : (
           <FlatList
@@ -259,15 +260,15 @@ export default function HistoryScreen() {
               >
                 <HistoryCover key={item.id} uri={item.coverUrl} title={item.title} size={64} colors={colors} />
                 <View style={styles.historyInfo}>
-                  <Text style={[styles.historyTitle, isDarkMode && styles.historyTitleDark]} numberOfLines={2}>
+                  <AppText style={[styles.historyTitle, isDarkMode && styles.historyTitleDark]} numberOfLines={2}>
                     {item.title}
-                  </Text>
-                  <Text style={[styles.historyAuthor, isDarkMode && styles.historyAuthorDark]} numberOfLines={1}>
+                  </AppText>
+                  <AppText style={[styles.historyAuthor, isDarkMode && styles.historyAuthorDark]} numberOfLines={1}>
                     {item.author}
-                  </Text>
-                  <Text style={[styles.historyDate, isDarkMode && styles.historyDateDark]}>
+                  </AppText>
+                  <AppText style={[styles.historyDate, isDarkMode && styles.historyDateDark]}>
                     {formatDate(item.scannedAt)}
-                  </Text>
+                  </AppText>
                 </View>
                 <Pressable
                   onPress={() => handleDelete(item.id)}

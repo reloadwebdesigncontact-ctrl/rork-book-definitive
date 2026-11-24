@@ -1,4 +1,4 @@
-import { Image } from "expo-image";
+﻿import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { ArrowLeft, Globe, Moon, Sun, Palette, Scale, ChevronRight, Info, Crown, Sparkles, Smartphone, Clock } from "lucide-react-native";
@@ -26,6 +26,7 @@ import { Paywall } from "@/components/Paywall";
 import { AnimatedBackground } from "@/components/AnimatedBackground";
 import { resolveThemeIcon } from "@/utils/themeIcon";
 import { changeAppIcon, getSavedIcon, ICON_OPTIONS, ICON_PREVIEWS, type AppIconKey } from "@/utils/appIcon";
+import { AppText } from "@/components/AppText";
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -221,9 +222,9 @@ export default function SettingsScreen() {
           <Animated.View style={[styles.section, isDarkMode && styles.sectionDark, { opacity: section1Opacity, transform: [{ translateY: section1Slide }] }]}>
             <View style={styles.sectionHeader}>
               <Globe size={24} color={colors.primary} strokeWidth={2.5} />
-              <Text style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
+              <AppText style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
                 {t.settings.language}
-              </Text>
+              </AppText>
             </View>
             <View style={styles.languageGrid}>
               {([
@@ -250,13 +251,13 @@ export default function SettingsScreen() {
                     language === lang.code && { backgroundColor: `${colors.primary}22`, borderColor: colors.primary, borderWidth: 2 },
                   ]}
                 >
-                  <Text style={styles.langFlag}>{lang.flag}</Text>
-                  <Text style={[styles.langLabel, isDarkMode && styles.langLabelDark, language === lang.code && { color: colors.primary, fontWeight: '700' as const }]} numberOfLines={1}>
+                  <AppText style={styles.langFlag}>{lang.flag}</AppText>
+                  <AppText style={[styles.langLabel, isDarkMode && styles.langLabelDark, language === lang.code && { color: colors.primary, fontWeight: '700' as const }]} numberOfLines={1}>
                     {lang.label}
-                  </Text>
+                  </AppText>
                   {language === lang.code && (
                     <View style={[styles.langCheck, { backgroundColor: colors.primary }]}>
-                      <Text style={{ color: '#FFF', fontSize: 10, fontWeight: '700' as const }}>✓</Text>
+                      <AppText style={{ color: '#FFF', fontSize: 10, fontWeight: '700' as const }}>✓</AppText>
                     </View>
                   )}
                 </Pressable>
@@ -271,9 +272,9 @@ export default function SettingsScreen() {
               ) : (
                 <Moon size={24} color={colors.primary} strokeWidth={2.5} />
               )}
-              <Text style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
+              <AppText style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
                 {t.settings.theme}
-              </Text>
+              </AppText>
             </View>
             <View style={[styles.themeSliderContainer, isDarkMode && styles.themeSliderContainerDark]}>
               <Pressable
@@ -328,12 +329,12 @@ export default function SettingsScreen() {
               </Pressable>
               
               <View style={styles.modeLabelsRow}>
-                <Text style={[styles.modeLabel, !isDarkMode && styles.modeLabelActive, isDarkMode && styles.modeLabelDark]}>
+                <AppText style={[styles.modeLabel, !isDarkMode && styles.modeLabelActive, isDarkMode && styles.modeLabelDark]}>
                   {t.settings.lightMode}
-                </Text>
-                <Text style={[styles.modeLabel, isDarkMode && styles.modeLabelActiveDark, !isDarkMode && styles.modeLabelLight]}>
+                </AppText>
+                <AppText style={[styles.modeLabel, isDarkMode && styles.modeLabelActiveDark, !isDarkMode && styles.modeLabelLight]}>
                   {t.settings.darkMode}
-                </Text>
+                </AppText>
               </View>
             </View>
           </Animated.View>
@@ -341,9 +342,9 @@ export default function SettingsScreen() {
           <Animated.View style={[styles.section, isDarkMode && styles.sectionDark, { opacity: section3Opacity, transform: [{ translateY: section3Slide }] }]}>
             <View style={styles.sectionHeader}>
               <Palette size={24} color={colors.primary} strokeWidth={2.5} />
-              <Text style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
+              <AppText style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
                 {t.settings.appColor}
-              </Text>
+              </AppText>
             </View>
             <Animated.View style={{ transform: [{ scale: colorPreviewScale }] }}>
               <Pressable
@@ -359,11 +360,11 @@ export default function SettingsScreen() {
                     style={styles.currentIcon}
                     contentFit="contain"
                   />
-                  <Text style={[styles.colorPreviewText, isDarkMode && styles.colorPreviewTextDark]}>
+                  <AppText style={[styles.colorPreviewText, isDarkMode && styles.colorPreviewTextDark]}>
                     Changer la couleur
-                  </Text>
+                  </AppText>
                 </View>
-                <Text style={[styles.arrow, isDarkMode && styles.arrowDark]}>›</Text>
+                <AppText style={[styles.arrow, isDarkMode && styles.arrowDark]}>›</AppText>
               </Pressable>
             </Animated.View>
           </Animated.View>
@@ -374,18 +375,18 @@ export default function SettingsScreen() {
           <Animated.View style={[styles.section, isDarkMode && styles.sectionDark, { opacity: section3Opacity, transform: [{ translateY: section3Slide }] }]}>
             <View style={styles.sectionHeader}>
               <Clock size={24} color={colors.primary} strokeWidth={2.5} />
-              <Text style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
+              <AppText style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
                 {language === 'fr' ? 'Bibliothèque' : 'Library'}
-              </Text>
+              </AppText>
             </View>
             <Pressable
               onPress={() => router.push('/history')}
               style={[styles.colorPreview, isDarkMode && styles.colorPreviewDark]}
             >
-              <Text style={[styles.colorPreviewText, isDarkMode && styles.colorPreviewTextDark]}>
+              <AppText style={[styles.colorPreviewText, isDarkMode && styles.colorPreviewTextDark]}>
                 {language === 'fr' ? 'Voir ma bibliothèque' : 'View my library'}
-              </Text>
-              <Text style={[styles.arrow, isDarkMode && styles.arrowDark]}>›</Text>
+              </AppText>
+              <AppText style={[styles.arrow, isDarkMode && styles.arrowDark]}>›</AppText>
             </Pressable>
           </Animated.View>
 
@@ -393,13 +394,13 @@ export default function SettingsScreen() {
           <Animated.View style={[styles.section, isDarkMode && styles.sectionDark, { opacity: section3Opacity, transform: [{ translateY: section3Slide }] }]}>
             <View style={styles.sectionHeader}>
               <Smartphone size={24} color={colors.primary} strokeWidth={2.5} />
-              <Text style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
+              <AppText style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
                 {language === 'fr' ? 'Icône de l\'app' : 'App icon'}
-              </Text>
+              </AppText>
               {!isPremium && (
                 <View style={[styles.premiumBadge, { backgroundColor: colors.primary }]}>
                   <Crown size={10} color="#FFF" />
-                  <Text style={styles.premiumBadgeText}>Premium</Text>
+                  <AppText style={styles.premiumBadgeText}>Premium</AppText>
                 </View>
               )}
             </View>
@@ -408,9 +409,9 @@ export default function SettingsScreen() {
                 onPress={() => setShowPaywall(true)}
                 style={[styles.option, isDarkMode && styles.optionDark]}
               >
-                <Text style={[styles.optionText, isDarkMode && styles.optionTextDark]}>
+                <AppText style={[styles.optionText, isDarkMode && styles.optionTextDark]}>
                   {language === 'fr' ? 'Déverrouillez avec Premium' : 'Unlock with Premium'}
-                </Text>
+                </AppText>
                 <Crown size={18} color={colors.primary} strokeWidth={2.5} />
               </Pressable>
             ) : (
@@ -465,7 +466,7 @@ export default function SettingsScreen() {
                     />
                     {selectedIcon === option.key && (
                       <View style={[styles.iconCheckBadge, { backgroundColor: colors.primary }]}>
-                        <Text style={styles.iconCheckText}>✓</Text>
+                        <AppText style={styles.iconCheckText}>✓</AppText>
                       </View>
                     )}
                   </Pressable>
@@ -498,32 +499,32 @@ export default function SettingsScreen() {
           <Animated.View style={[styles.section, isDarkMode && styles.sectionDark, { opacity: section4Opacity, transform: [{ translateY: section4Slide }] }]}> 
             <View style={styles.sectionHeader}>
               <Crown size={24} color={colors.primary} strokeWidth={2.5} />
-              <Text style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
+              <AppText style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
                 {language === 'fr' ? 'Mon abonnement' : 'My subscription'}
-              </Text>
+              </AppText>
             </View>
             <View style={[styles.debugCard, isDarkMode && styles.debugCardDark]}>
               <View style={styles.debugBadgeRow}>
                 <View style={[styles.debugBadge, { backgroundColor: isPremium ? colors.primary : "#8C8C8C" }]}>
-                  <Text style={styles.debugBadgeText}>
+                  <AppText style={styles.debugBadgeText}>
                     {isPremium ? 'Premium' : (language === 'fr' ? 'Gratuit' : 'Free')}
-                  </Text>
+                  </AppText>
                 </View>
                 {isPremium && (
                   <View style={[styles.storeBadge, { borderColor: colors.primary }]}>
                     <Crown size={14} color={colors.primary} strokeWidth={2.5} />
-                    <Text style={[styles.storeBadgeText, { color: colors.primary }]}>
+                    <AppText style={[styles.storeBadgeText, { color: colors.primary }]}>
                       {language === 'fr' ? 'Actif' : 'Active'}
-                    </Text>
+                    </AppText>
                   </View>
                 )}
               </View>
 
               {isPremium ? (
                 <>
-                  <Text style={[styles.debugDescription, isDarkMode && styles.debugDescriptionDark]}>
+                  <AppText style={[styles.debugDescription, isDarkMode && styles.debugDescriptionDark]}>
                     {language === 'fr' ? 'Vous bénéficiez de toutes les fonctionnalités premium.' : 'You have access to all premium features.'}
-                  </Text>
+                  </AppText>
                   {(() => {
                     const activeEntitlements = customerInfo?.entitlements.active;
                     const firstEntitlement = activeEntitlements
@@ -533,21 +534,21 @@ export default function SettingsScreen() {
                       || firstEntitlement?.originalPurchaseDate;
                     if (!purchaseDate) return null;
                     return (
-                      <Text style={[styles.subscriptionDate, isDarkMode && styles.subscriptionDateDark]}>
+                      <AppText style={[styles.subscriptionDate, isDarkMode && styles.subscriptionDateDark]}>
                         {language === 'fr' ? '📅 Abonné depuis le ' : '📅 Subscribed since '}
                         {new Date(purchaseDate).toLocaleDateString(
                           language === 'fr' ? 'fr-FR' : 'en-US',
                           { day: 'numeric', month: 'long', year: 'numeric' }
                         )}
-                      </Text>
+                      </AppText>
                     );
                   })()}
                 </>
               ) : (
                 <>
-                  <Text style={[styles.debugDescription, isDarkMode && styles.debugDescriptionDark]}>
+                  <AppText style={[styles.debugDescription, isDarkMode && styles.debugDescriptionDark]}>
                     {language === 'fr' ? 'Plan gratuit — 3 scans par jour.' : 'Free plan — 3 scans per day.'}
-                  </Text>
+                  </AppText>
                   <Animated.View style={{ transform: [{ scale: upgradeButtonScale }] }}>
                   <Pressable
                     onPress={() => {
@@ -565,9 +566,9 @@ export default function SettingsScreen() {
                       style={styles.upgradeButtonGradient}
                     >
                       <Sparkles size={18} color="#FFF" />
-                      <Text style={styles.upgradeButtonText}>
+                      <AppText style={styles.upgradeButtonText}>
                         {language === 'fr' ? 'Passer à Premium' : 'Upgrade to Premium'}
-                      </Text>
+                      </AppText>
                     </LinearGradient>
                   </Pressable>
                   </Animated.View>
@@ -578,11 +579,11 @@ export default function SettingsScreen() {
                     onPressOut={() => Animated.spring(restoreButtonScale, { toValue: 1, friction: 3, tension: 40, useNativeDriver: true }).start()}
                     style={[styles.restoreButton, isDarkMode && styles.restoreButtonDark]}
                   >
-                    <Text style={[styles.restoreButtonText, { color: colors.primary }]}>
+                    <AppText style={[styles.restoreButtonText, { color: colors.primary }]}>
                       {isRestoring
                         ? (language === 'fr' ? 'Restauration...' : 'Restoring...')
                         : (language === 'fr' ? 'Restaurer les achats' : 'Restore purchases')}
-                    </Text>
+                    </AppText>
                   </Pressable>
                   </Animated.View>
                 </>
@@ -598,16 +599,16 @@ export default function SettingsScreen() {
 
           <Animated.View style={[styles.section, isDarkMode && styles.sectionDark, { opacity: section4Opacity, transform: [{ translateY: section4Slide }] }]}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.rateStarIcon}>⭐</Text>
-              <Text style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
+              <AppText style={styles.rateStarIcon}>⭐</AppText>
+              <AppText style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
                 {language === 'fr' ? 'Évaluer l\'application' : 'Rate the app'}
-              </Text>
+              </AppText>
             </View>
-            <Text style={[styles.rateDescription, isDarkMode && styles.rateDescriptionDark]}>
+            <AppText style={[styles.rateDescription, isDarkMode && styles.rateDescriptionDark]}>
               {language === 'fr'
                 ? 'Vous aimez Summshine ? Laissez un avis sur le Play Store, ça nous aide beaucoup !'
                 : 'Enjoying Summshine? Leave a review on the Play Store, it helps us a lot!'}
-            </Text>
+            </AppText>
             <Animated.View style={{ transform: [{ scale: rateButtonScale }] }}>
             <Pressable
               onPress={() => {
@@ -624,9 +625,9 @@ export default function SettingsScreen() {
                 end={{ x: 1, y: 0 }}
                 style={styles.rateButtonGradient}
               >
-                <Text style={styles.rateButtonText}>
+                <AppText style={styles.rateButtonText}>
                   {language === 'fr' ? '⭐ Laisser un avis' : '⭐ Leave a review'}
-                </Text>
+                </AppText>
                 <ChevronRight size={18} color="#FFF" strokeWidth={2.5} />
               </LinearGradient>
             </Pressable>
@@ -636,9 +637,9 @@ export default function SettingsScreen() {
           <Animated.View style={[styles.section, isDarkMode && styles.sectionDark, { opacity: section4Opacity, transform: [{ translateY: section4Slide }] }]}>
             <View style={styles.sectionHeader}>
               <Scale size={24} color={colors.primary} strokeWidth={2.5} />
-              <Text style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
+              <AppText style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
                 {t.settings.legal}
-              </Text>
+              </AppText>
             </View>
             <Animated.View style={{ transform: [{ scale: legalOption1Scale }] }}>
               <Pressable
@@ -648,9 +649,9 @@ export default function SettingsScreen() {
                 }}
                 style={[styles.legalOption, isDarkMode && styles.legalOptionDark]}
               >
-                <Text style={[styles.legalOptionText, isDarkMode && styles.legalOptionTextDark]}>
+                <AppText style={[styles.legalOptionText, isDarkMode && styles.legalOptionTextDark]}>
                   {t.settings.legalNotices}
-                </Text>
+                </AppText>
                 <ChevronRight size={20} color={isDarkMode ? "#999" : "#666"} />
               </Pressable>
             </Animated.View>
@@ -662,9 +663,9 @@ export default function SettingsScreen() {
                 }}
                 style={[styles.legalOption, isDarkMode && styles.legalOptionDark]}
               >
-                <Text style={[styles.legalOptionText, isDarkMode && styles.legalOptionTextDark]}>
+                <AppText style={[styles.legalOptionText, isDarkMode && styles.legalOptionTextDark]}>
                   CGU
-                </Text>
+                </AppText>
                 <ChevronRight size={20} color={isDarkMode ? "#999" : "#666"} />
               </Pressable>
             </Animated.View>
@@ -676,9 +677,9 @@ export default function SettingsScreen() {
                 }}
                 style={[styles.legalOption, isDarkMode && styles.legalOptionDark]}
               >
-                <Text style={[styles.legalOptionText, isDarkMode && styles.legalOptionTextDark]}>
+                <AppText style={[styles.legalOptionText, isDarkMode && styles.legalOptionTextDark]}>
                   Politique de confidentialité
-                </Text>
+                </AppText>
                 <ChevronRight size={20} color={isDarkMode ? "#999" : "#666"} />
               </Pressable>
             </Animated.View>
@@ -690,9 +691,9 @@ export default function SettingsScreen() {
                 }}
                 style={[styles.legalOption, isDarkMode && styles.legalOptionDark]}
               >
-                <Text style={[styles.legalOptionText, isDarkMode && styles.legalOptionTextDark]}>
+                <AppText style={[styles.legalOptionText, isDarkMode && styles.legalOptionTextDark]}>
                   {language === 'fr' ? 'Conditions Générales de Vente' : 'Terms of Sale'}
-                </Text>
+                </AppText>
                 <ChevronRight size={20} color={isDarkMode ? "#999" : "#666"} />
               </Pressable>
             </Animated.View>
@@ -700,9 +701,9 @@ export default function SettingsScreen() {
 
           <Animated.View style={[styles.versionContainer, isDarkMode && styles.versionContainerDark, { opacity: versionFade }]}>
             <Info size={16} color={isDarkMode ? "#666" : "#999"} />
-            <Text style={[styles.versionText, isDarkMode && styles.versionTextDark]}>
+            <AppText style={[styles.versionText, isDarkMode && styles.versionTextDark]}>
               Version {appVersion}
-            </Text>
+            </AppText>
           </Animated.View>
 
         </ScrollView>

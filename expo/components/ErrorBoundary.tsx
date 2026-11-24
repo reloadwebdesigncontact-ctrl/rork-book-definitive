@@ -1,5 +1,6 @@
-import React from 'react';
+﻿import React from 'react';
 import { Text, View, ScrollView, StyleSheet } from 'react-native';
+import { AppText } from "@/components/AppText";
 
 interface State {
   hasError: boolean;
@@ -22,16 +23,16 @@ export class ErrorBoundary extends React.Component<{ children: React.ReactNode }
       return (
         <View style={styles.container}>
           <ScrollView>
-            <Text style={styles.title}>App Error</Text>
-            <Text style={styles.error}>
+            <AppText style={styles.title}>App Error</AppText>
+            <AppText style={styles.error}>
               {this.state.error?.message || 'Unknown error'}
-            </Text>
-            <Text style={styles.stack}>
+            </AppText>
+            <AppText style={styles.stack}>
               {this.state.error?.stack || ''}
-            </Text>
-            <Text style={styles.hint}>
+            </AppText>
+            <AppText style={styles.hint}>
               Relance l'app pour réessayer
-            </Text>
+            </AppText>
           </ScrollView>
         </View>
       );

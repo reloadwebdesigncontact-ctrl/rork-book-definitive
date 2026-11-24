@@ -1,7 +1,8 @@
-import React, { useEffect, useRef } from "react";
+﻿import React, { useEffect, useRef } from "react";
 import { Animated, Text, View, StyleSheet } from "react-native";
 import type { ColorPalette, AppTheme } from "@/constants/appThemes";
 import { useTheme } from "@/contexts/ThemeContext";
+import { AppText } from "@/components/AppText";
 
 interface SummshineProps {
   colors: ColorPalette;
@@ -58,14 +59,14 @@ export function SummshineTitle({ colors, themeKey }: SummshineProps) {
     <Animated.View style={{ opacity: opacityAnim, transform: [{ scale: scaleAnim }] }}>
       <View style={styles.row}>
         {/* "summ" en couleur sombre */}
-        <Text style={[base, { color: summColor }]}>summ</Text>
+        <AppText style={[base, { color: summColor }]}>summ</AppText>
 
         {/* "shine" en dégradé */}
-        <Text style={[base, { color: sc.s }]}>s</Text>
-        <Text style={[base, { color: sc.h }]}>h</Text>
-        <Text style={[base, { color: sc.i }]}>i</Text>
-        <Text style={[base, { color: sc.n }]}>n</Text>
-        <Text style={[base, { color: sc.e }]}>e</Text>
+        <AppText style={[base, { color: sc.s }]}>s</AppText>
+        <AppText style={[base, { color: sc.h }]}>h</AppText>
+        <AppText style={[base, { color: sc.i }]}>i</AppText>
+        <AppText style={[base, { color: sc.n }]}>n</AppText>
+        <AppText style={[base, { color: sc.e }]}>e</AppText>
       </View>
     </Animated.View>
   );

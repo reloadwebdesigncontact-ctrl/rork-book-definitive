@@ -1,4 +1,4 @@
-import { Image } from "expo-image";
+﻿import { Image } from "expo-image";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -29,6 +29,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { Paywall } from "@/components/Paywall";
+import { AppText } from "@/components/AppText";
 
 interface BookInfo {
   title: string;
@@ -743,31 +744,31 @@ return (
               <ArrowLeft size={24} color={isDarkMode ? "#FFF" : "#3E2723"} strokeWidth={2.5} />
             </Pressable>
           </Animated.View>
-          <Text style={[styles.headerTitle, isDarkMode && styles.headerTitleDark]}>{t.summary.title}</Text>
+          <AppText style={[styles.headerTitle, isDarkMode && styles.headerTitleDark]}>{t.summary.title}</AppText>
           <View style={{ width: 40 }} />
         </View>
 
         {isAnalyzing || (feature === 'fiche' && isGeneratingFiche) ? (
           <View style={styles.loadingContainer}>
             <BookLoader />
-            <Text style={[styles.loadingText, isDarkMode && styles.loadingTextDark]}>
+            <AppText style={[styles.loadingText, isDarkMode && styles.loadingTextDark]}>
               {t.summary.generating}
-            </Text>
-            <Text style={[styles.loadingSubtext, isDarkMode && styles.loadingSubtextDark]}>
+            </AppText>
+            <AppText style={[styles.loadingSubtext, isDarkMode && styles.loadingSubtextDark]}>
               {feature === 'fiche'
                 ? (language === 'fr' ? 'Génération de la fiche de lecture...' : 'Generating reading sheet...')
                 : (language === 'fr' ? 'Identification du livre et génération du résumé' : 'Book identification and summary generation')}
-            </Text>
+            </AppText>
           </View>
         ) : isError ? (
           <View style={styles.errorContainer}>
             <BookOpen size={48} color={colors.primary} />
-            <Text style={[styles.errorTitle, isDarkMode && styles.errorTitleDark]}>{t.summary.error}</Text>
-            <Text style={[styles.errorText, isDarkMode && styles.errorTextDark]}>
+            <AppText style={[styles.errorTitle, isDarkMode && styles.errorTitleDark]}>{t.summary.error}</AppText>
+            <AppText style={[styles.errorText, isDarkMode && styles.errorTextDark]}>
               {language === 'fr'
                 ? "Impossible d'analyser la couverture. Veuillez réessayer avec une image plus claire."
                 : "Unable to analyze the cover. Please try again with a clearer image."}
-            </Text>
+            </AppText>
             <Pressable
               onPress={() => router.back()}
               style={styles.retryButton}
@@ -778,7 +779,7 @@ return (
                 end={{ x: 1, y: 1 }}
                 style={styles.buttonGradient}
               >
-                <Text style={styles.buttonText}>{t.summary.retry}</Text>
+                <AppText style={styles.buttonText}>{t.summary.retry}</AppText>
               </LinearGradient>
             </Pressable>
           </View>
@@ -806,17 +807,17 @@ return (
                 <View style={styles.bookInfo}>
                   <View style={styles.infoRow}>
                     <BookOpen size={20} color={colors.primary} />
-                    <Text style={[styles.bookTitle, isDarkMode && styles.bookTitleDark]}>{bookInfo.title}</Text>
+                    <AppText style={[styles.bookTitle, isDarkMode && styles.bookTitleDark]}>{bookInfo.title}</AppText>
                   </View>
                   <View style={styles.infoRow}>
                     <User size={18} color={colors.secondary} />
-                    <Text style={[styles.bookAuthor, isDarkMode && styles.bookAuthorDark]}>{bookInfo.author}</Text>
+                    <AppText style={[styles.bookAuthor, isDarkMode && styles.bookAuthorDark]}>{bookInfo.author}</AppText>
                   </View>
                 </View>
               </View>
 
               <View style={[styles.selectionCard, isDarkMode && styles.selectionCardDark]}>
-                <Text style={[styles.selectionTitle, isDarkMode && styles.selectionTitleDark]}>{t.summary.selectType}</Text>
+                <AppText style={[styles.selectionTitle, isDarkMode && styles.selectionTitleDark]}>{t.summary.selectType}</AppText>
                 
                 <Animated.View style={{ transform: [{ scale: optionScale1 }] }}>
                   <Pressable
@@ -847,8 +848,8 @@ return (
                       style={styles.optionGradient}
                     >
                       <FileText size={32} color="#FFF" strokeWidth={2} />
-                      <Text style={styles.optionTitle}>{t.summary.normalSummary}</Text>
-                      <Text style={styles.optionDesc}>{t.summary.normalDesc}</Text>
+                      <AppText style={styles.optionTitle}>{t.summary.normalSummary}</AppText>
+                      <AppText style={styles.optionDesc}>{t.summary.normalDesc}</AppText>
                     </LinearGradient>
                   </Pressable>
                 </Animated.View>
@@ -883,11 +884,11 @@ return (
                     >
                       <View style={styles.premiumBadge}>
                         <Sparkles size={12} color="#FFF" />
-                        <Text style={styles.premiumBadgeText}>PREMIUM</Text>
+                        <AppText style={styles.premiumBadgeText}>PREMIUM</AppText>
                       </View>
                       <BookOpen size={32} color="#FFF" strokeWidth={2} />
-                      <Text style={styles.optionTitle}>{t.summary.chapterSummary}</Text>
-                      <Text style={styles.optionDesc}>{t.summary.chapterDesc}</Text>
+                      <AppText style={styles.optionTitle}>{t.summary.chapterSummary}</AppText>
+                      <AppText style={styles.optionDesc}>{t.summary.chapterDesc}</AppText>
                     </LinearGradient>
                   </Pressable>
                 </Animated.View>
@@ -897,10 +898,10 @@ return (
         ) : copyrightError ? (
           <View style={styles.errorContainer}>
             <BookOpen size={48} color={colors.primary} />
-            <Text style={[styles.errorTitle, isDarkMode && styles.errorTitleDark]}>{t.summary.copyrightError}</Text>
-            <Text style={[styles.errorText, isDarkMode && styles.errorTextDark]}>
+            <AppText style={[styles.errorTitle, isDarkMode && styles.errorTitleDark]}>{t.summary.copyrightError}</AppText>
+            <AppText style={[styles.errorText, isDarkMode && styles.errorTextDark]}>
               {t.summary.copyrightErrorMessage}
-            </Text>
+            </AppText>
             <Pressable
               onPress={() => {
                 setCopyrightError(false);
@@ -915,19 +916,19 @@ return (
                 end={{ x: 1, y: 1 }}
                 style={styles.buttonGradient}
               >
-                <Text style={styles.buttonText}>{t.summary.backToSelection}</Text>
+                <AppText style={styles.buttonText}>{t.summary.backToSelection}</AppText>
               </LinearGradient>
             </Pressable>
           </View>
         ) : isSummaryError ? (
           <View style={styles.errorContainer}>
             <BookOpen size={48} color={colors.primary} />
-            <Text style={[styles.errorTitle, isDarkMode && styles.errorTitleDark]}>{t.summary.error}</Text>
-            <Text style={[styles.errorText, isDarkMode && styles.errorTextDark]}>
+            <AppText style={[styles.errorTitle, isDarkMode && styles.errorTitleDark]}>{t.summary.error}</AppText>
+            <AppText style={[styles.errorText, isDarkMode && styles.errorTextDark]}>
               {language === 'fr'
                 ? "Impossible de générer le résumé. Veuillez réessayer."
                 : "Unable to generate the summary. Please try again."}
-            </Text>
+            </AppText>
             <Pressable
               onPress={() => {
                 setSummaryType(null);
@@ -941,7 +942,7 @@ return (
                 end={{ x: 1, y: 1 }}
                 style={styles.buttonGradient}
               >
-                <Text style={styles.buttonText}>{t.summary.retry}</Text>
+                <AppText style={styles.buttonText}>{t.summary.retry}</AppText>
               </LinearGradient>
             </Pressable>
           </View>
@@ -961,10 +962,10 @@ return (
             >
               <Loader2 size={48} color={colors.primary} />
             </Animated.View>
-            <Text style={[styles.loadingText, isDarkMode && styles.loadingTextDark]}>
+            <AppText style={[styles.loadingText, isDarkMode && styles.loadingTextDark]}>
               {t.summary.generating}
-            </Text>
-            <Text style={[styles.loadingSubtext, isDarkMode && styles.loadingSubtextDark]}>
+            </AppText>
+            <AppText style={[styles.loadingSubtext, isDarkMode && styles.loadingSubtextDark]}>
               {language === 'fr' 
                 ? summaryType === 'chapter' 
                   ? 'Génération du résumé par chapitre' 
@@ -972,7 +973,7 @@ return (
                 : summaryType === 'chapter'
                   ? 'Generating chapter summary'
                   : 'Generating summary'}
-            </Text>
+            </AppText>
           </View>
         ) : bookInfo && summaryType && selectedSummary ? (
           <Animated.View style={[styles.content, { opacity: fadeAnim, transform: [{ translateY: cardSlideAnim }] }]}>
@@ -998,18 +999,18 @@ return (
                 <View style={styles.bookInfo}>
                   <View style={styles.infoRow}>
                     <BookOpen size={20} color={colors.primary} />
-                    <Text style={[styles.bookTitle, isDarkMode && styles.bookTitleDark]}>{bookInfo.title}</Text>
+                    <AppText style={[styles.bookTitle, isDarkMode && styles.bookTitleDark]}>{bookInfo.title}</AppText>
                   </View>
                   <View style={styles.infoRow}>
                     <User size={18} color={colors.secondary} />
-                    <Text style={[styles.bookAuthor, isDarkMode && styles.bookAuthorDark]}>{bookInfo.author}</Text>
+                    <AppText style={[styles.bookAuthor, isDarkMode && styles.bookAuthorDark]}>{bookInfo.author}</AppText>
                   </View>
                 </View>
               </View>
 
               <Animated.View style={[styles.summaryCard, isDarkMode && styles.summaryCardDark, { opacity: summaryCardFade, transform: [{ translateY: summaryCardSlide }] }]}>
                 <View style={styles.summaryHeader}>
-                  <Text style={[styles.summaryTitle, isDarkMode && styles.summaryTitleDark]}>{t.summary.title}</Text>
+                  <AppText style={[styles.summaryTitle, isDarkMode && styles.summaryTitleDark]}>{t.summary.title}</AppText>
                   <View style={styles.headerActions}>
                   <View style={styles.textSizer}>
                     <Animated.View style={{ transform: [{ scale: textSizeButtonScale1 }] }}>
@@ -1030,7 +1031,7 @@ return (
                         }}
                         style={[styles.textSizeButton, isDarkMode && styles.textSizeButtonDark]}
                       >
-                        <Text style={[styles.textSizeLabel, isDarkMode && styles.textSizeLabelDark]}>A-</Text>
+                        <AppText style={[styles.textSizeLabel, isDarkMode && styles.textSizeLabelDark]}>A-</AppText>
                       </Pressable>
                     </Animated.View>
                     <Animated.View style={{ transform: [{ scale: textSizeButtonScale2 }] }}>
@@ -1051,7 +1052,7 @@ return (
                         }}
                         style={[styles.textSizeButton, isDarkMode && styles.textSizeButtonDark]}
                       >
-                        <Text style={[styles.textSizeLabel, { fontSize: 16 }, isDarkMode && styles.textSizeLabelDark]}>A+</Text>
+                        <AppText style={[styles.textSizeLabel, { fontSize: 16 }, isDarkMode && styles.textSizeLabelDark]}>A+</AppText>
                       </Pressable>
                     </Animated.View>
                   </View>
@@ -1082,28 +1083,28 @@ return (
                   </Animated.View>
                   </View>
                 </View>
-                <Text style={[styles.summaryText, { fontSize: textSize, lineHeight: textSize * 1.6 }, isDarkMode && styles.summaryTextDark]}>
+                <AppText style={[styles.summaryText, { fontSize: textSize, lineHeight: textSize * 1.6 }, isDarkMode && styles.summaryTextDark]}>
                   {selectedSummary.replace(/\*/g, '')}
-                </Text>
+                </AppText>
               </Animated.View>
 
               <Animated.View style={[styles.actionsSection, isDarkMode && styles.actionsSectionDark, { opacity: actionsCardFade, transform: [{ translateY: actionsCardSlide }] }]}>
                 {/* Header avec badge Premium */}
                 <View style={styles.actionsSectionHeader}>
                   <View style={styles.actionsSectionTitleRow}>
-                    <Text style={[styles.actionsSectionTitle, isDarkMode && styles.actionsSectionTitleDark]}>
+                    <AppText style={[styles.actionsSectionTitle, isDarkMode && styles.actionsSectionTitleDark]}>
                       {language === 'fr' ? 'Outils de révision' : 'Study tools'}
-                    </Text>
+                    </AppText>
                     <View style={[styles.premiumPillBadge, { backgroundColor: colors.primary }]}>
                       <Crown size={10} color="#FFF" strokeWidth={2.5} />
-                      <Text style={styles.premiumPillText}>Premium</Text>
+                      <AppText style={styles.premiumPillText}>Premium</AppText>
                     </View>
                   </View>
-                  <Text style={[styles.actionsSectionSubtitle, isDarkMode && styles.actionsSectionSubtitleDark]}>
+                  <AppText style={[styles.actionsSectionSubtitle, isDarkMode && styles.actionsSectionSubtitleDark]}>
                     {language === 'fr'
                       ? 'Approfondis ta lecture avec des outils IA.'
                       : 'Deepen your reading with AI-powered tools.'}
-                  </Text>
+                  </AppText>
                 </View>
 
                 {/* Bouton principal — Fiche de lecture */}
@@ -1129,19 +1130,19 @@ return (
                         )}
                       </View>
                       <View style={styles.primaryActionContent}>
-                        <Text style={styles.primaryActionTitle}>
+                        <AppText style={styles.primaryActionTitle}>
                           {isGeneratingFiche
                             ? (language === 'fr' ? 'Génération en cours...' : 'Generating...')
                             : t.summary.generateFiche}
-                        </Text>
-                        <Text style={styles.primaryActionSubtitle}>
+                        </AppText>
+                        <AppText style={styles.primaryActionSubtitle}>
                           {language === 'fr'
                             ? 'Analyse complète, idées clés et axes de lecture.'
                             : 'Complete analysis, key ideas, and reading insights.'}
-                        </Text>
+                        </AppText>
                       </View>
                       <View style={styles.primaryActionChevron}>
-                        <Text style={styles.primaryActionChevronText}>›</Text>
+                        <AppText style={styles.primaryActionChevronText}>›</AppText>
                       </View>
                     </LinearGradient>
                   </Pressable>
@@ -1168,14 +1169,14 @@ return (
                         <View style={[styles.squareCardIconWrap, { backgroundColor: `${colors.primary}20` }]}>
                           <Volume2 size={22} color={colors.primary} />
                         </View>
-                        <Text style={[styles.squareCardTitle, isDarkMode && styles.squareCardTitleDark]}>
+                        <AppText style={[styles.squareCardTitle, isDarkMode && styles.squareCardTitleDark]}>
                           {t.summary.animatedReading}
-                        </Text>
-                        <Text style={[styles.squareCardSubtitle, isDarkMode && styles.squareCardSubtitleDark]}>
+                        </AppText>
+                        <AppText style={[styles.squareCardSubtitle, isDarkMode && styles.squareCardSubtitleDark]}>
                           {language === 'fr' ? 'Écoute le résumé à voix haute' : 'Listen to the summary'}
-                        </Text>
+                        </AppText>
                         <View style={[styles.squareCardArrow, { backgroundColor: colors.primary }]}>
-                          <Text style={styles.squareCardArrowText}>›</Text>
+                          <AppText style={styles.squareCardArrowText}>›</AppText>
                         </View>
                       </LinearGradient>
                     </Pressable>
@@ -1200,14 +1201,14 @@ return (
                         <View style={[styles.squareCardIconWrap, { backgroundColor: `${colors.primary}20` }]}>
                           <Layers size={22} color={colors.primary} />
                         </View>
-                        <Text style={[styles.squareCardTitle, isDarkMode && styles.squareCardTitleDark]}>
+                        <AppText style={[styles.squareCardTitle, isDarkMode && styles.squareCardTitleDark]}>
                           {t.summary.flashcards}
-                        </Text>
-                        <Text style={[styles.squareCardSubtitle, isDarkMode && styles.squareCardSubtitleDark]}>
+                        </AppText>
+                        <AppText style={[styles.squareCardSubtitle, isDarkMode && styles.squareCardSubtitleDark]}>
                           {language === 'fr' ? 'Teste tes connaissances' : 'Test your knowledge'}
-                        </Text>
+                        </AppText>
                         <View style={[styles.squareCardArrow, { backgroundColor: colors.primary }]}>
-                          <Text style={styles.squareCardArrowText}>›</Text>
+                          <AppText style={styles.squareCardArrowText}>›</AppText>
                         </View>
                       </LinearGradient>
                     </Pressable>

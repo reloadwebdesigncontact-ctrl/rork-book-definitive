@@ -1,4 +1,4 @@
-import { LinearGradient } from "expo-linear-gradient";
+﻿import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from "expo-haptics";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ArrowLeft, Share2, Pause, Play } from "lucide-react-native";
@@ -23,6 +23,7 @@ import { SPEECH_LOCALES } from "@/utils/languageNames";
 import { useVoice } from "@/contexts/VoiceContext";
 import { logger } from "@/utils/logger";
 import { sanitizeAiResponse, sanitizeText } from "@/utils/sanitize";
+import { AppText } from "@/components/AppText";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -296,8 +297,8 @@ export default function LyricsReaderScreen() {
             </Pressable>
           </Animated.View>
           <View style={styles.headerCenter}>
-            <Text style={styles.headerTitle} numberOfLines={1}>{safeTitle}</Text>
-            <Text style={styles.headerSubtitle} numberOfLines={1}>{safeAuthor}</Text>
+            <AppText style={styles.headerTitle} numberOfLines={1}>{safeTitle}</AppText>
+            <AppText style={styles.headerSubtitle} numberOfLines={1}>{safeAuthor}</AppText>
           </View>
           <Animated.View style={{ transform: [{ scale: shareButtonScale }] }}>
             <Pressable 
@@ -359,7 +360,7 @@ export default function LyricsReaderScreen() {
                     },
                   ]}
                 >
-                  <Text
+                  <AppText
                     style={[
                       styles.paragraph,
                       currentParagraphIndex === index && styles.paragraphTextActive,
@@ -367,7 +368,7 @@ export default function LyricsReaderScreen() {
                     ]}
                   >
                     {paragraph}
-                  </Text>
+                  </AppText>
                 </Animated.View>
               ))}
             </View>
