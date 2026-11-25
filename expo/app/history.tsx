@@ -17,8 +17,8 @@ import { useFocusEffect } from "@react-navigation/native";
 import { AnimatedBackground } from "@/components/AnimatedBackground";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useLanguage } from "@/contexts/LanguageContext";
-import {
 import { AppText } from "@/components/AppText";
+import {
   clearHistory,
   getHistory,
   HistoryEntry,
