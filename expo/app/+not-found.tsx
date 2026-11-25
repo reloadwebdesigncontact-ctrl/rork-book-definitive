@@ -1,6 +1,6 @@
 ﻿// template
 import { Link, Stack } from "expo-router";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { AppText } from "@/components/AppText";
 
 export default function NotFoundScreen() {
