@@ -18,7 +18,7 @@
     },
     {
       "src": "/cgv",
-      "dest": "/api/cgv.js"
+      "dest": "/api/cgv"
     },
     {
       "src": "/(.*)",
