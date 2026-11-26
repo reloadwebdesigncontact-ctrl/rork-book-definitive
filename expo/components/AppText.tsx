@@ -1,17 +1,10 @@
 /**
- * AppText — remplace <Text> partout dans l'app.
- * Applique Baloo2-Regular par défaut (arrondi, fin comme Roboto Regular).
- * Les styles inline passés en prop overrident le fontFamily si besoin.
+ * AppText — wrapper de Text pour l'app.
+ * Police système par défaut (Roboto sur Android).
  */
 import React from 'react';
-import { Text, TextProps, StyleSheet } from 'react-native';
+import { Text, TextProps } from 'react-native';
 
 export function AppText({ style, ...props }: TextProps) {
-  return <Text style={[styles.default, style]} {...props} />;
+  return <Text style={style} {...props} />;
 }
-
-const styles = StyleSheet.create({
-  default: {
-    fontFamily: 'Baloo2-Regular',
-  },
-});
