@@ -687,7 +687,7 @@ export default function SettingsScreen() {
               <Pressable
                 onPress={() => {
                   animateOptionPress(legalOption4Scale);
-                  void Linking.openURL('https://book-definitive-backend.vercel.app/cgv');
+                  void Linking.openURL('https://book-definitive-backend.vercel.app/api/cgv');
                 }}
                 style={[styles.legalOption, isDarkMode && styles.legalOptionDark]}
               >
