@@ -2,7 +2,7 @@
   "expo": {
     "name": "Summshine",
     "slug": "book-definitive",
-    "version": "2.0.0",
+    "version": "2.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "coverscan",
@@ -24,7 +24,7 @@
     "android": {
       "icon": "./assets/images/icon.png",
       "package": "app.coverscan",
-      "versionCode": 144,
+      "versionCode": 145,
       "allowBackup": false,
       "blockedPermissions": [],
       "permissions": [
