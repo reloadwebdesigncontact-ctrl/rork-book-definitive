@@ -9,16 +9,5 @@
       "memory": 128,
       "maxDuration": 10
     }
-  },
-  "routes": [
-    {
-      "src": "/api/chat",
-      "methods": ["POST", "OPTIONS"],
-      "dest": "/api/chat.js"
-    },
-    {
-      "src": "/(.*)",
-      "status": 404
-    }
-  ]
+  }
 }
